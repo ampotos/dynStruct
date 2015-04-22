@@ -1,4 +1,5 @@
 #include "dr_api.h"
+#include "dr_ir_opnd.h"
 #include "drwrap.h"
 
 // sort at insert to have an easy size calculation at the end
@@ -16,6 +17,7 @@ struct malloc_s
   void		  *start;
   void		  *end;
   size_t	  size;
+  void		  *ret;
   access_t	  *access;
   int		  flag;
   struct malloc_s *next;
@@ -39,8 +41,9 @@ void	  *lock;
 
 static void pre_malloc(void *wrapctx, OUT void **user_data)
 {
-  malloc_t *last = blocks;
+  malloc_t	*last = blocks;
 
+  // TODO find a way to avoid double call of this pre wrapped call
   dr_mutex_lock(lock);
   if (last)
     {
@@ -61,6 +64,8 @@ static void pre_malloc(void *wrapctx, OUT void **user_data)
       last->size = (size_t)drwrap_get_arg(wrapctx, 0);
       last-> flag = 0;
       last->next = NULL;
+      //this is use to write return value on the right block
+      last->ret = drwrap_get_retaddr(wrapctx);
     }
   dr_mutex_unlock(lock);
 }
@@ -69,6 +74,8 @@ static void post_malloc(void *wrapctx, void *user_data)
 {
   dr_mutex_lock(lock);
   // todo print all message here + set start and end in node
+  // find node by retaddr
+  dr_printf("%p : ", drwrap_get_retaddr(wrapctx));
   dr_printf("%p\n", drwrap_get_retval(wrapctx));
   dr_mutex_unlock(lock);
 }

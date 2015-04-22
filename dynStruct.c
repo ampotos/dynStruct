@@ -66,6 +66,7 @@ static void pre_malloc(void *wrapctx, OUT void **user_data)
       last->next = NULL;
       //this is use to write return value on the right block
       last->ret = drwrap_get_retaddr(wrapctx);
+      dr_printf("m : %p\n", last->ret);
     }
   dr_mutex_unlock(lock);
 }
@@ -75,6 +76,7 @@ static void post_malloc(void *wrapctx, void *user_data)
   dr_mutex_lock(lock);
   // todo print all message here + set start and end in node
   // find node by retaddr
+  // if to node have the same ret value and are not free => delete the last one
   dr_printf("%p : ", drwrap_get_retaddr(wrapctx));
   dr_printf("%p\n", drwrap_get_retval(wrapctx));
   dr_mutex_unlock(lock);
@@ -83,7 +85,7 @@ static void post_malloc(void *wrapctx, void *user_data)
 static void pre_free(void *wrapctx, OUT void **user_data)
 {
   // todo set flag in node for the freed block to free (detect use after-free?)
-  dr_printf("free(%p)\n", drwrap_get_arg(wrapctx, 0));
+  dr_printf("free(%p)\n", drwrap_get_arg(wrapctx, 0))
 }
 
 static void load_event(void *drcontext, const module_data_t *mod, bool loaded)
@@ -91,7 +93,7 @@ static void load_event(void *drcontext, const module_data_t *mod, bool loaded)
   app_pc malloc = (app_pc)dr_get_proc_address(mod->handle, "malloc");
   app_pc free = (app_pc)dr_get_proc_address(mod->handle, "free");
 
-  // wrap malloc
+   // wrap malloc
   if (malloc)
     {
       dr_printf("malloc found at %p in %s\n", malloc, dr_module_preferred_name(mod));

@@ -28,8 +28,9 @@ struct malloc_s
 };
 
 // define flag for malloc_t
-#define FREE 0x1
-#define ALLOC (0x1 << 1)
+#define ALLOC 0x1
+#define CALLOC (0x1 << 1)
+#define FREE (0x1 << 2)
 
 malloc_t  *blocks = NULL;
 void	  *lock;
@@ -94,7 +95,7 @@ static void pre_malloc(void *wrapctx, OUT void **user_data)
 
 malloc_t *get_unalloc_block(void *ret)
 {
-  malloc_t *block = blocks;
+  malloc_t	*block = blocks;
 
   while (block)
     {
@@ -102,29 +103,104 @@ malloc_t *get_unalloc_block(void *ret)
 	return block;
       block = block->next;
     }
+
   return NULL;
+}
+
+void free_malloc_block(malloc_t *block)
+{
+  size_t	len;
+
+  if (block)
+    {
+      if (block->module_name_malloc)
+	{
+	  len = -1;
+	  while (block->module_name_malloc[++len]);
+	  dr_global_free(block->module_name_malloc, len);
+	}
+
+      if (block->module_name_free)
+	{
+	  len = -1;
+	  while (block->module_name_free[++len]);
+	  dr_global_free(block->module_name_free, len);
+	}
+
+      dr_global_free(block, sizeof(*block));
+    }
+}
+
+void remove_block(malloc_t *block)
+{
+  malloc_t	*tmp = blocks;
+
+  if (tmp == block)
+    {
+      blocks = tmp->next;
+      free_malloc_block(block);
+    }
+  else
+    {
+      while (tmp)
+	{
+	  if (tmp->next == block)
+	    {
+	      tmp->next = tmp->next->next;
+	      free_malloc_block(block);
+	      break;
+	    }
+	  tmp = tmp->next;
+	}
+    }
+}
+
+void set_addr_malloc(malloc_t *block, void *start, unsigned int flag)
+{
+  if (!start && block)
+    {
+      dr_printf("Malloc of size %d by %s failed\n", block->size, block->module_name_malloc);
+      remove_block(block);
+    }
+  else if (block)
+    {
+      block->start = start;
+      block->end = block->start + block->size;
+      block->flag = flag;
+    }
+  else
+    dr_printf("Error : post wrapping call without pre wrapping\n");
 }
 
 static void post_malloc(void *wrapctx, void *user_data)
 {
-  malloc_t *block;
+  malloc_t	*block;
+
+  dr_mutex_lock(lock);
+
+  block = get_unalloc_block(drwrap_get_retaddr(wrapctx));
+  if (block && drwrap_get_retaddr(wrapctx))
+    set_addr_malloc(block, drwrap_get_retval(wrapctx), ALLOC);
+
+  dr_mutex_unlock(lock);
+}
+
+static void post_calloc(void *wrapctx, void *user_data)
+{
+  malloc_t	*block;
 
   dr_mutex_lock(lock);
 
   block = get_unalloc_block(drwrap_get_retaddr(wrapctx));
   if (block)
-    {
-      block->start = drwrap_get_retval(wrapctx);
-      block->end = block->start + block->size;
-      block->flag = ALLOC;
-    }
-
+    set_addr_malloc(block, drwrap_get_retval(wrapctx), ALLOC | CALLOC);
+  
   dr_mutex_unlock(lock);
 }
 
 malloc_t *get_block_by_addr(void *addr)
 {
-  malloc_t *block = blocks;
+  malloc_t	*block = blocks;
 
   while(block)
     {
@@ -169,8 +245,9 @@ static void pre_free(void *wrapctx, OUT void **user_data)
 
 static void load_event(void *drcontext, const module_data_t *mod, bool loaded)
 {
-  app_pc malloc = (app_pc)dr_get_proc_address(mod->handle, "malloc");
-  app_pc free = (app_pc)dr_get_proc_address(mod->handle, "free");
+  app_pc	malloc = (app_pc)dr_get_proc_address(mod->handle, "malloc");
+  app_pc	calloc = (app_pc)dr_get_proc_address(mod->handle, "calloc");
+  app_pc	free = (app_pc)dr_get_proc_address(mod->handle, "free");
 
   // wrap only libc malloc to have all malloc without duplication
   if (strncmp(dr_module_preferred_name(mod), "libc.so", 7))
@@ -188,6 +265,18 @@ static void load_event(void *drcontext, const module_data_t *mod, bool loaded)
   else
     dr_printf("Malloc not found in %s\n", dr_module_preferred_name(mod));
 
+  // wrap malloc pre malloc and pre calloc are the same
+  if (calloc)
+    {
+      dr_printf("Calloc found at %p in %s\n", malloc, dr_module_preferred_name(mod));
+      if (drwrap_wrap(calloc, pre_malloc, post_calloc))
+	dr_printf("\tWrap sucess\n");
+      else
+	dr_printf("\tWrap fail\n");
+    }
+  else
+    dr_printf("Calloc not found in %s\n", dr_module_preferred_name(mod));
+
   // wrap free
   if (free)
     {
@@ -201,42 +290,6 @@ static void load_event(void *drcontext, const module_data_t *mod, bool loaded)
     dr_printf("free not found in %s\n", dr_module_preferred_name(mod));
 }
 
-static void exit_event(void);
-
-DR_EXPORT void dr_init(client_id_t id)
-{
-  drwrap_init();
-
-  dr_register_exit_event(exit_event); 
-  dr_register_module_load_event(load_event);
-
-  lock = dr_mutex_create();  
-}
-
-void free_malloc_block(malloc_t *block)
-{
-  size_t	len;
-
-  if (block)
-    {
-      if (block->module_name_malloc)
-	{
-	  len = -1;
-	  while (block->module_name_malloc[++len]);
-	  dr_global_free(block->module_name_malloc, len);
-	}
-
-      if (block->module_name_free)
-	{
-	  len = -1;
-	  while (block->module_name_free[++len]);
-	  dr_global_free(block->module_name_free, len);
-	}
-
-      dr_global_free(block, sizeof(*block));
-    }
-}
-
 static void exit_event(void)
 {
   malloc_t	*block = blocks;
@@ -247,10 +300,15 @@ static void exit_event(void)
   while (block)
     {
       tmp = block->next;
-      if (block->flag & FREE)
-	dr_printf("%p-%p(0x%x) malloc by %s and free by %s\n", block->start, block->end, block->size, block->module_name_malloc, block->module_name_free);
+      dr_printf("%p-%p(0x%x) ", block->start, block->end, block->size);
+      if (block->flag & CALLOC)
+	dr_printf("calloc by ");
       else
-	dr_printf("%p-%p(0x%x) malloc by %s and not free\n", block->start, block->end, block->size, block->module_name_malloc);
+	dr_printf("malloc by ");
+      if (block->flag & FREE)
+	dr_printf("%s and free by %s\n", block->module_name_malloc, block->module_name_free);
+      else
+	dr_printf("%s and not free\n", block->module_name_malloc);
       free_malloc_block(block);
       block = tmp;
     }
@@ -260,4 +318,14 @@ static void exit_event(void)
   dr_mutex_destroy(lock);
   
   drwrap_exit();
+}
+
+DR_EXPORT void dr_init(client_id_t id)
+{
+  drwrap_init();
+
+  dr_register_exit_event(exit_event); 
+  dr_register_module_load_event(load_event);
+
+  lock = dr_mutex_create();  
 }

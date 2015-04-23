@@ -29,8 +29,7 @@ struct malloc_s
 
 // define flag for malloc_t
 #define ALLOC 0x1
-#define CALLOC (0x1 << 1)
-#define FREE (0x1 << 2)
+#define FREE (0x1 << 1)
 
 // Globals
 extern malloc_t  *blocks;

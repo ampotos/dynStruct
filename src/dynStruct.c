@@ -196,10 +196,7 @@ static void exit_event(void)
     {
       tmp = block->next;
       dr_printf("%p-%p(0x%x) ", block->start, block->end, block->size);
-      if (block->flag & CALLOC)
-	dr_printf("calloc by ");
-      else
-	dr_printf("malloc by ");
+      dr_printf("malloc by ");
       if (block->flag & FREE)
 	dr_printf("%s and free by %s\n", block->module_name_malloc, block->module_name_free);
       else

@@ -27,6 +27,12 @@ struct malloc_s
   struct malloc_s *next;
 };
 
+typedef struct
+{
+  malloc_t	*block;
+  size_t	size;
+} realloc_tmp_t;
+
 // define flag for malloc_t
 #define ALLOC 0x1
 #define FREE (0x1 << 1)

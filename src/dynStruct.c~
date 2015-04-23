@@ -1,8 +1,8 @@
 #include "dr_api.h"
 #include "dr_ir_opnd.h"
 #include "drwrap.h"
-#include "utils.h"
-#include "block_utils.h"
+#include "../includes/utils.h"
+#include "../includes/block_utils.h"
 
 malloc_t  *blocks = NULL;
 void      *lock;

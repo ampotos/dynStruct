@@ -12,8 +12,8 @@ static void pre_malloc(void *wrapctx, OUT void **user_data)
   malloc_t	*new;
 
   dr_mutex_lock(lock);
-  
-  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0), drwrap_get_retval(wrapctx));
+
+  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0), drwrap_get_retaddr(wrapctx));
 
   dr_mutex_unlock(lock);
 }
@@ -50,7 +50,7 @@ static void post_malloc(void *wrapctx, void *user_data)
 
   dr_mutex_lock(lock);
 
-  if (block && drwrap_get_retaddr(wrapctx))
+  if (block)
     set_addr_malloc(block, drwrap_get_retval(wrapctx), ALLOC, 0);
 
   dr_mutex_unlock(lock);
@@ -78,6 +78,7 @@ static void pre_realloc(void *wrapctx, OUT void **user_data)
 
   // if size == 0 => realloc call free
   // if start == 0 => realloc call malloc
+
   if (!size || !start)
     return;
 
@@ -98,8 +99,13 @@ static void post_realloc(void *wrapctx, void *user_data)
   void		*ret = drwrap_get_retval(wrapctx);
 
   // if null => fail or free, on both case flag is set to free
+  
+  dr_mutex_lock(lock);
+
   if (block)
     set_addr_malloc(block, ret, block->flag, 1);
+
+  dr_mutex_unlock(lock);
 }
 
 static void pre_free(void *wrapctx, OUT void **user_data)
@@ -153,18 +159,6 @@ static void load_event(void *drcontext, const module_data_t *mod, bool loaded)
     }
   else
     dr_printf("Malloc not found in %s\n", dr_module_preferred_name(mod));
-
-  // wrap calloc pre malloc and pre calloc are the same
-  if (calloc)
-    {
-      dr_printf("Calloc found at %p in %s\n", malloc, dr_module_preferred_name(mod));
-      if (drwrap_wrap(calloc, pre_malloc, post_calloc))
-  	dr_printf("\tWrap sucess\n");
-      else
-  	dr_printf("\tWrap fail\n");
-    }
-  else
-    dr_printf("Calloc not found in %s\n", dr_module_preferred_name(mod));
 
   // wrap realloc
   if (realloc)

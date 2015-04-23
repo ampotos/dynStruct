@@ -1,5 +1,5 @@
 # dynStruct
-dynStruct is a first poc for a tool using dynamoRio to recover internal structure of a binary.
+dynStruct is a in development tool using dynamoRio to recover internal structure of a binary.
 
 # Setup
 Set the environment variable DYNAMORIO_HOME to the absolute path of your DynamoRIO installation

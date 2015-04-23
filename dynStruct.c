@@ -117,10 +117,6 @@ static void post_malloc(void *wrapctx, void *user_data)
       block->start = drwrap_get_retval(wrapctx);
       block->end = block->start + block->size;
       block->flag = ALLOC;
-      /* if (block->module_name_malloc) */
-      /* 	dr_printf("New malloc for %s : %p-%p(0x%x)\n", block->module_name_malloc, block->start, block->end, block->size); */
-      /* else */
-      /* 	dr_printf("New malloc : %p-%p(0x%x)\n", block->start, block->end, block->size); */
     }
 
   dr_mutex_unlock(lock);
@@ -164,11 +160,6 @@ static void pre_free(void *wrapctx, OUT void **user_data)
 	}
       else
 	block->module_name_free = NULL;
-      
-      /* if (block->module_name_free) */
-      /* 	dr_printf("free : %p from %s\n", block->start, block->module_name_free); */
-      /* else */
-      /* 	dr_printf("free : %p\n", block->start); */
     }
   else
     dr_printf("free of non malloc adress : %p\n", drwrap_get_arg(wrapctx, 0));

@@ -12,7 +12,7 @@ static void pre_malloc(void *wrapctx, OUT void **user_data)
   malloc_t	*new;
 
   dr_mutex_lock(lock);
-  // problem malloc called by realloc have a size parameter of zero
+
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0), drwrap_get_retaddr(wrapctx));
 
   dr_mutex_unlock(lock);
@@ -47,7 +47,7 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag, int reallo
 static void post_malloc(void *wrapctx, void *user_data)
 {
   malloc_t	*block = (malloc_t *)user_data;
-
+  
   dr_mutex_lock(lock);
 
   if (block)
@@ -79,6 +79,8 @@ static void pre_realloc(void *wrapctx, OUT void **user_data)
 
   // is realloc is use like a malloc save the to set it on the post wrapping
   tmp->size = size;
+  *user_data = tmp;
+
   // if start == 0 => realloc call malloc
   if (!start)
     {
@@ -93,8 +95,6 @@ static void pre_realloc(void *wrapctx, OUT void **user_data)
     block->size = size;
   tmp->block = block;
   
-  *user_data = tmp;
-
   dr_mutex_unlock(lock);
 }
 
@@ -104,7 +104,7 @@ static void post_realloc(void *wrapctx, void *user_data)
   void		*ret = drwrap_get_retval(wrapctx);
 
   // if null => fail or free, on both case flag is set to free
-  
+
   dr_mutex_lock(lock);
 
   if (((realloc_tmp_t *)user_data)->block)
@@ -112,6 +112,7 @@ static void post_realloc(void *wrapctx, void *user_data)
   // is realloc is use like a malloc set the size (malloc wrapper receive a nuul size)
   else if ((block = get_block_by_addr(ret)))
     block->size = ((realloc_tmp_t*)user_data)->size;
+
   dr_global_free(user_data, sizeof(realloc_tmp_t));
   dr_mutex_unlock(lock);
 }

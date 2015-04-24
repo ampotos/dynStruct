@@ -17,3 +17,12 @@ char *my_dr_strdup(const char* str)
     }
   return (ret);
 }
+
+size_t	my_dr_strlen(const char *str)
+{
+  size_t len = 0;
+
+  while (str[len++]);
+
+  return len - 1;
+}

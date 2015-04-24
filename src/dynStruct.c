@@ -7,9 +7,17 @@
 malloc_t  *blocks = NULL;
 void      *lock;
 
+int	  first = 1;
+
 static void pre_malloc(void *wrapctx, OUT void **user_data)
 {
   malloc_t	*new;
+
+  if (first) // ugly fix to the double call of first *alloc
+    {
+      first = 0;
+      return;
+    }
 
   dr_mutex_lock(lock);
 
@@ -59,14 +67,17 @@ static void post_malloc(void *wrapctx, void *user_data)
 static void pre_realloc(void *wrapctx, OUT void **user_data)
 {
   malloc_t	*block;
-  realloc_tmp_t *tmp;
+  realloc_tmp_t *tmp = NULL;
   void		*start = drwrap_get_arg(wrapctx, 0);
   size_t	size = (size_t)drwrap_get_arg(wrapctx, 1);
 
-  // maybe store module name of each realloc (and size and ptr change);
+  if (first) // ugly fix to the double call of first *alloc
+    {
+      first = 0;
+      return;
+    }
 
   // if size == 0 => realloc call free
-
   if (!size)
     return;
 
@@ -101,19 +112,32 @@ static void pre_realloc(void *wrapctx, OUT void **user_data)
 static void post_realloc(void *wrapctx, void *user_data)
 {
   malloc_t	*block;
+  module_data_t *m_data;
   void		*ret = drwrap_get_retval(wrapctx);
-
-  // if null => fail or free, on both case flag is set to free
 
   dr_mutex_lock(lock);
 
-  if (((realloc_tmp_t *)user_data)->block)
-    set_addr_malloc(((realloc_tmp_t *)user_data)->block, ret, ((realloc_tmp_t *)user_data)->block->flag, 1);
-  // is realloc is use like a malloc set the size (malloc wrapper receive a nuul size)
-  else if ((block = get_block_by_addr(ret)))
-    block->size = ((realloc_tmp_t*)user_data)->size;
-
-  dr_global_free(user_data, sizeof(realloc_tmp_t));
+  // if user_data is not set realloc was called to do a free
+  if (user_data)
+    {
+      if (((realloc_tmp_t *)user_data)->block)
+	set_addr_malloc(((realloc_tmp_t *)user_data)->block, ret, ((realloc_tmp_t *)user_data)->block->flag, 1);
+      // if realloc is use like a malloc set the size (malloc wrapper receive a null size)
+      else if ((block = get_block_by_addr(ret)))
+	{
+	  block->size = ((realloc_tmp_t*)user_data)->size;
+	  block->ret_malloc = drwrap_get_retaddr(wrapctx);
+	  dr_global_free(block->module_name_malloc, my_dr_strlen(block->module_name_malloc));
+	  if (m_data = dr_lookup_module(block->ret_malloc))
+	    {
+	      block->module_name_malloc = my_dr_strdup(dr_module_preferred_name(m_data));
+	      dr_free_module_data(m_data);
+	    }
+	  else
+	    block->module_name_malloc = NULL;
+	}
+      dr_global_free(user_data, sizeof(realloc_tmp_t));
+    }
   dr_mutex_unlock(lock);
 }
 
@@ -124,7 +148,7 @@ static void pre_free(void *wrapctx, OUT void **user_data)
 
   // free(0) du nothing
   if (!drwrap_get_arg(wrapctx,0))
-    return ;
+    return;
 
   dr_mutex_lock(lock);
 
@@ -156,6 +180,10 @@ static void load_event(void *drcontext, const module_data_t *mod, bool loaded)
   app_pc	calloc = (app_pc)dr_get_proc_address(mod->handle, "calloc");
   app_pc	realloc = (app_pc)dr_get_proc_address(mod->handle, "realloc");
   app_pc	free = (app_pc)dr_get_proc_address(mod->handle, "free");
+
+  // blacklist ld-linux to see only his internal alloc
+  if (!strncmp("ld-linux", dr_module_preferred_name(mod), 8))
+    return ;
 
   // wrap malloc
   if (malloc)
@@ -205,7 +233,7 @@ static void exit_event(void)
     {
       tmp = block->next;
       dr_printf("%p-%p(0x%x) ", block->start, block->end, block->size);
-      dr_printf("malloc by ");
+      dr_printf("alloc by ");
       if (block->flag & FREE)
 	dr_printf("%s and free by %s\n", block->module_name_malloc, block->module_name_free);
       else

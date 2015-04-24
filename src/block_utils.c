@@ -57,23 +57,13 @@ malloc_t *add_block(size_t size, void *ret)
 
 void free_malloc_block(malloc_t *block)
 {
-  size_t        len;
-
   if (block)
     {
       if (block->module_name_malloc)
-        {
-          len = -1;
-          while (block->module_name_malloc[++len]);
-          dr_global_free(block->module_name_malloc, len);
-        }
-
+	dr_global_free(block->module_name_malloc, my_dr_strlen(block->module_name_malloc));
+      
       if (block->module_name_free)
-        {
-          len = -1;
-          while (block->module_name_free[++len]);
-          dr_global_free(block->module_name_free, len);
-        }
+	dr_global_free(block->module_name_free, my_dr_strlen(block->module_name_free));
 
       dr_global_free(block, sizeof(*block));
     }

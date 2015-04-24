@@ -21,7 +21,7 @@ static void pre_malloc(void *wrapctx, OUT void **user_data)
 
   dr_mutex_lock(lock);
 
-  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0), drwrap_get_retaddr(wrapctx));
+  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0));
 
   dr_mutex_unlock(lock);
 }
@@ -32,13 +32,13 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag, int reallo
     {
       if (!realloc)
 	{
-	  dr_printf("Malloc of size %d by %s failed\n", block->size, block->module_name_malloc);
+	  dr_printf("alloc of size %d failed\n", block->size);
 	  remove_block(block);
 	}
       // if start == NULL on realloc set block to free to keep previous access to data
       else if (!(block->flag & FREE))
 	{
-	  dr_printf("Realloc of size %d by %s on %p failed\n", block->size, block->module_name_malloc, block->start);
+	  dr_printf("Realloc of size %d on %p failed\n", block->size, block->start);
 	  block->flag |= FREE;
 	}
     }
@@ -124,20 +124,10 @@ static void post_realloc(void *wrapctx, void *user_data)
 	set_addr_malloc(((realloc_tmp_t *)user_data)->block, ret, ((realloc_tmp_t *)user_data)->block->flag, 1);
       // if realloc is use like a malloc set the size (malloc wrapper receive a null size)
       else if ((block = get_block_by_addr(ret)))
-	{
-	  block->size = ((realloc_tmp_t*)user_data)->size;
-	  block->ret_malloc = drwrap_get_retaddr(wrapctx);
-	  dr_global_free(block->module_name_malloc, my_dr_strlen(block->module_name_malloc));
-	  if (m_data = dr_lookup_module(block->ret_malloc))
-	    {
-	      block->module_name_malloc = my_dr_strdup(dr_module_preferred_name(m_data));
-	      dr_free_module_data(m_data);
-	    }
-	  else
-	    block->module_name_malloc = NULL;
-	}
+	block->size = ((realloc_tmp_t*)user_data)->size;
       dr_global_free(user_data, sizeof(realloc_tmp_t));
     }
+
   dr_mutex_unlock(lock);
 }
 
@@ -156,20 +146,9 @@ static void pre_free(void *wrapctx, OUT void **user_data)
 
   // if the block was previously malloc we set it to free
   if (block)
-    {
-      block->flag |= FREE;
-      block->ret_free = drwrap_get_retaddr(wrapctx);
-
-      if (m_data = dr_lookup_module(block->ret_free))
-	{
-	  block->module_name_free = my_dr_strdup(dr_module_preferred_name(m_data));
-	  dr_free_module_data(m_data);
-	}
-      else
-	block->module_name_free = NULL;
-    }
+    block->flag |= FREE;
   else
-    dr_printf("free of non malloc adress : %p\n", drwrap_get_arg(wrapctx, 0));
+    dr_printf("free of non alloc adress : %p\n", drwrap_get_arg(wrapctx, 0));
 
   dr_mutex_unlock(lock);
 }
@@ -233,11 +212,10 @@ static void exit_event(void)
     {
       tmp = block->next;
       dr_printf("%p-%p(0x%x) ", block->start, block->end, block->size);
-      dr_printf("alloc by ");
       if (block->flag & FREE)
-	dr_printf("%s and free by %s\n", block->module_name_malloc, block->module_name_free);
+	dr_printf(" => free\n");
       else
-	dr_printf("%s and not free\n", block->module_name_malloc);
+	dr_printf("=> not free\n");
       free_malloc_block(block);
       block = tmp;
     }

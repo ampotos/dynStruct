@@ -20,10 +20,6 @@ struct malloc_s
   size_t          size;
   access_t        *access;
   unsigned int    flag;
-  void            *ret_malloc;
-  char            *module_name_malloc;
-  void            *ret_free;
-  char            *module_name_free;
   struct malloc_s *next;
 };
 
@@ -42,7 +38,7 @@ extern malloc_t  *blocks;
 extern void      *lock;
 
 malloc_t *get_block_by_addr(void *addr); //get a block by the start addr
-malloc_t *add_block(size_t size, void *ret); // add new block
+malloc_t *add_block(size_t size); // add new block
 void free_malloc_block(malloc_t *block); // free a block (usually this is never call directly use remove_block)
 void remove_block(malloc_t *block); // remove and free the give block
 

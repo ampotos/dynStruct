@@ -16,7 +16,7 @@ malloc_t *get_block_by_addr(void *addr)
   return NULL;
 }
 
-malloc_t *add_block(size_t size, void *ret)
+malloc_t *add_block(size_t size)
 {
   malloc_t      *new = blocks;
   module_data_t *m_data;
@@ -41,14 +41,6 @@ malloc_t *add_block(size_t size, void *ret)
       new->end = NULL;
       new->size = size;
       new-> flag = 0;
-      new->ret_malloc = ret;
-      if (m_data = dr_lookup_module(new->ret_malloc))
-        {
-          new->module_name_malloc = my_dr_strdup(dr_module_preferred_name(m_data));
-          dr_free_module_data(m_data);
-        }
-      else
-        new->module_name_malloc = NULL;
       new->next = NULL;
     }
 
@@ -58,15 +50,7 @@ malloc_t *add_block(size_t size, void *ret)
 void free_malloc_block(malloc_t *block)
 {
   if (block)
-    {
-      if (block->module_name_malloc)
-	dr_global_free(block->module_name_malloc, my_dr_strlen(block->module_name_malloc));
-      
-      if (block->module_name_free)
-	dr_global_free(block->module_name_free, my_dr_strlen(block->module_name_free));
-
-      dr_global_free(block, sizeof(*block));
-    }
+    dr_global_free(block, sizeof(*block));
 }
 
 void remove_block(malloc_t *block)

@@ -1,6 +1,7 @@
 #include "dr_api.h"
 #include "dr_ir_opnd.h"
 #include "drwrap.h"
+#include "drmgr.h"
 #include "../includes/utils.h"
 #include "../includes/block_utils.h"
 
@@ -225,11 +226,13 @@ static void exit_event(void)
   dr_mutex_destroy(lock);
   
   drwrap_exit();
+  drmgr_exit();
 }
 
 DR_EXPORT void dr_init(client_id_t id)
 {
   drwrap_init();
+  drmgr_init();
 
   // todo check for fail
   dr_register_exit_event(exit_event); 

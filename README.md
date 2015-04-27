@@ -1,13 +1,22 @@
 # dynStruct
 dynStruct is a in development tool using dynamoRio to recover internal structure of a binary.
 
-# Setup
+## Setup
 Set the environment variable DYNAMORIO_HOME to the absolute path of your DynamoRIO installation
-run setup.sh
 
-# Usage
-drrun -c dynStruct -- <binary>
+execute `setup.sh`
 
-# Requirements
+## Usage
+`drrun -c dynStruct -- <binary>`
+
+## Requirements
 CMake >= 2.8
 DynamoRIO
+
+## TODO
+monitoring all read/write on the heap
+recover struct members
+create en html page
+display struct
+add alloc/free fonction for the structs
+display acess read/write for each elem

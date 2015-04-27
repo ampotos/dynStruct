@@ -12,13 +12,13 @@ execute `setup.sh`
 `drrun -c dynStruct -- <binary> <arg 1> <arg 2> ...`
 
 ## Requirements
-*CMake >= 2.8
-*DynamoRIO
+* CMake >= 2.8
+* DynamoRIO
 
 ## TODO
-*monitoring all read/write on the heap
-*recover struct members
-*create en html page
-*display struct
-*add alloc/free fonction for the structs
-*display acess read/write for each elem
+* monitoring all read/write on the heap
+* recover struct members
+* create en html page
+* display struct
+* add alloc/free fonction for the structs
+* display acess read/write for each elem

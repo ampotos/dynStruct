@@ -20,9 +20,17 @@ char *my_dr_strdup(const char* str)
 
 size_t	my_dr_strlen(const char *str)
 {
-  size_t len = 0;
+  size_t	len = 0;
 
   while (str[len++]);
 
   return len - 1;
+}
+
+int my_dr_strncmp(const char *str1, const char *str2, size_t size)
+{
+  for (size_t len = 0; len < size; len++)
+    if (str1[len] != str2[len])
+      return str1[len] - str2[len];
+  return (0);
 }

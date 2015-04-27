@@ -19,7 +19,6 @@ malloc_t *get_block_by_addr(void *addr)
 malloc_t *add_block(size_t size)
 {
   malloc_t      *new = blocks;
-  module_data_t *m_data;
 
   if (new)
     {

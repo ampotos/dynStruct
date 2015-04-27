@@ -12,8 +12,6 @@ int	  first = 1;
 
 static void pre_malloc(void *wrapctx, OUT void **user_data)
 {
-  malloc_t	*new;
-
   if (first) // ugly fix to the double call of first *alloc
     {
       first = 0;
@@ -113,7 +111,6 @@ static void pre_realloc(void *wrapctx, OUT void **user_data)
 static void post_realloc(void *wrapctx, void *user_data)
 {
   malloc_t	*block;
-  module_data_t *m_data;
   void		*ret = drwrap_get_retval(wrapctx);
 
   dr_mutex_lock(lock);
@@ -132,10 +129,9 @@ static void post_realloc(void *wrapctx, void *user_data)
   dr_mutex_unlock(lock);
 }
 
-static void pre_free(void *wrapctx, OUT void **user_data)
+static void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
 {
   malloc_t	*block;
-  module_data_t	*m_data;
 
   // free(0) du nothing
   if (!drwrap_get_arg(wrapctx,0))
@@ -154,15 +150,14 @@ static void pre_free(void *wrapctx, OUT void **user_data)
   dr_mutex_unlock(lock);
 }
 
-static void load_event(void *drcontext, const module_data_t *mod, bool loaded)
+static void load_event(__attribute__((unused))void *drcontext, const module_data_t *mod, __attribute__((unused))bool loaded)
 {
   app_pc	malloc = (app_pc)dr_get_proc_address(mod->handle, "malloc");
-  app_pc	calloc = (app_pc)dr_get_proc_address(mod->handle, "calloc");
   app_pc	realloc = (app_pc)dr_get_proc_address(mod->handle, "realloc");
   app_pc	free = (app_pc)dr_get_proc_address(mod->handle, "free");
 
   // blacklist ld-linux to see only his internal alloc
-  if (!strncmp("ld-linux", dr_module_preferred_name(mod), 8))
+  if (!my_dr_strncmp("ld-linux", dr_module_preferred_name(mod), 8))
     return ;
 
   // wrap malloc
@@ -229,14 +224,14 @@ static void exit_event(void)
   drmgr_exit();
 }
 
-DR_EXPORT void dr_init(client_id_t id)
+DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
 {
   drwrap_init();
   drmgr_init();
 
   // todo check for fail
   dr_register_exit_event(exit_event); 
-  dr_register_module_load_event(load_event);
+  drmgr_register_module_load_event(load_event);
 
   lock = dr_mutex_create();  
 }

@@ -153,6 +153,7 @@ static void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
 static void load_event(__attribute__((unused))void *drcontext, const module_data_t *mod, __attribute__((unused))bool loaded)
 {
   app_pc	malloc = (app_pc)dr_get_proc_address(mod->handle, "malloc");
+  app_pc	calloc = (app_pc)dr_get_proc_address(mod->handle, "calloc");
   app_pc	realloc = (app_pc)dr_get_proc_address(mod->handle, "realloc");
   app_pc	free = (app_pc)dr_get_proc_address(mod->handle, "free");
 
@@ -164,6 +165,18 @@ static void load_event(__attribute__((unused))void *drcontext, const module_data
   if (malloc)
     {
       dr_printf("malloc found at %p in %s\n", malloc, dr_module_preferred_name(mod));
+      if (drwrap_wrap(malloc, pre_malloc, post_malloc))
+	dr_printf("\tWrap sucess\n");
+      else
+	dr_printf("\tWrap fail\n");
+    }
+  else
+    dr_printf("Malloc not found in %s\n", dr_module_preferred_name(mod));
+
+  // wrap calloc (same pre and post wrapping than malloc)
+  if (calloc)
+    {
+      dr_printf("calloc found at %p in %s\n", calloc, dr_module_preferred_name(mod));
       if (drwrap_wrap(malloc, pre_malloc, post_malloc))
 	dr_printf("\tWrap sucess\n");
       else

@@ -13,7 +13,7 @@ execute `setup.sh`
 
 ## Requirements
 * CMake >= 2.8
-* DynamoRIO
+* [DynamoRIO](https://github.com/DynamoRIO/dynamorio=
 
 ## TODO
 * monitoring all read/write on the heap

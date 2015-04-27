@@ -231,6 +231,7 @@ DR_EXPORT void dr_init(client_id_t id)
 {
   drwrap_init();
 
+  // todo check for fail
   dr_register_exit_event(exit_event); 
   dr_register_module_load_event(load_event);
 

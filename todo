@@ -1,0 +1,23 @@
+for each bb block event
+for each instr
+if instr is read and memory reference : instrument (c clean call first we look at opti after)
+if instr is write and memory reference : instrument (c clean call first we look at opti after)
+
+use drutil_expand_rep_string to transform advanced str instruction in a loop to make the analyse easier
+
+and on exit compute data to recover struct (first considère one access  = one member)
+after:
+	heuritics to avoid memset/memcopy like false positive
+	detect tab
+	detect tab of struct
+	detect ptr
+	detect ptr type
+	generate an html (or equivalant to bottlepy ?) page with schéma for struct recover
+	add alloc/free fonction when hoover
+	add read/write access by founction when hoover
+
+bonus:
+	detect signedness
+
+
+recover cpp class : same tool or standalone ?

@@ -1,8 +1,8 @@
 #include "dr_api.h"
 #include "dr_ir_opnd.h"
+#include "drutil.h"
 #include "drwrap.h"
 #include "drmgr.h"
-#include "drutils.h"
 #include "../includes/utils.h"
 #include "../includes/block_utils.h"
 #include "../includes/allocs.h"
@@ -10,9 +10,12 @@
 malloc_t  *blocks = NULL;
 void      *lock;
 
-// app2app is the first step of instrumentatiob, only use replace string instructions by a loop to have a better monitoring
-static dr_emit_flags_t bb_app2app_event(void *drcontext, void *tag, instrlist_t *bb,
-					bool for_trace, bool translating)
+// app2app is the first step of instrumentatiob, only use replace string
+// instructions by a loop to have a better monitoring
+static dr_emit_flags_t bb_app2app_event(void *drcontext,
+					__attribute__((unused))void *tag, instrlist_t *bb,
+					__attribute__((unused))bool for_trace,
+					__attribute__((unused))bool translating)
 {
   if (!drutil_expand_rep_string(drcontext, bb))
     DR_ASSERT(false);
@@ -20,10 +23,14 @@ static dr_emit_flags_t bb_app2app_event(void *drcontext, void *tag, instrlist_t 
   return DR_EMIT_DEFAULT;
 }
 
-// instrument each read or write instruction in order to be able tu monitor them"
-static dr_emit_flags_t bb_insert_event(void *drcontext, void *tag, instrlist_t *bb,
-				       instr_t *instr, bool for_trace, bool translating,
-				       void *user_data)
+// instrument each read or write instruction in order to be able tu monitor them
+static dr_emit_flags_t bb_insert_event( __attribute__((unused))void *drcontext,
+					__attribute__((unused))void *tag,
+					__attribute__((unused))instrlist_t *bb,
+					instr_t *instr, 
+					__attribute__((unused))bool for_trace,
+					__attribute__((unused))bool translating,
+				        __attribute__((unused))void *user_data)
 {
   // check if the instruction is valid
   if (instr_get_app_pc(instr) == NULL)
@@ -31,20 +38,22 @@ static dr_emit_flags_t bb_insert_event(void *drcontext, void *tag, instrlist_t *
 
   if (instr_reads_memory(instr))
     for (int i = 0; i < instr_num_srcs(instr); i++)
-      if (opnd_is_memory_reference(instr_get_src(instr, i))
+      if (opnd_is_memory_reference(instr_get_src(instr, i)))
 	  // todo instrument read
 	  continue;
 
   if (instr_writes_memory(instr))
     for (int i = 0; i < instr_num_srcs(instr); i++)
-      if (opnd_is_memory_reference(instr_get_src(instr, i))
+      if (opnd_is_memory_reference(instr_get_src(instr, i)))
 	  // todo instrument write
 	  continue;
 
   return DR_EMIT_DEFAULT;
 }
 
-static void load_event(__attribute__((unused))void *drcontext, const module_data_t *mod, __attribute__((unused))bool loaded)
+static void load_event(__attribute__((unused))void *drcontext,
+		       const module_data_t *mod,
+		       __attribute__((unused))bool loaded)
 {
   app_pc	malloc = (app_pc)dr_get_proc_address(mod->handle, "malloc");
   app_pc	calloc = (app_pc)dr_get_proc_address(mod->handle, "calloc");
@@ -57,51 +66,23 @@ static void load_event(__attribute__((unused))void *drcontext, const module_data
 
   // wrap malloc
   if (malloc)
-    {
-      dr_printf("malloc found at %p in %s\n", malloc, dr_module_preferred_name(mod));
-      if (drwrap_wrap(malloc, pre_malloc, post_malloc))
-	dr_printf("\tWrap sucess\n");
-      else
-	dr_printf("\tWrap fail\n");
-    }
-  else
-    dr_printf("Malloc not found in %s\n", dr_module_preferred_name(mod));
+    if (!drwrap_wrap(malloc, pre_malloc, post_malloc))
+      DR_ASSERT(false);
 
   // wrap calloc (same pre and post wrapping than malloc)
   if (calloc)
-    {
-      dr_printf("calloc found at %p in %s\n", calloc, dr_module_preferred_name(mod));
-      if (drwrap_wrap(malloc, pre_malloc, post_malloc))
-	dr_printf("\tWrap sucess\n");
-      else
-	dr_printf("\tWrap fail\n");
-    }
-  else
-    dr_printf("Malloc not found in %s\n", dr_module_preferred_name(mod));
+      if (!drwrap_wrap(malloc, pre_malloc, post_malloc))
+	DR_ASSERT(false);
 
   // wrap realloc
   if (realloc)
-    {
-      dr_printf("realloc found at %p in %s\n", malloc, dr_module_preferred_name(mod));
-      if (drwrap_wrap(realloc, pre_realloc, post_realloc))
-  	dr_printf("\tWrap sucess\n");
-      else
-  	dr_printf("\tWrap fail\n");
-    }
-  else
-    dr_printf("realloc not found in %s\n", dr_module_preferred_name(mod));
+      if (!drwrap_wrap(realloc, pre_realloc, post_realloc))
+	DR_ASSERT(false);
 
   // wrap free
   if (free)
-    {
-      dr_printf("free found at %p in %s\n", malloc, dr_module_preferred_name(mod));
       if (drwrap_wrap(free, pre_free, NULL))
-	dr_printf("\tWrap sucess\n");
-      else
-	dr_printf("\tWrap fail\n");
-    }
-  else
-    dr_printf("free not found in %s\n", dr_module_preferred_name(mod));
+	DR_ASSERT(false);
 }
 
 static void exit_event(void)

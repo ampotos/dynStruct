@@ -8,7 +8,8 @@ static int       first = 1;
 
 void pre_malloc(void *wrapctx, OUT void **user_data)
 {
-  if (first) // ugly fix to the double call of first *alloc                                                                           
+  // ugly fix to the double call of first *alloc
+  if (first)
     {
       first = 0;
       return;
@@ -40,13 +41,14 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   void          *start = drwrap_get_arg(wrapctx, 0);
   size_t        size = (size_t)drwrap_get_arg(wrapctx, 1);
 
-  if (first) // ugly fix to the double call of first *alloc                                                                           
+  // ugly fix to the double call of first *alloc
+  if (first)
     {
       first = 0;
       return;
     }
 
-  // if size == 0 => realloc call free                                                                                                
+  // if size == 0 => realloc call free
   if (!size)
     return;
 
@@ -57,11 +59,11 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
       return;
     }
 
-  // is realloc is use like a malloc save the to set it on the post wrapping                                                          
+  // is realloc is use like a malloc save the to set it on the post wrapping
   tmp->size = size;
   *user_data = tmp;
 
-  // if start == 0 => realloc call malloc                                                                                             
+  // if start == 0 => realloc call malloc
   if (!start)
     {
       tmp->block = NULL;
@@ -85,12 +87,13 @@ void post_realloc(void *wrapctx, void *user_data)
 
   dr_mutex_lock(lock);
 
-  // if user_data is not set realloc was called to do a free                                                                          
+  // if user_data is not set realloc was called to do a free
   if (user_data)
     {
       if (((realloc_tmp_t *)user_data)->block)
-        set_addr_malloc(((realloc_tmp_t *)user_data)->block, ret, ((realloc_tmp_t *)user_data)->block->flag, 1);
-      // if realloc is use like a malloc set the size (malloc wrapper receive a null size)                                            
+        set_addr_malloc(((realloc_tmp_t *)user_data)->block, ret,
+			((realloc_tmp_t *)user_data)->block->flag, 1);
+      // if realloc is use like a malloc set the size (malloc wrapper receive a null size)
       else if ((block = get_block_by_addr(ret)))
         block->size = ((realloc_tmp_t*)user_data)->size;
       dr_global_free(user_data, sizeof(realloc_tmp_t));
@@ -103,7 +106,7 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
 {
   malloc_t      *block;
 
-  // free(0) du nothing                                                                                                               
+  // free(0) du nothing
   if (!drwrap_get_arg(wrapctx,0))
     return;
 
@@ -111,7 +114,7 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
 
   block = get_block_by_addr(drwrap_get_arg(wrapctx, 0));
 
-  // if the block was previously malloc we set it to free                                                                             
+  // if the block was previously malloc we set it to free
   if (block)
     block->flag |= FREE;
   else

@@ -6,6 +6,7 @@
 #include "../includes/utils.h"
 #include "../includes/block_utils.h"
 #include "../includes/allocs.h"
+#include "../includes/rw.h"
 
 malloc_t  *blocks = NULL;
 void      *lock;
@@ -24,29 +25,36 @@ static dr_emit_flags_t bb_app2app_event(void *drcontext,
 }
 
 // instrument each read or write instruction in order to be able tu monitor them
-static dr_emit_flags_t bb_insert_event( __attribute__((unused))void *drcontext,
+static dr_emit_flags_t bb_insert_event( void *drcontext,
 					__attribute__((unused))void *tag,
-					__attribute__((unused))instrlist_t *bb,
-					instr_t *instr, 
+					instrlist_t *bb, instr_t *instr, 
 					__attribute__((unused))bool for_trace,
 					__attribute__((unused))bool translating,
 				        __attribute__((unused))void *user_data)
 {
+  app_pc	addr = instr_get_app_pc(instr);
+
   // check if the instruction is valid
-  if (instr_get_app_pc(instr) == NULL)
+  if (addr == NULL)
     return DR_EMIT_DEFAULT;
 
   if (instr_reads_memory(instr))
     for (int i = 0; i < instr_num_srcs(instr); i++)
       if (opnd_is_memory_reference(instr_get_src(instr, i)))
-	  // todo instrument read
-	  continue;
+	{
+	  dr_insert_clean_call(drcontext, bb, instr, &memory_read, false, 1, opnd_create_instr(instr));
+	  // break to not instrument the same instruction 2 time
+	  break;
+	}
 
   if (instr_writes_memory(instr))
-    for (int i = 0; i < instr_num_srcs(instr); i++)
-      if (opnd_is_memory_reference(instr_get_src(instr, i)))
-	  // todo instrument write
-	  continue;
+    for (int i = 0; i < instr_num_dsts(instr); i++)
+      if (opnd_is_memory_reference(instr_get_dst(instr, i)))
+	{
+	  dr_insert_clean_call(drcontext, bb, instr, &memory_write, false, 1, opnd_create_instr(instr));
+	  // break to not instrument the same instruction 2 time
+	  break;
+	}
 
   return DR_EMIT_DEFAULT;
 }

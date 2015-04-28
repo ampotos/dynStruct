@@ -1,9 +1,9 @@
-for each bb block event
-for each instr
 if instr is read and memory reference : instrument (c clean call first we look at opti after)
 if instr is write and memory reference : instrument (c clean call first we look at opti after)
 
-use drutil_expand_rep_string to transform advanced str instruction in a loop to make the analyse easier
+instrument:
+	check if the eccessed memory is in one of the block (if not return)
+	if the entry exist increment counter else create entry (1 for read and 1 for write)
 
 and on exit compute data to recover struct (first considère one access  = one member)
 after:

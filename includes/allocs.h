@@ -8,18 +8,19 @@ struct access_s
   struct access_s  *next;
   size_t           offset;
   size_t           nb_hit;
+  int		   read;
 };
 
 //maybe store module_names for realloc
 typedef struct malloc_s malloc_t;
 struct malloc_s
 {
+  struct malloc_s *next;
   void            *start;
   void            *end;
   size_t          size;
   access_t        *access;
   unsigned int    flag;
-  struct malloc_s *next;
 };
 
 typedef struct

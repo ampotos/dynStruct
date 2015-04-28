@@ -1,5 +1,5 @@
 # dynStruct
-dynStruct is a in development tool using dynamoRio to recover internal
+dynStruct is a tool using dynamoRio to recover internal
 structure of a binary.
 
 ## Requirements

@@ -71,17 +71,17 @@ static void load_event(__attribute__((unused))void *drcontext,
 
   // wrap calloc (same pre and post wrapping than malloc)
   if (calloc)
-      if (!drwrap_wrap(malloc, pre_malloc, post_malloc))
-	DR_ASSERT(false);
+    if (!drwrap_wrap(malloc, pre_malloc, post_malloc))
+      DR_ASSERT(false);
 
   // wrap realloc
   if (realloc)
-      if (!drwrap_wrap(realloc, pre_realloc, post_realloc))
-	DR_ASSERT(false);
+    if (!drwrap_wrap(realloc, pre_realloc, post_realloc))
+      DR_ASSERT(false);
 
   // wrap free
   if (free)
-      if (drwrap_wrap(free, pre_free, NULL))
+    if (!drwrap_wrap(free, pre_free, NULL))
 	DR_ASSERT(false);
 }
 
@@ -110,6 +110,7 @@ static void exit_event(void)
   
   drwrap_exit();
   drmgr_exit();
+  drutil_exit();
 }
 
 DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
@@ -125,6 +126,7 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
 
   drwrap_init();
   drmgr_init();
+  drutil_init();
 
   dr_register_exit_event(exit_event);
   if (!drmgr_register_module_load_event(load_event) ||

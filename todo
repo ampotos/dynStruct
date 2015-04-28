@@ -1,6 +1,3 @@
-if instr is read and memory reference : instrument (c clean call first we look at opti after)
-if instr is write and memory reference : instrument (c clean call first we look at opti after)
-
 instrument:
 	check if the eccessed memory is in one of the block (if not return)
 	if the entry exist increment counter else create entry (1 for read and 1 for write)

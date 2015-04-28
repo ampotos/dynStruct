@@ -46,6 +46,32 @@ malloc_t *add_block(size_t size)
   return new;
 }
 
+void set_addr_malloc(malloc_t *block, void *start, unsigned int flag, int realloc)
+{
+  if (!start && block)
+    {
+      if (!realloc)
+        {
+          dr_printf("alloc of size %d failed\n", block->size);
+          remove_block(block);
+        }
+      // if start == NULL on realloc set block to free to keep previous access to data                                                
+      else if (!(block->flag & FREE))
+        {
+          dr_printf("Realloc of size %d on %p failed\n", block->size, block->start);
+          block->flag |= FREE;
+        }
+    }
+  else if (block)
+    {
+      block->start = start;
+      block->end = block->start + block->size;
+      block->flag = flag;
+    }
+  else
+    dr_printf("Error : *alloc post wrapping call without pre wrapping\n");
+}
+
 void free_malloc_block(malloc_t *block)
 {
   if (block)

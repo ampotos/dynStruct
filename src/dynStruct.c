@@ -68,7 +68,7 @@ static void load_event(__attribute__((unused))void *drcontext,
   app_pc	realloc = (app_pc)dr_get_proc_address(mod->handle, "realloc");
   app_pc	free = (app_pc)dr_get_proc_address(mod->handle, "free");
 
-  // blacklist ld-linux to see only his internal alloc
+  // blacklist ld-linux to not see only his internal alloc
   if (!my_dr_strncmp("ld-linux", dr_module_preferred_name(mod), 8))
     return ;
 

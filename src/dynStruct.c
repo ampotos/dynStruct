@@ -32,17 +32,17 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
 					__attribute__((unused))bool translating,
 				        __attribute__((unused))void *user_data)
 {
-  app_pc	addr = instr_get_app_pc(instr);
-
+  app_pc pc = instr_get_app_pc(instr);
+  
   // check if the instruction is valid
-  if (addr == NULL)
+    if (pc == NULL)
     return DR_EMIT_DEFAULT;
 
   if (instr_reads_memory(instr))
     for (int i = 0; i < instr_num_srcs(instr); i++)
       if (opnd_is_memory_reference(instr_get_src(instr, i)))
 	{
-	  dr_insert_clean_call(drcontext, bb, instr, &memory_read, false, 1, opnd_create_instr(instr));
+	  dr_insert_clean_call(drcontext, bb, instr, &memory_read, false, 1, OPND_CREATE_INTPTR(pc));
 	  // break to not instrument the same instruction 2 time
 	  break;
 	}
@@ -51,7 +51,7 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
     for (int i = 0; i < instr_num_dsts(instr); i++)
       if (opnd_is_memory_reference(instr_get_dst(instr, i)))
 	{
-	  dr_insert_clean_call(drcontext, bb, instr, &memory_write, false, 1, opnd_create_instr(instr));
+	  dr_insert_clean_call(drcontext, bb, instr, &memory_write, false, 1, OPND_CREATE_INTPTR(pc));
 	  // break to not instrument the same instruction 2 time
 	  break;
 	}
@@ -120,6 +120,7 @@ static void exit_event(void)
   drmgr_exit();
   drutil_exit();
 }
+
 
 DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
 {

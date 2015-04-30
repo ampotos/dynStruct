@@ -34,6 +34,7 @@ extern malloc_t  *blocks;
 extern void      *lock;
 
 void pre_malloc(void *wrapctx, OUT void **user_data);
+void pre_calloc(void *wrapctx, OUT void **user_data);
 void post_malloc(void *wrapctx, void *user_data);
 
 void pre_realloc(void *wrapctx, OUT void **user_data);

@@ -77,9 +77,9 @@ static void load_event(__attribute__((unused))void *drcontext,
     if (!drwrap_wrap(malloc, pre_malloc, post_malloc))
       DR_ASSERT(false);
 
-  // wrap calloc (same pre and post wrapping than malloc)
+  // wrap calloc (same post wrapping than malloc)
   if (calloc)
-    if (!drwrap_wrap(malloc, pre_malloc, post_malloc))
+    if (!drwrap_wrap(malloc, pre_calloc, post_malloc))
       DR_ASSERT(false);
 
   // wrap realloc

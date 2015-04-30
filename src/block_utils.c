@@ -55,7 +55,7 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag, int reallo
           dr_printf("alloc of size %d failed\n", block->size);
           remove_block(block);
         }
-      // if start == NULL on realloc set block to free to keep previous access to data                                                
+      // if start == NULL on realloc set block to free to keep previous access to data
       else if (!(block->flag & FREE))
         {
           dr_printf("Realloc of size %d on %p failed\n", block->size, block->start);

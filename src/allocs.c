@@ -6,18 +6,24 @@
 
 static int       first = 1;
 
+// TODO fix free by realloc set size to 0
+
 void pre_malloc(void *wrapctx, OUT void **user_data)
 {
-  // ugly fix to the double call of first *alloc
-  if (first)
-    {
-      first = 0;
-      return;
-    }
 
   dr_mutex_lock(lock);
 
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0));
+
+  dr_mutex_unlock(lock);
+}
+
+void pre_calloc(void *wrapctx, OUT void **user_data)
+{
+
+  dr_mutex_lock(lock);
+
+  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 1));
 
   dr_mutex_unlock(lock);
 }
@@ -40,13 +46,6 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   realloc_tmp_t *tmp = NULL;
   void          *start = drwrap_get_arg(wrapctx, 0);
   size_t        size = (size_t)drwrap_get_arg(wrapctx, 1);
-
-  // ugly fix to the double call of first *alloc
-  if (first)
-    {
-      first = 0;
-      return;
-    }
 
   // if size == 0 => realloc call free
   if (!size)

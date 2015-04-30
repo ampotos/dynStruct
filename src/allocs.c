@@ -4,15 +4,12 @@
 #include "../includes/utils.h"
 #include "../includes/block_utils.h"
 
-static int       first = 1;
-
-// TODO fix free by realloc set size to 0
-
 void pre_malloc(void *wrapctx, OUT void **user_data)
 {
 
   dr_mutex_lock(lock);
 
+  dr_printf("malloc : %p\n", drwrap_get_retaddr(wrapctx));
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0));
 
   dr_mutex_unlock(lock);
@@ -21,8 +18,11 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
 void pre_calloc(void *wrapctx, OUT void **user_data)
 {
 
-  dr_mutex_lock(lock);
+  // TODO check if called by calloc, if it is do nothing
 
+  dr_mutex_lock(lock);
+ 
+  dr_printf("calloc : %p\n", drwrap_get_retaddr(wrapctx));
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 1));
 
   dr_mutex_unlock(lock);
@@ -32,6 +32,7 @@ void post_malloc(void *wrapctx, void *user_data)
 {
   malloc_t      *block = (malloc_t *)user_data;
 
+  // TODO check if called by calloc, if it is do nothing
   dr_mutex_lock(lock);
 
   if (block)
@@ -46,6 +47,8 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   realloc_tmp_t *tmp = NULL;
   void          *start = drwrap_get_arg(wrapctx, 0);
   size_t        size = (size_t)drwrap_get_arg(wrapctx, 1);
+
+  dr_printf("realloc : %p\n", drwrap_get_retaddr(wrapctx));
 
   // if size == 0 => realloc call free
   if (!size)

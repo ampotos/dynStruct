@@ -79,7 +79,7 @@ static void load_event(__attribute__((unused))void *drcontext,
 
   // wrap calloc (same post wrapping than malloc)
   if (calloc)
-    if (!drwrap_wrap(malloc, pre_calloc, post_malloc))
+    if (!drwrap_wrap(calloc, pre_calloc, post_malloc))
       DR_ASSERT(false);
 
   // wrap realloc
@@ -144,5 +144,5 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
       !drmgr_register_bb_instrumentation_event(NULL, bb_insert_event, &p))
     DR_ASSERT(false);
 
-  lock = dr_mutex_create();  
+  lock = dr_mutex_create();
 }

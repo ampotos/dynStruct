@@ -8,10 +8,10 @@
 
 void	memory_read(app_pc pc)
 {
-  opnd_t	src;
+  instr_t	instr;
   void		*drcontext = dr_get_current_drcontext();
 
-  dr_printf("pc r: %p\n", pc);
+  decode(drcontext, pc, &instr);
 
   /* for (int i = 0; i < instr_num_srcs(instr); i++) */
   /*   { */
@@ -26,10 +26,10 @@ void	memory_read(app_pc pc)
 
 void	memory_write(app_pc pc)
 {
-  opnd_t	dst;
+  instr_t	instr;
   void		*drcontext = dr_get_current_drcontext();
   
-  dr_printf("pc w: %p\n", pc);
+  decode(drcontext, pc, &instr);
 
   /* for (int i = 0; i < instr_num_dsts(instr); i++) */
   /*   { */

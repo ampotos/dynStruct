@@ -36,26 +36,26 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
   app_pc pc = instr_get_app_pc(instr);
   
   // check if the instruction is valid
-    if (pc == NULL)
+  if (pc == NULL)
     return DR_EMIT_DEFAULT;
 
   if (instr_reads_memory(instr))
     for (int i = 0; i < instr_num_srcs(instr); i++)
       if (opnd_is_memory_reference(instr_get_src(instr, i)))
-	{
-	  dr_insert_clean_call(drcontext, bb, instr, &memory_read, false, 1, OPND_CREATE_INTPTR(pc));
-	  // break to not instrument the same instruction 2 time
-	  break;
-	}
+  	{
+  	  dr_insert_clean_call(drcontext, bb, instr, &memory_read, false, 1, OPND_CREATE_INTPTR(pc));
+  	  // break to not instrument the same instruction 2 time
+  	  break;
+  	}
 
   if (instr_writes_memory(instr))
     for (int i = 0; i < instr_num_dsts(instr); i++)
       if (opnd_is_memory_reference(instr_get_dst(instr, i)))
-	{
-	  dr_insert_clean_call(drcontext, bb, instr, &memory_write, false, 1, OPND_CREATE_INTPTR(pc));
-	  // break to not instrument the same instruction 2 time
-	  break;
-	}
+  	{
+  	  dr_insert_clean_call(drcontext, bb, instr, &memory_write, false, 1, OPND_CREATE_INTPTR(pc));
+  	  // break to not instrument the same instruction 2 time
+  	  break;
+  	}
 
   return DR_EMIT_DEFAULT;
 }

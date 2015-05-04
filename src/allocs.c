@@ -4,26 +4,43 @@
 #include "../includes/utils.h"
 #include "../includes/block_utils.h"
 
-void pre_malloc(void *wrapctx, OUT void **user_data)
-{
+static int malloc_init = 0;
+static int realloc_init = 0;
 
+void pre_calloc(void *wrapctx, OUT void **user_data)
+{
   dr_mutex_lock(lock);
 
-  dr_printf("malloc : %p\n", drwrap_get_retaddr(wrapctx));
-  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0));
+  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 1));
 
   dr_mutex_unlock(lock);
 }
 
-void pre_calloc(void *wrapctx, OUT void **user_data)
+void post_calloc(void *wrapctx, void *user_data)
 {
-
-  // TODO check if called by calloc, if it is do nothing
+  malloc_t      *block = (malloc_t *)user_data;
 
   dr_mutex_lock(lock);
- 
-  dr_printf("calloc : %p\n", drwrap_get_retaddr(wrapctx));
-  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 1));
+
+  if (block)
+    set_addr_malloc(block, drwrap_get_retval(wrapctx), ALLOC, 0);
+
+  dr_mutex_unlock(lock);
+}
+
+void pre_malloc(void *wrapctx, OUT void **user_data)
+{
+  dr_mutex_lock(lock);
+
+  // if is the first call of malloc it's an init call and we have to do nothing
+  if (!malloc_init)
+    {
+      malloc_init++;
+      dr_mutex_unlock(lock);
+      return ;
+    }
+
+  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0));
 
   dr_mutex_unlock(lock);
 }
@@ -32,8 +49,14 @@ void post_malloc(void *wrapctx, void *user_data)
 {
   malloc_t      *block = (malloc_t *)user_data;
 
-  // TODO check if called by calloc, if it is do nothing
   dr_mutex_lock(lock);
+
+  // first malloc don't set user_data because is call for init
+  if (!user_data)
+    {
+      dr_mutex_unlock(lock);
+      return ;
+    }
 
   if (block)
     set_addr_malloc(block, drwrap_get_retval(wrapctx), ALLOC, 0);
@@ -48,20 +71,30 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   void          *start = drwrap_get_arg(wrapctx, 0);
   size_t        size = (size_t)drwrap_get_arg(wrapctx, 1);
 
-  dr_printf("realloc : %p\n", drwrap_get_retaddr(wrapctx));
+  dr_mutex_lock(lock);
+
+  // if is the first call of realloc it's an init call and we have to do nothing
+  if (!realloc_init)
+    {
+      realloc_init++;
+      dr_mutex_unlock(lock);
+      return ;
+    }
 
   // if size == 0 => realloc call free
   if (!size)
-    return;
+    {
+      dr_mutex_unlock(lock);
+      return;
+    }
 
-  dr_mutex_lock(lock);
   if (!(tmp = dr_global_alloc(sizeof(realloc_tmp_t))))
     {
       dr_printf("dr_malloc fail\n");
       return;
     }
 
-  // is realloc is use like a malloc save the to set it on the post wrapping
+  // if realloc is use like a malloc save the size to set it on the post wrapping
   tmp->size = size;
   *user_data = tmp;
 
@@ -89,7 +122,7 @@ void post_realloc(void *wrapctx, void *user_data)
 
   dr_mutex_lock(lock);
 
-  // if user_data is not set realloc was called to do a free
+  // if user_data is not set realloc was called to do a free or is the first call to realloc
   if (user_data)
     {
       if (((realloc_tmp_t *)user_data)->block)

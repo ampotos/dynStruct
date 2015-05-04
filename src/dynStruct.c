@@ -1,3 +1,4 @@
+#include <string.h>
 #include "dr_api.h"
 #include "dr_ir_opnd.h"
 #include "drutil.h"
@@ -67,9 +68,10 @@ static void load_event(__attribute__((unused))void *drcontext,
   app_pc	calloc = (app_pc)dr_get_proc_address(mod->handle, "calloc");
   app_pc	realloc = (app_pc)dr_get_proc_address(mod->handle, "realloc");
   app_pc	free = (app_pc)dr_get_proc_address(mod->handle, "free");
+  const char	*mod_name = dr_module_preferred_name(mod);
 
-  // blacklist ld-linux to not see only his internal alloc
-  if (!my_dr_strncmp("ld-linux", dr_module_preferred_name(mod), 8))
+  // only wrap libc because we suppose our appli use standard malloc
+  if (strncmp("libc.so", mod_name, 7))
     return ;
 
   // wrap malloc
@@ -77,9 +79,9 @@ static void load_event(__attribute__((unused))void *drcontext,
     if (!drwrap_wrap(malloc, pre_malloc, post_malloc))
       DR_ASSERT(false);
 
-  // wrap calloc (same post wrapping than malloc)
+  // wrap calloc
   if (calloc)
-    if (!drwrap_wrap(calloc, pre_calloc, post_malloc))
+    if (!drwrap_wrap(calloc, pre_calloc, post_calloc))
       DR_ASSERT(false);
 
   // wrap realloc

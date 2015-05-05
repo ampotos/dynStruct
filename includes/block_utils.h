@@ -13,7 +13,7 @@ access_t *get_access(size_t offset, access_t **l_access);// get access structure
 malloc_t *get_active_block_by_access(void *addr); // get a block by an addr of a memory access
 malloc_t *get_block_by_addr(void *addr); //get a block by the start addr
 
-malloc_t *add_block(size_t size); // add new block
+malloc_t *add_block(size_t size, void *alloc_pc); // add new block
 void free_malloc_block(malloc_t *block); // free a block (usually this is never call directly use remove_block)
 void remove_block(malloc_t *block); // remove and free the give block
 

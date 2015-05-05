@@ -32,6 +32,8 @@ struct malloc_s
   access_t        *read;
   access_t        *write;
   unsigned int    flag;
+  void		  *alloc_pc;
+  void		  *free_pc;
 };
 
 // this struct is only use as a user_data for realloc wrapping

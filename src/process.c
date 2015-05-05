@@ -47,9 +47,9 @@ void	process_recover(void)
       tmp = block->next;
       dr_printf("block : %p-%p(0x%x) ", block->start, block->end, block->size);
       if (block->flag & FREE)
-	dr_printf("was free\n");
+	dr_printf("was free\nalloc by %p and free by %p\n", block->alloc_pc, block->free_pc);
       else
-        dr_printf("was not free\n");
+        dr_printf("was not free\nalloc by %p\n", block->alloc_pc);
       print_access(block);
       free_malloc_block(block);
       block = tmp;

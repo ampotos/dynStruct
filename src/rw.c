@@ -11,6 +11,7 @@ void	memory_read(void *pc)
   dr_mcontext_t mctx;
   opnd_t	src;
   void		*addr_read;
+  malloc_t	*block;
 
   pc = dr_app_pc_for_decoding(pc);
 
@@ -34,7 +35,8 @@ void	memory_read(void *pc)
 	  { 
 	    addr_read = opnd_get_disp(src) + 
 	      (void *)reg_get_value(opnd_get_base(src), &mctx);
-	    if (get_block_by_access(addr_read))
+	    block = get_block_by_access(addr_read);
+	    if (block && !(block->flag & FREE))
 	      dr_printf("read from % p at %p of %d\n", pc, addr_read,
 			opnd_size_in_bytes(opnd_get_size(src)));
 	  }
@@ -50,7 +52,8 @@ void	memory_write(void *pc)
   dr_mcontext_t mctx;
   opnd_t	dst;
   void		*addr_write;
-  
+  malloc_t	*block;
+
   pc = dr_app_pc_for_decoding(pc);
   
   mctx.flags = DR_MC_CONTROL|DR_MC_INTEGER;
@@ -73,7 +76,8 @@ void	memory_write(void *pc)
 	  {
 	    addr_write = opnd_get_disp(dst) + 
 	      (void *)reg_get_value(opnd_get_base(dst), &mctx);
-	    if (get_block_by_access(addr_write))
+	    block = get_block_by_access(addr_write);
+	    if (block && !(block->flag & FREE))
 	      dr_printf("write from % p at %p of %d\n", pc, addr_write,
 			opnd_size_in_bytes(opnd_get_size(dst)));
 	  }

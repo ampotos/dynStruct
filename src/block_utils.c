@@ -4,13 +4,38 @@
 #include "../includes/utils.h"
 #include "../includes/block_utils.h"
 
-malloc_t *get_block_by_access(void *addr)
+access_t *get_access(size_t offset, access_t **l_access)
+{
+  access_t	*access = *l_access;
+
+  while (access)
+    {
+      if (access->offset == offset)
+	return access;
+      access = access->next;
+    }
+  
+  // if no access with this offset is found we create a new one
+  if (!(access = dr_global_alloc(sizeof(*access))))
+    {
+      dr_printf("dr_malloc fail\n");
+      return NULL;
+    }
+  
+  memset(access, 0, sizeof(*access));
+  access->offset = offset;
+  access->next = *l_access;
+  *l_access = access;
+  return access;
+}
+
+malloc_t *get_active_block_by_access(void *addr)
 {
   malloc_t	*block = blocks;
 
   while (block)
     {
-      if (block->start <= addr && block->end >= addr)
+      if (!(block->flag & FREE) && block->start <= addr && block->end >= addr)
 	return block;
       block = block->next;
     }
@@ -85,10 +110,39 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
     dr_printf("Error : *alloc post wrapping call without pre wrapping\n");
 }
 
+void free_orig(orig_t *orig)
+{
+  orig_t	*tmp;
+
+  while (orig)
+    {
+      tmp = orig->next;
+      dr_global_free(orig, sizeof(*orig));
+      orig = tmp;
+    }
+}
+
+void free_access(access_t *access)
+{
+  access_t	*tmp;
+
+  while (access)
+    {
+      tmp = access->next;
+      free_orig(access->origs);
+      dr_global_free(access, sizeof(*access));
+      access = tmp;
+    }
+}
+
 void free_malloc_block(malloc_t *block)
 {
   if (block)
-    dr_global_free(block, sizeof(*block));
+    {
+      free_access(block->read);
+      free_access(block->write);
+      dr_global_free(block, sizeof(*block));
+    }
 }
 
 void remove_block(malloc_t *block)

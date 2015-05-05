@@ -1,14 +1,24 @@
 #ifndef ALLOCS_H_
 #define ALLOCS_H_
 
+//sotre nb_hit and size of the hit by pc on access instruction
+typedef struct orig_s orig_t;
+struct orig_s
+{
+  struct orig_s	*next;
+  size_t	size;
+  size_t	nb_hit;
+  void		*addr;
+};
+
 // sort at insert by offset typedef struct access_s access_t;
 typedef struct access_s access_t;
 struct access_s
 {
   struct access_s  *next;
   size_t           offset;
-  size_t           nb_hit;
-  int		   size;
+  size_t	   total_hits;
+  orig_t	   *origs;
 };
 
 //maybe store module_names for realloc

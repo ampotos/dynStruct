@@ -8,7 +8,9 @@
 #define ALLOC 0x1
 #define FREE (0x1 << 1)
 
-malloc_t *get_block_by_access(void *addr); // get a block by an addr of a memory access
+access_t *get_access(size_t offset, access_t **l_access);// get access structure of a block
+
+malloc_t *get_active_block_by_access(void *addr); // get a block by an addr of a memory access
 malloc_t *get_block_by_addr(void *addr); //get a block by the start addr
 
 malloc_t *add_block(size_t size); // add new block

@@ -8,6 +8,7 @@
 #include "../includes/block_utils.h"
 #include "../includes/allocs.h"
 #include "../includes/rw.h"
+#include "../includes/process.h"
 
 malloc_t  *blocks = NULL;
 void      *lock;
@@ -100,23 +101,9 @@ static void load_event(__attribute__((unused))void *drcontext,
 
 static void exit_event(void)
 {
-  malloc_t	*block = blocks;
-  malloc_t	*tmp;
-
   dr_mutex_lock(lock);
 
-  while (block)
-    {
-      tmp = block->next;
-      dr_printf("%p-%p(0x%x) ", block->start, block->end, block->size);
-      if (block->flag & FREE)
-	dr_printf(" => free\n");
-      else
-	dr_printf("=> not free\n");
-      free_malloc_block(block);
-      block = tmp;
-    }
-  blocks = NULL;
+  process_recover();
   
   dr_mutex_unlock(lock);
   dr_mutex_destroy(lock);
@@ -145,7 +132,7 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
   dr_register_exit_event(exit_event);
   if (!drmgr_register_module_load_event(load_event) ||
       !drmgr_register_bb_app2app_event(bb_app2app_event, &p) ||
-      // only use insert event because we need to monitore single instruction
+      // only use insert event because we need to monitore single instruction only
       !drmgr_register_bb_instrumentation_event(NULL, bb_insert_event, &p))
     DR_ASSERT(false);
 

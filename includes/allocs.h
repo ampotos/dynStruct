@@ -8,7 +8,7 @@ struct access_s
   struct access_s  *next;
   size_t           offset;
   size_t           nb_hit;
-  int		   read;
+  int		   size;
 };
 
 //maybe store module_names for realloc
@@ -19,7 +19,8 @@ struct malloc_s
   void            *start;
   void            *end;
   size_t          size;
-  access_t        *access;
+  access_t        *read;
+  access_t        *write;
   unsigned int    flag;
 };
 

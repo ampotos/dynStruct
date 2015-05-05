@@ -1,13 +1,27 @@
+#include <string.h>
 #include "dr_api.h"
 #include "drwrap.h"
 #include "../includes/utils.h"
 #include "../includes/block_utils.h"
 
+malloc_t *get_block_by_access(void *addr)
+{
+  malloc_t	*block = blocks;
+
+  while (block)
+    {
+      if (block->start <= addr && block->end >= addr)
+	return block;
+      block = block->next;
+    }
+  return NULL;
+}
+
 malloc_t *get_block_by_addr(void *addr)
 {
   malloc_t      *block = blocks;
 
-  while(block)
+  while (block)
     {
       if (block->start == addr)
         return block;
@@ -36,17 +50,15 @@ malloc_t *add_block(size_t size)
 
   if (new)
     {
-      new->start = NULL;
-      new->end = NULL;
+      memset(new, 0, sizeof(*new));
       new->size = size;
-      new-> flag = 0;
-      new->next = NULL;
     }
 
   return new;
 }
 
-void set_addr_malloc(malloc_t *block, void *start, unsigned int flag, int realloc)
+void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
+		     int realloc)
 {
   if (!start && block)
     {
@@ -81,7 +93,7 @@ void free_malloc_block(malloc_t *block)
 void remove_block(malloc_t *block)
 {
   malloc_t      *tmp = blocks;
-
+ 
   if (tmp == block)
     {
       blocks = tmp->next;

@@ -37,7 +37,7 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
     {
       malloc_init++;
       dr_mutex_unlock(lock);
-      return ;
+      return;
     }
 
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0));
@@ -55,7 +55,7 @@ void post_malloc(void *wrapctx, void *user_data)
   if (!user_data)
     {
       dr_mutex_unlock(lock);
-      return ;
+      return;
     }
 
   if (block)
@@ -78,7 +78,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
     {
       realloc_init++;
       dr_mutex_unlock(lock);
-      return ;
+      return;
     }
 
   // if size == 0 => realloc call free

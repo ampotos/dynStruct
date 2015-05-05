@@ -53,7 +53,6 @@ malloc_t *add_block(size_t size)
       memset(new, 0, sizeof(*new));
       new->size = size;
     }
-
   return new;
 }
 
@@ -67,10 +66,12 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
           dr_printf("alloc of size %d failed\n", block->size);
           remove_block(block);
         }
-      // if start == NULL on realloc set block to free to keep previous access to data
+      // if start == NULL on realloc 
+      // set block to free to keep previous access to data
       else if (!(block->flag & FREE))
         {
-          dr_printf("Realloc of size %d on %p failed\n", block->size, block->start);
+          dr_printf("Realloc of size %d on %p failed\n",
+		    block->size, block->start);
           block->flag |= FREE;
         }
     }

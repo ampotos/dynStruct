@@ -30,7 +30,8 @@ void	memory_read(void *pc)
     {
       src = instr_get_src(instr, i);
       if (opnd_is_memory_reference(src))
-	// take a look at other type of memory ref to be sure we don't miss any ref to the heap
+	// take a look at other type of memory ref to be 
+	// sure we don't miss any ref to the heap
 	if (opnd_is_base_disp(src))
 	  { 
 	    addr_read = opnd_get_disp(src) + 
@@ -71,7 +72,8 @@ void	memory_write(void *pc)
     {
       dst = instr_get_dst(instr, i);
       if (opnd_is_memory_reference(dst))
-	// take a look at other type of memory ref to be sure we don't miss any ref to the heap
+	// take a look at other type of memory ref to be
+	// sure we don't miss any ref to the heap
 	if (opnd_is_base_disp(dst))
 	  {
 	    addr_write = opnd_get_disp(dst) + 

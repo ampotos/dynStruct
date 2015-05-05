@@ -15,7 +15,8 @@ void      *lock;
 // app2app is the first step of instrumentatiob, only use replace string
 // instructions by a loop to have a better monitoring
 static dr_emit_flags_t bb_app2app_event(void *drcontext,
-					__attribute__((unused))void *tag, instrlist_t *bb,
+					__attribute__((unused))void *tag,
+					instrlist_t *bb,
 					__attribute__((unused))bool for_trace,
 					__attribute__((unused))bool translating)
 {
@@ -33,7 +34,7 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
 					__attribute__((unused))bool translating,
 				        __attribute__((unused))void *user_data)
 {
-  app_pc pc = instr_get_app_pc(instr);
+  app_pc	pc = instr_get_app_pc(instr);
   
   // check if the instruction is valid
   if (pc == NULL)
@@ -43,7 +44,8 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
     for (int i = 0; i < instr_num_srcs(instr); i++)
       if (opnd_is_memory_reference(instr_get_src(instr, i)))
   	{
-  	  dr_insert_clean_call(drcontext, bb, instr, &memory_read, false, 1, OPND_CREATE_INTPTR(pc));
+  	  dr_insert_clean_call(drcontext, bb, instr, &memory_read,
+			       false, 1, OPND_CREATE_INTPTR(pc));
   	  // break to not instrument the same instruction 2 time
   	  break;
   	}
@@ -52,7 +54,8 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
     for (int i = 0; i < instr_num_dsts(instr); i++)
       if (opnd_is_memory_reference(instr_get_dst(instr, i)))
   	{
-  	  dr_insert_clean_call(drcontext, bb, instr, &memory_write, false, 1, OPND_CREATE_INTPTR(pc));
+  	  dr_insert_clean_call(drcontext, bb, instr, &memory_write,
+			       false, 1, OPND_CREATE_INTPTR(pc));
   	  // break to not instrument the same instruction 2 time
   	  break;
   	}
@@ -72,7 +75,7 @@ static void load_event(__attribute__((unused))void *drcontext,
 
   // only wrap libc because we suppose our appli use standard malloc
   if (strncmp("libc.so", mod_name, 7))
-    return ;
+    return;
 
   // wrap malloc
   if (malloc)

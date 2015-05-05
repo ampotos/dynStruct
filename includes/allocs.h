@@ -24,6 +24,7 @@ struct malloc_s
   unsigned int    flag;
 };
 
+// this struct is only use as a user_data for realloc wrapping
 typedef struct
 {
   malloc_t      *block;

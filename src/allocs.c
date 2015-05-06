@@ -152,9 +152,7 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
     return;
 
   dr_mutex_lock(lock);
-
   block = get_block_by_addr(drwrap_get_arg(wrapctx, 0));
-
   // if the block was previously malloc we set it to free
   if (block)
     {

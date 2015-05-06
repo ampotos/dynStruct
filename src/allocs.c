@@ -24,7 +24,7 @@ void post_calloc(void *wrapctx, void *user_data)
   dr_mutex_lock(lock);
 
   if (block)
-    set_addr_malloc(block, drwrap_get_retaval(wrapctx), ALLOC, 0);
+    set_addr_malloc(block, drwrap_get_retval(wrapctx), ALLOC, 0);
 
   dr_mutex_unlock(lock);
 }

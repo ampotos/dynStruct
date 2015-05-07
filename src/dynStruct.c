@@ -41,6 +41,11 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
   if (pc == NULL)
     return DR_EMIT_DEFAULT;
 
+  // TODO : add clean call for each direct/indirect call and return
+  // maintain a stack for each thread with the addr of the entry point in the current fonction on top
+  // on calls push new entry point val
+  // on ret pop
+
   if (instr_reads_memory(instr))
     for (int i = 0; i < instr_num_srcs(instr); i++)
       if (opnd_is_memory_reference(instr_get_src(instr, i)))

@@ -7,11 +7,15 @@
 static int malloc_init = 0;
 static int realloc_init = 0;
 
+// TODO read the stack with function addr to store
+// and stock exact pc for alloc and free instuction (plus entry point of the caller fonction)
+
 void pre_calloc(void *wrapctx, OUT void **user_data)
 {
   dr_mutex_lock(lock);
 
-  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 1));
+  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 1),
+			 drwrap_get_retaddr(wrapctx));
 
   dr_mutex_unlock(lock);
 }
@@ -40,7 +44,8 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
       return;
     }
 
-  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0));
+  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0),
+			 drwrap_get_retaddr(wrapctx));
 
   dr_mutex_unlock(lock);
 }
@@ -126,9 +131,13 @@ void post_realloc(void *wrapctx, void *user_data)
   if (user_data)
     {
       if (((realloc_tmp_t *)user_data)->block)
-        set_addr_malloc(((realloc_tmp_t *)user_data)->block, ret,
+        {
+	  set_addr_malloc(((realloc_tmp_t *)user_data)->block, ret,
 			((realloc_tmp_t *)user_data)->block->flag, 1);
+	  ((realloc_tmp_t *)user_data)->block->alloc_pc = drwrap_get_retaddr(wrapctx);
+	}
       // if realloc is use like a malloc set the size (malloc wrapper receive a null size)
+      // maybe add a linked lsit to store all pc for realloc maybe not because realloc is usualy done on array
       else if ((block = get_block_by_addr(ret)))
         block->size = ((realloc_tmp_t*)user_data)->size;
       dr_global_free(user_data, sizeof(realloc_tmp_t));
@@ -146,12 +155,13 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
     return;
 
   dr_mutex_lock(lock);
-
   block = get_block_by_addr(drwrap_get_arg(wrapctx, 0));
-
   // if the block was previously malloc we set it to free
   if (block)
-    block->flag |= FREE;
+    {
+      block->flag |= FREE;
+      block->free_pc = drwrap_get_retval(wrapctx);
+    }
   else
     dr_printf("free of non alloc adress : %p\n", drwrap_get_arg(wrapctx, 0));
 

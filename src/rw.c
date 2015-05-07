@@ -4,6 +4,8 @@
 #include "../includes/block_utils.h"
 #include "../includes/allocs.h"
 
+// TODO read stack of entry point to get the entry point of the current fuction en store it on orig struct
+
 void	incr_orig(access_t *access, size_t size, void *pc)
 {
   orig_t	*tmp_orig = access->origs;

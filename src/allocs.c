@@ -7,6 +7,9 @@
 static int malloc_init = 0;
 static int realloc_init = 0;
 
+// TODO read the stack with function addr to store
+// and stock exact pc for alloc and free instuction (plus entry point of the caller fonction)
+
 void pre_calloc(void *wrapctx, OUT void **user_data)
 {
   dr_mutex_lock(lock);

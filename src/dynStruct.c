@@ -9,6 +9,7 @@
 #include "../includes/allocs.h"
 #include "../includes/rw.h"
 #include "../includes/process.h"
+#include "../includes/call.h"
 
 malloc_t  *blocks = NULL;
 void      *lock;
@@ -66,6 +67,15 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
   	  break;
   	}
 
+  if (instr_is_call_direct(instr))
+    dr_insert_clean_call(drcontext, bb, instr, &dir_call_monitor,
+			 false, 1, OPND_CREATE_INTPTR(pc));
+  if (instr_is_call_indirect(instr))
+    dr_insert_clean_call(drcontext, bb, instr, &ind_call_monitor,
+			 false, 1, OPND_CREATE_INTPTR(pc));
+  if (instr_is_return(instr))
+    dr_insert_clean_call(drcontext, bb, instr, &ret_monitor,
+			 false, 1, OPND_CREATE_INTPTR(pc));
   return DR_EMIT_DEFAULT;
 }
 
@@ -118,7 +128,6 @@ static void exit_event(void)
   drutil_exit();
 }
 
-
 DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
 {
   drmgr_priority_t p = {
@@ -134,12 +143,18 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
   drmgr_init();
   drutil_init();
 
-  dr_register_exit_event(exit_event);
-  if (!drmgr_register_module_load_event(load_event) ||
-      !drmgr_register_bb_app2app_event(bb_app2app_event, &p) ||
-      // only use insert event because we need to monitore single instruction only
-      !drmgr_register_bb_instrumentation_event(NULL, bb_insert_event, &p))
+  dr_register_exit_event(&exit_event);
+  if (!drmgr_register_module_load_event(&load_event) ||
+      !drmgr_register_bb_app2app_event(&bb_app2app_event, &p) ||
+      //only use insert event because we only need to monitor single instruction
+      !drmgr_register_bb_instrumentation_event(NULL, &bb_insert_event, &p))
     DR_ASSERT(false);
 
+  // maybe we need init/exit thread event to manage tls slot (or maybe opt)
+  
+  // register slot for each thread
+  if ((tls_stack_idx = drmgr_register_tls_field()) == -1)
+    DR_ASSERT(false);
+  
   lock = dr_mutex_create();
 }

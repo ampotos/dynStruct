@@ -46,7 +46,7 @@ void	process_recover(void)
     {
       tmp = block->next;
       if (block->read || block->write)
-	{
+      	{
 	  dr_printf("block : %p-%p(0x%x) ", block->start, block->end, block->size);
 	  if (block->flag & FREE)
 	    dr_printf("was free\nalloc by %p and free by %p\n", block->alloc_pc, block->free_pc);

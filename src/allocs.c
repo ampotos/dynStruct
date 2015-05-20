@@ -14,7 +14,8 @@ void pre_calloc(void *wrapctx, OUT void **user_data)
 {
   dr_mutex_lock(lock);
 
-  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 1),
+  *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 1) *
+			 (size_t)drwrap_get_arg(wrapctx, 0),
 			 drwrap_get_retaddr(wrapctx));
 
   dr_mutex_unlock(lock);

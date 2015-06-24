@@ -14,6 +14,11 @@
 malloc_t  *blocks = NULL;
 void      *lock;
 
+// TODO clear the stack of the thread
+static void thread_exit_event(void *drcontext)
+{
+}
+
 // app2app is the first step of instrumentatiob, only use replace string
 // instructions by a loop to have a better monitoring
 static dr_emit_flags_t bb_app2app_event(void *drcontext,
@@ -22,8 +27,7 @@ static dr_emit_flags_t bb_app2app_event(void *drcontext,
 					__attribute__((unused))bool for_trace,
 					__attribute__((unused))bool translating)
 {
-  if (!drutil_expand_rep_string(drcontext, bb))
-    DR_ASSERT(false);
+  DR_ASSERT(drutil_expand_rep_string(drcontext, bb));
 
   return DR_EMIT_DEFAULT;
 }
@@ -94,23 +98,19 @@ static void load_event(__attribute__((unused))void *drcontext,
 
   // wrap malloc
   if (malloc)
-    if (!drwrap_wrap(malloc, pre_malloc, post_malloc))
-      DR_ASSERT(false);
+    DR_ASSERT(drwrap_wrap(malloc, pre_malloc, post_malloc));
 
   // wrap calloc
   if (calloc)
-    if (!drwrap_wrap(calloc, pre_calloc, post_calloc))
-      DR_ASSERT(false);
+    DR_ASSERT(drwrap_wrap(calloc, pre_calloc, post_calloc));
 
   // wrap realloc
   if (realloc)
-    if (!drwrap_wrap(realloc, pre_realloc, post_realloc))
-      DR_ASSERT(false);
+    DR_ASSERT(drwrap_wrap(realloc, pre_realloc, post_realloc));
 
   // wrap free
   if (free)
-    if (!drwrap_wrap(free, pre_free, NULL))
-	DR_ASSERT(false);
+    DR_ASSERT(drwrap_wrap(free, pre_free, NULL));
 }
 
 static void exit_event(void)
@@ -145,6 +145,7 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
   dr_register_exit_event(&exit_event);
   if (!drmgr_register_module_load_event(&load_event) ||
       !drmgr_register_bb_app2app_event(&bb_app2app_event, &p) ||
+      !drmgr_register_thread_exit_event (&thread_exit_event) ||
       //only use insert event because we only need to monitor single instruction
       !drmgr_register_bb_instrumentation_event(NULL, &bb_insert_event, &p))
     DR_ASSERT(false);
@@ -154,8 +155,7 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
   // register slot for each thread
   if ((tls_stack_idx = drmgr_register_tls_field()) == -1)
     DR_ASSERT(false);
-  if ((tls_mutex_idx = drmgr_register_tls_field()) == -1)
-    DR_ASSERT(false);
   
-  lock = dr_mutex_create();
+  if (!(lock = dr_mutex_create()))
+    DR_ASSERT(false);
 }

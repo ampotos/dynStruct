@@ -14,22 +14,14 @@
 malloc_t  *blocks = NULL;
 void      *lock;
 
-static void thread_init_event(void *drcontext)
-{
-  void	*thread_lock = dr_mutex_create();
-
-  DR_ASSERT(thread_lock);
-  DR_ASSERT(drmgr_set_tls_field(drcontext, tls_mutex_idx, thread_lock));
-}
-
 // TODO clear the stack of the thread
 static void thread_exit_event(void *drcontext)
 {
-  void	*thread_lock = drmgr_get_tls_field(drcontext, tls_mutex_idx);
+}
 
-  DR_ASSERT(thread_lock);
-  
-  dr_mutex_destroy(thread_lock);
+// TODO init the stack with the actual start addr of the current function
+static void thread_init_event(void *drcontext)
+{
 }
 
 // app2app is the first step of instrumentatiob, only use replace string
@@ -45,7 +37,7 @@ static dr_emit_flags_t bb_app2app_event(void *drcontext,
   return DR_EMIT_DEFAULT;
 }
 
-// instrument each read or write instruction in order to be able tu monitor them
+// instrument each read or write instruction in order to monitor them, also instrument each call/return to update the stack of functions
 static dr_emit_flags_t bb_insert_event( void *drcontext,
 					__attribute__((unused))void *tag,
 					instrlist_t *bb, instr_t *instr, 
@@ -54,6 +46,7 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
 				        __attribute__((unused))void *user_data)
 {
   app_pc	pc = instr_get_app_pc(instr);
+  
   
   // check if the instruction is valid
   if (pc == NULL)
@@ -83,13 +76,17 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
   	  break;
   	}
 
+  // if it's a direct call we send the callee addr as parameter
   if (instr_is_call_direct(instr))
-    dr_insert_clean_call(drcontext, bb, instr, &dir_call_monitor,
-			 false, 1, OPND_CREATE_INTPTR(pc));
-  if (instr_is_call_indirect(instr))
-    dr_insert_clean_call(drcontext, bb, instr, &ind_call_monitor,
-			 false, 1, OPND_CREATE_INTPTR(pc));
-  if (instr_is_return(instr))
+    {
+      dr_insert_clean_call(drcontext, bb, instr, &dir_call_monitor,
+			   false, 1, OPND_CREATE_INTPTR(instr_get_branch_target_pc(instr)));
+    }
+  // for indirect call we have to get callee addr on instrumentation function
+  else if (instr_is_call_indirect(instr))
+    dr_insert_mbr_instrumentation(drcontext, bb, instr, &ind_call_monitor,
+				  SPILL_SLOT_1);
+  else if (instr_is_return(instr))
     dr_insert_clean_call(drcontext, bb, instr, &ret_monitor,
 			 false, 1, OPND_CREATE_INTPTR(pc));
   return DR_EMIT_DEFAULT;
@@ -158,18 +155,14 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
   dr_register_exit_event(&exit_event);
   if (!drmgr_register_module_load_event(&load_event) ||
       !drmgr_register_bb_app2app_event(&bb_app2app_event, &p) ||
-      !drmgr_register_thread_init_event(&thread_init_event) ||
+      !drmgr_register_thread_init_event (&thread_init_event) ||
       !drmgr_register_thread_exit_event (&thread_exit_event) ||
       //only use insert event because we only need to monitor single instruction
       !drmgr_register_bb_instrumentation_event(NULL, &bb_insert_event, &p))
     DR_ASSERT(false);
-
-  //TODO we have to handle init thread event to init tls slot (and try to get the actual start function addr when the thread is create)
   
   // register slot for each thread
   if ((tls_stack_idx = drmgr_register_tls_field()) == -1)
-    DR_ASSERT(false);
-  if ((tls_mutex_idx = drmgr_register_tls_field()) == -1)
     DR_ASSERT(false);
   
   if (!(lock = dr_mutex_create()))

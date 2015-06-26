@@ -10,9 +10,8 @@ struct stack_s
 
 // store the index of the tls slot who contain stack data
 int	tls_stack_idx;
-int	tls_mutex_idx;
 
 void    dir_call_monitor(void *pc);
-void    ind_call_monitor(void *pc);
+void    ind_call_monitor(app_pc caller, app_pc callee);
 void    ret_monitor(void *pc);
 #endif

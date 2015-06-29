@@ -9,8 +9,13 @@
 static int malloc_init = 0;
 static int realloc_init = 0;
 
-// TODO read the stack with function addr to store
-// and stock exact pc for alloc and free instuction (plus entry point of the caller fonction)
+// TODO all addr for *alloc/free are the ret addr and the call addr
+// change that
+
+void *get_prev_instr_pc(void *pc)
+{
+  return pc;
+}
 
 void pre_calloc(void *wrapctx, OUT void **user_data)
 {
@@ -21,7 +26,8 @@ void pre_calloc(void *wrapctx, OUT void **user_data)
   stack = drmgr_get_tls_field(drwrap_get_drcontext(wrapctx), tls_stack_idx);
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 1) *
 			 (size_t)drwrap_get_arg(wrapctx, 0),
-			 drwrap_get_retaddr(wrapctx), stack->addr);
+			 get_prev_instr_pc(drwrap_get_retaddr(wrapctx)),
+			 stack->addr);
 
   dr_mutex_unlock(lock);
 }
@@ -55,7 +61,8 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
   stack = drmgr_get_tls_field(drwrap_get_drcontext(wrapctx), tls_stack_idx);
 
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0),
-			 drwrap_get_retaddr(wrapctx), stack->addr);
+			 get_prev_instr_pc(drwrap_get_retaddr(wrapctx)),
+			 stack->addr);
 
   dr_mutex_unlock(lock);
 }
@@ -145,8 +152,8 @@ void post_realloc(void *wrapctx, void *user_data)
         {
 	  set_addr_malloc(((realloc_tmp_t *)user_data)->block, ret,
 			((realloc_tmp_t *)user_data)->block->flag, 1);
-	  ((realloc_tmp_t *)user_data)->block->alloc_pc = drwrap_get_retaddr(wrapctx);
-
+	  ((realloc_tmp_t *)user_data)->block->alloc_pc =
+	    get_prev_instr_pc(drwrap_get_retaddr(wrapctx));
 	  stack = drmgr_get_tls_field(drwrap_get_drcontext(wrapctx), tls_stack_idx);
 	  ((realloc_tmp_t *)user_data)->block->alloc_start_func_pc = stack->addr;
 	}
@@ -176,7 +183,7 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
     {
       stack = drmgr_get_tls_field(drwrap_get_drcontext(wrapctx), tls_stack_idx);
       block->flag |= FREE;
-      block->free_pc = drwrap_get_retaddr(wrapctx);
+      block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx));
       block->free_start_func_pc = stack->addr;
     }
   else

@@ -1,15 +1,18 @@
 #include "dr_api.h"
 #include "dr_ir_opnd.h"
+#include "drmgr.h"
 #include "../includes/utils.h"
 #include "../includes/block_utils.h"
 #include "../includes/allocs.h"
+#include "../includes/call.h"
 
 // TODO read stack of entry point to get the entry point of the current fuction en store it on orig struct
 
-void	incr_orig(access_t *access, size_t size, void *pc)
+void	incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 {
   orig_t	*tmp_orig = access->origs;
   orig_t	*orig = NULL;
+  stack_t	*stack;
 
   while (tmp_orig)
     {
@@ -33,13 +36,16 @@ void	incr_orig(access_t *access, size_t size, void *pc)
 	  orig->addr = pc;
 	  orig->next = access->origs;
 	  access->origs = orig;
+	  // get the start value of the function doing the access
+	  stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
+	  orig->start_func_addr = stack->addr;
 	}
     }
   if (orig)
     orig->nb_hit++;
 }
 
-void	add_hit(void *pc, size_t size, void *target, int read)
+void	add_hit(void *pc, size_t size, void *target, int read, void *drcontext)
 {
   malloc_t	*block = get_active_block_by_access(target);
   access_t	*access;
@@ -56,7 +62,7 @@ void	add_hit(void *pc, size_t size, void *target, int read)
     access = get_access(target - block->start, &(block->write));
 
   access->total_hits++;
-  incr_orig(access, size, pc);
+  incr_orig(access, size, pc, drcontext);
 
   dr_mutex_unlock(lock);  
 }
@@ -91,7 +97,7 @@ void	memory_read(void *pc)
 	  add_hit(pc, opnd_size_in_bytes(opnd_get_size(src)), 
 		  opnd_get_disp(src) + (void *)reg_get_value(opnd_get_base(src),
 							     &mctx),
-		  1);
+		  1, drcontext);
     }
   
   instr_destroy(drcontext, instr);
@@ -127,7 +133,7 @@ void	memory_write(void *pc)
 	  add_hit(pc, opnd_size_in_bytes(opnd_get_size(dst)), 
 		  opnd_get_disp(dst) + (void *)reg_get_value(opnd_get_base(dst),
 							     &mctx),
-		  0);
+		  0, drcontext);
 
     }
 

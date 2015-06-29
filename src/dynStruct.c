@@ -14,14 +14,14 @@
 malloc_t  *blocks = NULL;
 void      *lock;
 
-// TODO clear the stack of the thread
-static void thread_exit_event(void *drcontext)
-{
-}
-
 // TODO init the stack with the actual start addr of the current function
 static void thread_init_event(void *drcontext)
 {
+}
+
+static void thread_exit_event(void *drcontext)
+{
+  clean_stack(drcontext);
 }
 
 // app2app is the first step of instrumentatiob, only use replace string
@@ -88,7 +88,7 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
 				  SPILL_SLOT_1);
   else if (instr_is_return(instr))
     dr_insert_clean_call(drcontext, bb, instr, &ret_monitor,
-			 false, 1, OPND_CREATE_INTPTR(pc));
+			 false, 0);
   return DR_EMIT_DEFAULT;
 }
 

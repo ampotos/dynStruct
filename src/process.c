@@ -10,8 +10,8 @@ void	print_orig(orig_t *orig, const char *type)
 {
   while (orig)
     {
-      dr_printf("\t\t\t %d bytes was %s by %p %d times\n", orig->size, type,
-		orig->addr, orig->nb_hit);
+      dr_printf("\t\t\t %d bytes was %s by %p (func start at %p) %d times\n", orig->size, type,
+		orig->addr, orig->start_func_addr, orig->nb_hit);
       orig  = orig->next;
     }
 }
@@ -52,7 +52,7 @@ void	process_recover(void)
       	{
 	  dr_printf("block : %p-%p(0x%x) ", block->start, block->end, block->size);
 	  if (block->flag & FREE)
-	    dr_printf("was free\nalloc by %p and free by %p\n", block->alloc_pc, block->free_pc);
+	    dr_printf("was free\nalloc by %p(%p) and free by %p(%p)\n", block->alloc_pc, block->alloc_start_func_pc, block->free_pc, block->free_start_func_pc);
 	  else
 	    dr_printf("was not free\nalloc by %p\n", block->alloc_pc);
 	  print_access(block);

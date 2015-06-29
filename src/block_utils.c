@@ -55,7 +55,7 @@ malloc_t *get_block_by_addr(void *addr)
   return NULL;
 }
 
-malloc_t *add_block(size_t size, void *pc)
+malloc_t *add_block(size_t size, void *pc, void *start_pc)
 {
   malloc_t      *new = blocks;
 
@@ -78,6 +78,7 @@ malloc_t *add_block(size_t size, void *pc)
       memset(new, 0, sizeof(*new));
       new->size = size;
       new->alloc_pc = pc;
+      new->alloc_start_func_pc = start_pc;
     }
   return new;
 }

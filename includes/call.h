@@ -13,5 +13,6 @@ int	tls_stack_idx;
 
 void    dir_call_monitor(void *pc);
 void    ind_call_monitor(app_pc caller, app_pc callee);
-void    ret_monitor(void *pc);
+void    ret_monitor();
+void    clean_stack(void *drcontext);
 #endif

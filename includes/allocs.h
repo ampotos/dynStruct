@@ -9,6 +9,7 @@ struct orig_s
   size_t	size;
   size_t	nb_hit;
   void		*addr;
+  void		*start_func_addr;
 };
 
 // sort at insert by offset typedef struct access_s access_t;
@@ -33,7 +34,9 @@ struct malloc_s
   access_t        *write;
   unsigned int    flag;
   void		  *alloc_pc;
+  void		  *alloc_start_func_pc;
   void		  *free_pc;
+  void		  *free_start_func_pc;
 };
 
 // this struct is only use as a user_data for realloc wrapping

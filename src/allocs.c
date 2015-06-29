@@ -14,13 +14,11 @@ static int realloc_init = 0;
 
 void pre_calloc(void *wrapctx, OUT void **user_data)
 {
-  void		*drcontext;
   stack_t	*stack;
 
   dr_mutex_lock(lock);
 
-  drcontext = dr_get_current_drcontext();
-  stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
+  stack = drmgr_get_tls_field(drwrap_get_drcontext(wrapctx), tls_stack_idx);
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 1) *
 			 (size_t)drwrap_get_arg(wrapctx, 0),
 			 drwrap_get_retaddr(wrapctx), stack->addr);
@@ -42,7 +40,6 @@ void post_calloc(void *wrapctx, void *user_data)
 
 void pre_malloc(void *wrapctx, OUT void **user_data)
 {
-  void		*drcontext;
   stack_t	*stack;
 
   dr_mutex_lock(lock);
@@ -55,8 +52,7 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
       return;
     }
 
-  drcontext = dr_get_current_drcontext();
-  stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
+  stack = drmgr_get_tls_field(drwrap_get_drcontext(wrapctx), tls_stack_idx);
 
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0),
 			 drwrap_get_retaddr(wrapctx), stack->addr);
@@ -138,7 +134,6 @@ void post_realloc(void *wrapctx, void *user_data)
 {
   malloc_t      *block;
   void          *ret = drwrap_get_retval(wrapctx);
-  void          *drcontext;
   stack_t       *stack;
 
   dr_mutex_lock(lock);
@@ -152,8 +147,7 @@ void post_realloc(void *wrapctx, void *user_data)
 			((realloc_tmp_t *)user_data)->block->flag, 1);
 	  ((realloc_tmp_t *)user_data)->block->alloc_pc = drwrap_get_retaddr(wrapctx);
 
-	  drcontext = dr_get_current_drcontext();
-	  stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
+	  stack = drmgr_get_tls_field(drwrap_get_drcontext(wrapctx), tls_stack_idx);
 	  ((realloc_tmp_t *)user_data)->block->alloc_start_func_pc = stack->addr;
 	}
       // if realloc is use like a malloc set the size (malloc wrapper receive a null size)
@@ -169,7 +163,6 @@ void post_realloc(void *wrapctx, void *user_data)
 void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
 {
   malloc_t      *block;
-  void		*drcontext;
   stack_t	*stack;
 
   // free(0) du nothing
@@ -181,8 +174,7 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
   // if the block was previously malloc we set it to free
   if (block)
     {
-      drcontext = dr_get_current_drcontext();
-      stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
+      stack = drmgr_get_tls_field(drwrap_get_drcontext(wrapctx), tls_stack_idx);
       block->flag |= FREE;
       block->free_pc = drwrap_get_retaddr(wrapctx);
       block->free_start_func_pc = stack->addr;

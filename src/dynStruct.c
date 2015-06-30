@@ -98,6 +98,8 @@ static void load_event(__attribute__((unused))void *drcontext,
   app_pc	free = (app_pc)dr_get_proc_address(mod->handle, "free");
   const char	*mod_name = dr_module_preferred_name(mod);
 
+  // store all symbol on the hashtable (key : addr after loading, value : name);
+  
   // only wrap libc because we suppose our appli use standard malloc
   if (strncmp("libc.so", mod_name, 7))
     return;
@@ -119,11 +121,21 @@ static void load_event(__attribute__((unused))void *drcontext,
     DR_ASSERT(drwrap_wrap(free, pre_free, NULL));
 }
 
+static void unload_event(__attribute__((unused))void *drcontext,
+			 const module_data_t *mod)
+{
+  // remove all symbol from the hashtable to avoid conflict if another module is load at the same addr later.
+  // store removed symbol in a list named old_sym
+  return;
+}
+
 static void exit_event(void)
 {
   dr_mutex_lock(lock);
 
   process_recover();
+
+  // TODO clean hashmap and old_sym
   
   dr_mutex_unlock(lock);
   dr_mutex_destroy(lock);
@@ -150,9 +162,10 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
 
   dr_register_exit_event(&exit_event);
   if (!drmgr_register_module_load_event(&load_event) ||
+      !drmgr_register_module_unload_event(&unload_event) ||
       !drmgr_register_bb_app2app_event(&bb_app2app_event, &p) ||
-      !drmgr_register_thread_init_event (&thread_init_event) ||
-      !drmgr_register_thread_exit_event (&thread_exit_event) ||
+      !drmgr_register_thread_init_event(&thread_init_event) ||
+      !drmgr_register_thread_exit_event(&thread_exit_event) ||
       //only use insert event because we only need to monitor single instruction
       !drmgr_register_bb_instrumentation_event(NULL, &bb_insert_event, &p))
     DR_ASSERT(false);

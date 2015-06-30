@@ -7,6 +7,9 @@
 // of a call we don't add it on the stack and there is a tricky return the stack
 // is going to be fucked up
 
+// TODO on each call search in hashmap if the function have a sym
+// if yes store the ptr to the string in the stack_t
+
 // TODO : check is the pc of the caller is on plt(when opti with bsp), if yes take prev addr on the stack
 void	dir_call_monitor(void *pc)
 {

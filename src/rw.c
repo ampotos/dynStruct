@@ -6,7 +6,7 @@
 #include "../includes/allocs.h"
 #include "../includes/call.h"
 
-// TODO read stack of entry point to get the entry point of the current fuction en store it on orig struct
+// TODO each time the addr on stack is taken, also take the ptr to the sym string
 
 void	incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 {

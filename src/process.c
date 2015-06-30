@@ -6,6 +6,8 @@
 // for this use the addr on top of thread stack (this is the start of 
 // the fonction who try to have access to the memory
 
+// call drsym_demangle_symbol to have clean cpp name
+
 void	print_orig(orig_t *orig, const char *type)
 {
   while (orig)

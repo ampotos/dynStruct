@@ -14,22 +14,25 @@ static int realloc_init = 0;
 // use decode_next_pc to parcour the instructions and when decode_next_pc return 
 // the retaddr take the pc give to decode_next_pc as addr calling
 
+// TODO each time the addr on stack is taken, also take the ptr to the sym string
+
 void *get_prev_instr_pc(void *pc, void *drc)
 {
   instr_t	*instr = instr_create(drc);
-  int		ct;
+  void		*tmp_pc;
 
-  for (ct = 1; ; ct++)
+  for (int ct = 1; ; ct++)
     {
-      if (decode(drc, pc - ct, instr))
+      tmp_pc = dr_app_pc_for_decoding(pc - ct);
+      if (decode(drc, tmp_pc, instr))
 	{
-	  if (instr_is_call(instr) && decode_next_pc(drc, pc - ct) == pc)
+	  if (instr_is_call(instr) && decode_next_pc(drc, tmp_pc) == pc)
 	    break;
 	}
       instr_reuse(drc, instr);
     }
   instr_destroy(drc, instr);
-  return pc - ct;
+  return tmp_pc;
 }
 
 void pre_calloc(void *wrapctx, OUT void **user_data)

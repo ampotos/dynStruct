@@ -7,7 +7,7 @@
 // of a call we don't add it on the stack and there is a tricky return the stack
 // is going to be fucked up
 
-// TODO : check is the pc of the caller is on plt, if yes take prev addr on the stack
+// TODO : check is the pc of the caller is on plt(when opti with bsp), if yes take prev addr on the stack
 void	dir_call_monitor(void *pc)
 {
   stack_t	*new_func;

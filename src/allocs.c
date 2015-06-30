@@ -9,24 +9,44 @@
 static int malloc_init = 0;
 static int realloc_init = 0;
 
-// TODO all addr for *alloc/free are the ret addr and the call addr
-// change that
+// maybe the following solution to get the previous pc is better
+// take the ddr of the start of function on the stack (when the stack handle plt)
+// use decode_next_pc to parcour the instructions and when decode_next_pc return 
+// the retaddr take the pc give to decode_next_pc as addr calling
 
-void *get_prev_instr_pc(void *pc)
+
+
+
+void *get_prev_instr_pc(void *pc, void *drc)
 {
-  return pc;
+  instr_t	*instr = instr_create(drc);
+  int		ct;
+
+  for (ct = 1; ; ct++)
+    {
+      if (decode(drc, pc - ct, instr))
+	{
+	  if (instr_is_call(instr) && decode_next_pc(drc, pc - ct) == pc)
+	    break;
+	}
+      instr_reuse(drc, instr);
+    }
+  return pc - ct;
 }
 
 void pre_calloc(void *wrapctx, OUT void **user_data)
 {
   stack_t	*stack;
+  void		*drc;
+  
+  drc = drwrap_get_drcontext(wrapctx);
 
   dr_mutex_lock(lock);
 
-  stack = drmgr_get_tls_field(drwrap_get_drcontext(wrapctx), tls_stack_idx);
+  stack = drmgr_get_tls_field(drc, tls_stack_idx);
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 1) *
 			 (size_t)drwrap_get_arg(wrapctx, 0),
-			 get_prev_instr_pc(drwrap_get_retaddr(wrapctx)),
+			 get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc),
 			 stack->addr);
 
   dr_mutex_unlock(lock);
@@ -47,6 +67,9 @@ void post_calloc(void *wrapctx, void *user_data)
 void pre_malloc(void *wrapctx, OUT void **user_data)
 {
   stack_t	*stack;
+  void		*drc;
+  
+  drc = drwrap_get_drcontext(wrapctx);
 
   dr_mutex_lock(lock);
 
@@ -58,10 +81,10 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
       return;
     }
 
-  stack = drmgr_get_tls_field(drwrap_get_drcontext(wrapctx), tls_stack_idx);
+  stack = drmgr_get_tls_field(drc, tls_stack_idx);
 
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0),
-			 get_prev_instr_pc(drwrap_get_retaddr(wrapctx)),
+			 get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc),
 			 stack->addr);
 
   dr_mutex_unlock(lock);
@@ -142,7 +165,9 @@ void post_realloc(void *wrapctx, void *user_data)
   malloc_t      *block;
   void          *ret = drwrap_get_retval(wrapctx);
   stack_t       *stack;
-
+  void		*drc;
+  
+  drc = drwrap_get_drcontext(wrapctx);
   dr_mutex_lock(lock);
 
   // if user_data is not set realloc was called to do a free or is the first call to realloc
@@ -153,8 +178,8 @@ void post_realloc(void *wrapctx, void *user_data)
 	  set_addr_malloc(((realloc_tmp_t *)user_data)->block, ret,
 			((realloc_tmp_t *)user_data)->block->flag, 1);
 	  ((realloc_tmp_t *)user_data)->block->alloc_pc =
-	    get_prev_instr_pc(drwrap_get_retaddr(wrapctx));
-	  stack = drmgr_get_tls_field(drwrap_get_drcontext(wrapctx), tls_stack_idx);
+	    get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
+	  stack = drmgr_get_tls_field(drc, tls_stack_idx);
 	  ((realloc_tmp_t *)user_data)->block->alloc_start_func_pc = stack->addr;
 	}
       // if realloc is use like a malloc set the size (malloc wrapper receive a null size)
@@ -171,19 +196,21 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
 {
   malloc_t      *block;
   stack_t	*stack;
-
+  void		*drc;
+  
   // free(0) du nothing
   if (!drwrap_get_arg(wrapctx,0))
     return;
 
+  drc = drwrap_get_drcontext(wrapctx);
   dr_mutex_lock(lock);
   block = get_block_by_addr(drwrap_get_arg(wrapctx, 0));
   // if the block was previously malloc we set it to free
   if (block)
     {
-      stack = drmgr_get_tls_field(drwrap_get_drcontext(wrapctx), tls_stack_idx);
+      stack = drmgr_get_tls_field(drc, tls_stack_idx);
       block->flag |= FREE;
-      block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx));
+      block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
       block->free_start_func_pc = stack->addr;
     }
   else

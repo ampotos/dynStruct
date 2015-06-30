@@ -1,23 +1,19 @@
-#include <string.h>
 #include "dr_api.h"
 #include "dr_ir_opnd.h"
 #include "drutil.h"
 #include "drwrap.h"
 #include "drmgr.h"
+#include "drsyms.h"
 #include "../includes/utils.h"
 #include "../includes/block_utils.h"
 #include "../includes/allocs.h"
 #include "../includes/rw.h"
 #include "../includes/process.h"
 #include "../includes/call.h"
+#include "../includes/sym.h"
 
 malloc_t  *blocks = NULL;
 void      *lock;
-
-// TODO init the stack with the actual start addr of the current function
-static void thread_init_event(void *drcontext)
-{
-}
 
 static void thread_exit_event(void *drcontext)
 {
@@ -99,9 +95,16 @@ static void load_event(__attribute__((unused))void *drcontext,
   const char	*mod_name = dr_module_preferred_name(mod);
 
   // store all symbol on the hashtable (key : addr after loading, value : name);
-  
+  dr_mutex_lock(lock);
+  drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap,
+  			     sizeof(drsym_info_t), (void *)mod, 0);
+  dr_mutex_unlock(lock);
+
+  // free all data relative to sym (like debug info) after loading symbol
+  drsym_free_resources(mod->full_path);
+
   // only wrap libc because we suppose our appli use standard malloc
-  if (strncmp("libc.so", mod_name, 7))
+  if (my_dr_strncmp("libc.so", mod_name, 7))
     return;
 
   // wrap malloc
@@ -121,59 +124,58 @@ static void load_event(__attribute__((unused))void *drcontext,
     DR_ASSERT(drwrap_wrap(free, pre_free, NULL));
 }
 
-static void unload_event(__attribute__((unused))void *drcontext,
-			 const module_data_t *mod)
-{
-  // remove all symbol from the hashtable to avoid conflict if another module is load at the same addr later.
-  // store removed symbol in a list named old_sym
-  return;
-}
-
 static void exit_event(void)
 {
   dr_mutex_lock(lock);
 
   process_recover();
 
-  // TODO clean hashmap and old_sym
+  // TODO clean hashmap and old_sym (even the string)
   
   dr_mutex_unlock(lock);
   dr_mutex_destroy(lock);
   
+  drsym_exit();
   drwrap_exit();
   drmgr_exit();
   drutil_exit();
 }
 
+// TODO use DR_ASSERT_MSG (check all file)
+
 DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
 {
   drmgr_priority_t p = {
     sizeof(p),
-    "reccord heap access",
+    "reccord heap access and recover datas structures",
     NULL,
     NULL,
     0};
 
   dr_set_client_name("dynStruct", "");
 
+  drsym_init(0);
   drwrap_init();
   drmgr_init();
   drutil_init();
 
   dr_register_exit_event(&exit_event);
   if (!drmgr_register_module_load_event(&load_event) ||
-      !drmgr_register_module_unload_event(&unload_event) ||
       !drmgr_register_bb_app2app_event(&bb_app2app_event, &p) ||
-      !drmgr_register_thread_init_event(&thread_init_event) ||
       !drmgr_register_thread_exit_event(&thread_exit_event) ||
       //only use insert event because we only need to monitor single instruction
       !drmgr_register_bb_instrumentation_event(NULL, &bb_insert_event, &p))
     DR_ASSERT(false);
   
   // register slot for each thread
-  if ((tls_stack_idx = drmgr_register_tls_field()) == -1)
-    DR_ASSERT(false);
-  
-  if (!(lock = dr_mutex_create()))
-    DR_ASSERT(false);
+  tls_stack_idx = drmgr_register_tls_field();
+  DR_ASSERT_MSG(tls_stack_idx != -1, "Can't register tls field\n");
+
+  // init sym hashtab
+  sym_hashtab = dr_global_alloc(sizeof(*sym_hashtab));
+  DR_ASSERT_MSG(sym_hashtab, "Global alloc fail\n");
+  hashtable_init(sym_hashtab, 8, HASH_INTPTR, false);
+
+  lock = dr_mutex_create();
+  DR_ASSERT_MSG(lock, "Can't create mutex\n");
 }

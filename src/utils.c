@@ -15,3 +15,13 @@ char *my_dr_strdup(const char* str)
     }
   return (ret);
 }
+
+int my_dr_strncmp(const char *s1, const char *s2, size_t size)
+{
+  int ct;
+
+  for (ct = 0; ct < size && s1[ct] && s1[ct] == s2[ct]; ct++);
+  if (ct == size)
+    return 0;
+  return s1[ct] - s2[ct];
+}

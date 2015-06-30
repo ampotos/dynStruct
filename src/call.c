@@ -16,7 +16,7 @@ void	dir_call_monitor(void *pc)
 
   stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
 
-  if (!(new_func = dr_global_alloc(sizeof(*new_func))))
+  if (!(new_func = dr_thread_alloc(drcontext, sizeof(*new_func))))
     dr_printf("dr_malloc fail\n");
   else
     {
@@ -35,7 +35,7 @@ void	ind_call_monitor(app_pc caller, app_pc callee)
 
   stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
 
-  if (!(new_func = dr_global_alloc(sizeof(*new_func))))
+  if (!(new_func = dr_thread_alloc(drcontext, sizeof(*new_func))))
     dr_printf("dr_malloc fail\n");
   else
     {
@@ -55,7 +55,7 @@ void	ret_monitor()
   if (stack)
     {
       drmgr_set_tls_field(drcontext, tls_stack_idx, stack->next);
-      dr_global_free(stack, sizeof(*stack));
+      dr_thread_free(drcontext, stack, sizeof(*stack));
     }
 }
 
@@ -69,6 +69,6 @@ void	clean_stack(void *drcontext)
     {
       stack_tmp = stack;
       stack = stack->next;
-      dr_global_free(stack_tmp, sizeof(*stack_tmp));
+      dr_thread_free(drcontext, stack_tmp, sizeof(*stack_tmp));
     }
 }

@@ -14,9 +14,6 @@ static int realloc_init = 0;
 // use decode_next_pc to parcour the instructions and when decode_next_pc return 
 // the retaddr take the pc give to decode_next_pc as addr calling
 
-
-
-
 void *get_prev_instr_pc(void *pc, void *drc)
 {
   instr_t	*instr = instr_create(drc);
@@ -31,6 +28,7 @@ void *get_prev_instr_pc(void *pc, void *drc)
 	}
       instr_reuse(drc, instr);
     }
+  instr_destroy(drc, instr);
   return pc - ct;
 }
 

@@ -91,13 +91,10 @@ void	memory_read(void *pc)
     {
       src = instr_get_src(instr, i);
       if (opnd_is_memory_reference(src))
-	// todo : take a look at other type of memory ref to be 
-	// sure we don't miss any ref to the heap
-	if (opnd_is_base_disp(src))
-	  add_hit(pc, opnd_size_in_bytes(opnd_get_size(src)), 
-		  opnd_get_disp(src) + (void *)reg_get_value(opnd_get_base(src),
-							     &mctx),
-		  1, drcontext);
+	add_hit(pc, opnd_size_in_bytes(opnd_get_size(src)), 
+		opnd_get_disp(src) + (void *)reg_get_value(opnd_get_base(src),
+							   &mctx),
+		1, drcontext);
     }
   
   instr_destroy(drcontext, instr);
@@ -127,14 +124,11 @@ void	memory_write(void *pc)
     {
       dst = instr_get_dst(instr, i);
       if (opnd_is_memory_reference(dst))
-	// todo : take a look at other type of memory ref to be
-	// sure we don't miss any ref to the heap
-	if (opnd_is_base_disp(dst))
-	  add_hit(pc, opnd_size_in_bytes(opnd_get_size(dst)), 
-		  opnd_get_disp(dst) + (void *)reg_get_value(opnd_get_base(dst),
-							     &mctx),
-		  0, drcontext);
-
+	add_hit(pc, opnd_size_in_bytes(opnd_get_size(dst)), 
+		opnd_get_disp(dst) + (void *)reg_get_value(opnd_get_base(dst),
+							   &mctx),
+		0, drcontext);
+      
     }
 
   instr_destroy(drcontext, instr);

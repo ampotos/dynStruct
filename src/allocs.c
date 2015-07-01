@@ -16,6 +16,8 @@ static int realloc_init = 0;
 
 // TODO each time the addr on stack is taken, also take the ptr to the sym string
 
+// return the addr of he previous instructions
+// the prev instr is supposed to be a call
 void *get_prev_instr_pc(void *pc, void *drc)
 {
   instr_t	*instr = instr_create(drc);

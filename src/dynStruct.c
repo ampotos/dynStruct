@@ -94,7 +94,7 @@ static void load_event(__attribute__((unused))void *drcontext,
   app_pc	free = (app_pc)dr_get_proc_address(mod->handle, "free");
   const char	*mod_name = dr_module_preferred_name(mod);
 
-  // store all symbol on the hashtable (key : addr after loading, value : name);
+  // store symbols on the hashtable (key : sym addr, value : name);
   dr_mutex_lock(lock);
   drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap,
   			     sizeof(drsym_info_t), (void *)mod, 0);
@@ -104,22 +104,18 @@ static void load_event(__attribute__((unused))void *drcontext,
   drsym_free_resources(mod->full_path);
 
   // only wrap libc because we suppose our appli use standard malloc
-  if (my_dr_strncmp("libc.so", mod_name, 7))
+  if (ds_strncmp("libc.so", mod_name, 7))
     return;
 
-  // wrap malloc
   if (malloc)
     DR_ASSERT(drwrap_wrap(malloc, pre_malloc, post_malloc));
 
-  // wrap calloc
   if (calloc)
     DR_ASSERT(drwrap_wrap(calloc, pre_calloc, post_calloc));
 
-  // wrap realloc
   if (realloc)
     DR_ASSERT(drwrap_wrap(realloc, pre_realloc, post_realloc));
 
-  // wrap free
   if (free)
     DR_ASSERT(drwrap_wrap(free, pre_free, NULL));
 }
@@ -140,8 +136,6 @@ static void exit_event(void)
   drmgr_exit();
   drutil_exit();
 }
-
-// TODO use DR_ASSERT_MSG (check all file)
 
 DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
 {
@@ -165,7 +159,7 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
       !drmgr_register_thread_exit_event(&thread_exit_event) ||
       //only use insert event because we only need to monitor single instruction
       !drmgr_register_bb_instrumentation_event(NULL, &bb_insert_event, &p))
-    DR_ASSERT(false);
+    DR_ASSERT_MSG(false, "Can't register event handler\n");
   
   // register slot for each thread
   tls_stack_idx = drmgr_register_tls_field();

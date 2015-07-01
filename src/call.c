@@ -30,7 +30,7 @@ void	dir_call_monitor(void *pc)
 }
 
 
-void	ind_call_monitor(app_pc caller, app_pc callee)
+void	ind_call_monitor(app_pc __attribute__((unused))caller, app_pc callee)
 {
   stack_t	*new_func;
   stack_t	*stack;

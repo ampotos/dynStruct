@@ -3,7 +3,14 @@
 
 #include "hashtable.h"
 
-bool sym_to_hashmap(drsym_info_t *info, drsym_error_t status, void *data);
+typedef struct old_sym_s
+{
+  struct old_sym_s	*next;
+  char			*sym;
+}old_sym_t;
 
-hashtable_t	*sym_hashtab;
+bool sym_to_hashmap(drsym_info_t *, drsym_error_t, void *);
+
+extern hashtable_t	*sym_hashtab;
+extern old_sym_t	*old_symlist;
 #endif

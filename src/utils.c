@@ -1,10 +1,17 @@
-#include <string.h>
 #include "dr_api.h"
 
-char *my_dr_strdup(const char* str)
+
+size_t	ds_strlen(const char *s)
+{
+  for (int ct = 0; ; ct++)
+    if (!s[ct])
+      return ct;
+}
+
+char *ds_strdup(const char* str)
 {
   char          *ret;
-  size_t        len = strlen(str);
+  size_t        len = ds_strlen(str);
 
   if ((ret = dr_global_alloc((len + 1) * sizeof(*ret))))
     {
@@ -13,12 +20,12 @@ char *my_dr_strdup(const char* str)
         ret[len] = str[len];
       ret[len] = 0;
     }
-  return (ret);
+  return ret;
 }
 
-int my_dr_strncmp(const char *s1, const char *s2, size_t size)
+int ds_strncmp(const char *s1, const char *s2, size_t size)
 {
-  int ct;
+  size_t ct;
 
   for (ct = 0; ct < size && s1[ct] && s1[ct] == s2[ct]; ct++);
   if (ct == size)

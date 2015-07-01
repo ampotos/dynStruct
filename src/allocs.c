@@ -171,7 +171,8 @@ void post_realloc(void *wrapctx, void *user_data)
   drc = drwrap_get_drcontext(wrapctx);
   dr_mutex_lock(lock);
 
-  // if user_data is not set realloc was called to do a free or is the first call to realloc
+  // if user_data is not set realloc was called to do a free
+  // or is the realloc's first call
   if (user_data)
     {
       if (((realloc_tmp_t *)user_data)->block)
@@ -183,8 +184,10 @@ void post_realloc(void *wrapctx, void *user_data)
 	  stack = drmgr_get_tls_field(drc, tls_stack_idx);
 	  ((realloc_tmp_t *)user_data)->block->alloc_start_func_pc = stack->addr;
 	}
-      // if realloc is use like a malloc set the size (malloc wrapper receive a null size)
-      // maybe add a linked lsit to store all pc for realloc maybe not because realloc is usualy done on array
+      // if realloc is use like a malloc set the size here
+      // because malloc wrapper receive a null size
+      // maybe add a linked lsit to store all pc for realloc
+      // maybe not because realloc is usualy used on array
       else if ((block = get_block_by_addr(ret)))
         block->size = ((realloc_tmp_t*)user_data)->size;
       dr_global_free(user_data, sizeof(realloc_tmp_t));
@@ -206,7 +209,6 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
   drc = drwrap_get_drcontext(wrapctx);
   dr_mutex_lock(lock);
   block = get_block_by_addr(drwrap_get_arg(wrapctx, 0));
-  // if the block was previously malloc we set it to free
   if (block)
     {
       stack = drmgr_get_tls_field(drc, tls_stack_idx);

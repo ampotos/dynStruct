@@ -32,3 +32,22 @@ bool sym_to_hashmap(drsym_info_t *info,
 
   return true;
 }
+
+
+void	clean_old_sym(void)
+{
+  old_sym_t	*tmp;
+
+  while (old_symlist)
+    {
+      tmp = old_symlist;
+      old_symlist = old_symlist->next;
+      dr_global_free(tmp->sym, ds_strlen(tmp->sym));
+      dr_global_free(tmp, sizeof(*tmp));
+    }
+}
+
+void	delete_sym(void *sym)
+{
+  dr_global_free(sym, ds_strlen((char *)sym));
+}

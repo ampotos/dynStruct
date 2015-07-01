@@ -10,6 +10,8 @@ typedef struct old_sym_s
 }old_sym_t;
 
 bool sym_to_hashmap(drsym_info_t *, drsym_error_t, void *);
+void clean_old_sym(void);
+void delete_sym(void *);
 
 extern hashtable_t	*sym_hashtab;
 extern old_sym_t	*old_symlist;

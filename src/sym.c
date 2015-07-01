@@ -12,7 +12,7 @@ bool sym_to_hashmap(drsym_info_t *info,
 {
   char		*old_val;
   old_sym_t	*old_sym;
-
+  
   old_val = hashtable_add_replace(sym_hashtab, ((module_data_t *)data)->start +
 				  info->start_offs,
 				  ds_strdup(info->name));

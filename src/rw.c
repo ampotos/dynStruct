@@ -5,8 +5,7 @@
 #include "../includes/block_utils.h"
 #include "../includes/allocs.h"
 #include "../includes/call.h"
-
-// TODO each time the addr on stack is taken, also take the ptr to the sym string
+#include "../includes/sym.h"
 
 void	incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 {
@@ -39,6 +38,7 @@ void	incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 	  // get the start value of the function doing the access
 	  stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
 	  orig->start_func_addr = stack->addr;
+	  orig->start_func_sym = hashtable_lookup(sym_hashtab, stack->addr);
 	}
     }
   if (orig)

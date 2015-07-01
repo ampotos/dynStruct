@@ -5,6 +5,7 @@ typedef struct stack_s stack_t;
 struct stack_s
 {
   void			*addr;
+  char			*name;
   struct stack_s	*next;
 };
 

@@ -2,18 +2,14 @@
 #include "../includes/allocs.h"
 #include "../includes/block_utils.h"
 
-// todo get the symbol of the function who has accessed to the memory
-// for this use the addr on top of thread stack (this is the start of 
-// the fonction who try to have access to the memory
-
-// call drsym_demangle_symbol to have clean cpp name
+// maybe call drsym_demangle_symbol to have clean cpp sym demangle
 
 void	print_orig(orig_t *orig, const char *type)
 {
   while (orig)
     {
-      dr_printf("\t\t\t %d bytes was %s by %p (func start at %p) %d times\n", orig->size, type,
-		orig->addr, orig->start_func_addr, orig->nb_hit);
+      dr_printf("\t\t\t %d bytes was %s by %p (%s : %p) %d times\n", orig->size, type,
+		orig->addr, orig->start_func_sym, orig->start_func_addr, orig->nb_hit);
       orig  = orig->next;
     }
 }
@@ -54,7 +50,10 @@ void	process_recover(void)
       	{
 	  dr_printf("block : %p-%p(0x%x) ", block->start, block->end, block->size);
 	  if (block->flag & FREE)
-	    dr_printf("was free\nalloc by %p(%p) and free by %p(%p)\n", block->alloc_pc, block->alloc_start_func_pc, block->free_pc, block->free_start_func_pc);
+	    dr_printf("was free\nalloc by %p(%s : %p) and free by %p(%s : %p)\n",
+		      block->alloc_pc, block->alloc_func_sym,
+		      block->alloc_func_pc, block->free_pc,
+		      block->free_func_sym, block->free_func_pc);
 	  else
 	    dr_printf("was not free\nalloc by %p\n", block->alloc_pc);
 	  print_access(block);

@@ -2,13 +2,11 @@
 #include "drmgr.h"
 #include "dr_ir_opnd.h"
 #include "../includes/call.h"
+#include "../includes/sym.h"
 
 // actually we only follow call and return, so if a program use a jump instead
 // of a call we don't add it on the stack and there is a tricky return the stack
 // is going to be fucked up
-
-// TODO on each call search in hashmap if the function have a sym
-// if yes store the ptr to the string in the stack_t
 
 // TODO : check is the pc of the caller is on plt(when opti with bsp), if yes take prev addr on the stack
 void	dir_call_monitor(void *pc)
@@ -25,6 +23,7 @@ void	dir_call_monitor(void *pc)
     {
       new_func->next = stack;
       new_func->addr = pc;
+      new_func->name = hashtable_lookup(sym_hashtab, pc);
       drmgr_set_tls_field(drcontext, tls_stack_idx, new_func);
     }
 }
@@ -44,6 +43,7 @@ void	ind_call_monitor(app_pc __attribute__((unused))caller, app_pc callee)
     {
       new_func->next = stack;
       new_func->addr = callee;
+      new_func->name = hashtable_lookup(sym_hashtab, callee);
       drmgr_set_tls_field(drcontext, tls_stack_idx, new_func);
     }
 }

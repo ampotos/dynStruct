@@ -13,4 +13,8 @@ struct tree_s
   int		height;
 };
 
+void    *search_on_tree(tree_t *tree, void *addr);
+tree_t  *del_from_tree(tree_t *tree, tree_t *node, void (* free_func)(void *));
+tree_t  *add_to_tree(tree_t *tree, tree_t *node);
+
 #endif

@@ -199,6 +199,7 @@ void post_realloc(void *wrapctx, void *user_data)
   dr_mutex_unlock(lock);
 }
 
+// TODO when block are store on tree, free block are going to be stored on a linked list
 void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
 {
   malloc_t      *block;

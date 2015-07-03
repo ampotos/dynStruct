@@ -30,6 +30,7 @@ access_t *get_access(size_t offset, access_t **l_access)
   return access;
 }
 
+// todo : when block are store in tree, this has to  search in tree
 malloc_t *get_active_block_by_access(void *addr)
 {
   malloc_t	*block = blocks;
@@ -43,6 +44,7 @@ malloc_t *get_active_block_by_access(void *addr)
   return NULL;
 }
 
+// todo : when block are store in tree, this has to  search in tree
 malloc_t *get_block_by_addr(void *addr)
 {
   malloc_t      *block = blocks;
@@ -56,6 +58,7 @@ malloc_t *get_block_by_addr(void *addr)
   return NULL;
 }
 
+// todo : when block are store in tree, this has to add in tree
 malloc_t *add_block(size_t size, void *pc, void *start_pc)
 {
   malloc_t      *new = blocks;

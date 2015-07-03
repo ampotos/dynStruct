@@ -98,6 +98,7 @@ static void load_event(__attribute__((unused))void *drcontext,
   dr_mutex_lock(lock);
   drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap,
   			     sizeof(drsym_info_t), (void *)mod, 0);
+  // todo parse lib to get start/end addr of plt and store it on a tree
   dr_mutex_unlock(lock);
 
   // free all data relative to sym (like debug info) after loading symbol

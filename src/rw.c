@@ -47,7 +47,7 @@ void	incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 
 void	add_hit(void *pc, size_t size, void *target, int read, void *drcontext)
 {
-  malloc_t	*block = get_active_block_by_access(target);
+  malloc_t	*block = search_on_tree(active_blocks, target);
   access_t	*access;
 
   // if the access is not on a malloc block we do nothing
@@ -90,13 +90,14 @@ void	memory_read(void *pc)
   for (int i = 0; i < instr_num_srcs(instr); i++)
     {
       src = instr_get_src(instr, i);
-      if (opnd_is_memory_reference(src))
-	add_hit(pc, opnd_size_in_bytes(opnd_get_size(src)), 
+      // todo there is some acces who are not base_disp
+      if (opnd_is_memory_reference(src) && opnd_is_base_disp(src))
+	add_hit(pc, opnd_size_in_bytes(opnd_get_size(src)),
 		opnd_get_disp(src) + (void *)reg_get_value(opnd_get_base(src),
 							   &mctx),
 		1, drcontext);
     }
-  
+
   instr_destroy(drcontext, instr);
 }
 
@@ -123,8 +124,9 @@ void	memory_write(void *pc)
   for (int i = 0; i < instr_num_dsts(instr); i++)
     {
       dst = instr_get_dst(instr, i);
-      if (opnd_is_memory_reference(dst))
-	add_hit(pc, opnd_size_in_bytes(opnd_get_size(dst)), 
+      // todo there is some acces who are not base_disp
+      if (opnd_is_memory_reference(dst) && opnd_is_base_disp(dst))
+	add_hit(pc, opnd_size_in_bytes(opnd_get_size(dst)),
 		opnd_get_disp(dst) + (void *)reg_get_value(opnd_get_base(dst),
 							   &mctx),
 		0, drcontext);

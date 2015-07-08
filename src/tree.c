@@ -380,3 +380,9 @@ void	*search_on_tree(tree_t *tree, void *addr)
 
   return tree->data;
 }
+
+void	clean_tree(tree_t **tree, void (* free_func)(void *))
+{
+  while (*tree)
+    del_from_tree(tree, (*tree)->min_addr, free_func);
+}

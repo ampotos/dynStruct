@@ -11,8 +11,10 @@
 #include "../includes/out.h"
 #include "../includes/call.h"
 #include "../includes/sym.h"
+#include "../includes/tree.h"
 
-malloc_t  *blocks = NULL;
+malloc_t  *old_blocks = NULL;
+tree_t	  *active_blocks = NULL;
 void      *lock;
 
 static void thread_exit_event(void *drcontext)

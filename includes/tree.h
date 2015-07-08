@@ -15,6 +15,7 @@ struct tree_s
 
 void    *search_on_tree(tree_t *, void *);
 void    del_from_tree(tree_t **, void *, void (*)(void *));
+void    clean_tree(tree_t **tree, void (* free_func)(void *));
 void    add_to_tree(tree_t **, tree_t *);
 
 #endif

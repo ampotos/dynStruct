@@ -1,6 +1,8 @@
 #ifndef ALLOCS_H_
 #define ALLOCS_H_
 
+#include "tree.h"
+
 //sotre nb_hit and size of the hit by pc on access instruction
 // todo : orig must not stay a linked list, find something faster
 typedef struct orig_s orig_t;
@@ -52,7 +54,8 @@ typedef struct
 } realloc_tmp_t;
 
 // globals
-extern malloc_t  *blocks;
+extern malloc_t  *old_blocks;
+extern tree_t	 *active_blocks;
 extern void      *lock;
 
 void pre_malloc(void *, OUT void **);

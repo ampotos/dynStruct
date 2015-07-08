@@ -32,3 +32,10 @@ int ds_strncmp(const char *s1, const char *s2, size_t size)
     return 0;
   return s1[ct] - s2[ct];
 }
+
+void ds_memset(void *ptr, int c, size_t size)
+{
+  while (--size > 0)
+    ((char *)ptr)[size] = (char)c;
+  *((char *)ptr) = (char)c;
+}

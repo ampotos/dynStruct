@@ -9,8 +9,6 @@
 #define FREE (0x1 << 1)
 
 access_t *get_access(size_t, access_t **);
-malloc_t *get_active_block_by_access(void *);
-malloc_t *get_block_by_addr(void *);
 malloc_t *add_block(size_t, void *, void *);
 void free_malloc_block(malloc_t *);
 void remove_block(malloc_t *);

@@ -1,4 +1,3 @@
-#include <string.h>
 #include "dr_api.h"
 #include "drwrap.h"
 #include "../includes/utils.h"
@@ -23,88 +22,82 @@ access_t *get_access(size_t offset, access_t **l_access)
       return NULL;
     }
   
-  memset(access, 0, sizeof(*access));
+  ds_memset(access, 0, sizeof(*access));
   access->offset = offset;
   access->next = *l_access;
   *l_access = access;
   return access;
 }
 
-// todo : when block are store in tree, this has to  search in tree
-malloc_t *get_active_block_by_access(void *addr)
-{
-  malloc_t	*block = blocks;
-
-  while (block)
-    {
-      if (!(block->flag & FREE) && block->start <= addr && block->end >= addr)
-	return block;
-      block = block->next;
-    }
-  return NULL;
-}
-
-// todo : when block are store in tree, this has to  search in tree
-malloc_t *get_block_by_addr(void *addr)
-{
-  malloc_t      *block = blocks;
-
-  while (block)
-    {
-      if (block->start == addr)
-        return block;
-      block = block->next;
-    }
-  return NULL;
-}
-
-// todo : when block are store in tree, this has to add in tree
 malloc_t *add_block(size_t size, void *pc, void *start_pc)
 {
-  malloc_t      *new = blocks;
+  malloc_t      *new = dr_global_alloc(sizeof(*new));
 
-  if (new)
+  if (!new)
     {
-      while (new->next)
-        new = new->next;
-      if (!(new->next = dr_global_alloc(sizeof(*new))))
-        dr_printf("dr_malloc fail\n");
-      new = new->next;
+      dr_printf("dr_malloc fail\n");
+      return NULL;
     }
   else
-    if (!(blocks = dr_global_alloc(sizeof(*new))))
-      dr_printf("dr_malloc fail\n");
-    else
-      new = blocks;
-
-  if (new)
     {
-      memset(new, 0, sizeof(*new));
+      ds_memset(new, 0, sizeof(*new));
       new->size = size;
       new->alloc_pc = pc;
       new->alloc_func_pc = start_pc;
       new->alloc_func_sym = hashtable_lookup(sym_hashtab, start_pc);
     }
+
   return new;
+
+  /* malloc_t new = blocks; */
+  /* if (new) */
+  /*   { */
+  /*     while (new->next) */
+  /*       new = new->next; */
+  /*     if (!(new->next = dr_global_alloc(sizeof(*new)))) */
+  /*       dr_printf("dr_malloc fail\n"); */
+  /*     new = new->next; */
+  /*   } */
+  /* else */
+  /*   if (!(blocks = dr_global_alloc(sizeof(*new)))) */
+  /*     dr_printf("dr_malloc fail\n"); */
+  /*   else */
+  /*     new = blocks; */
+
+  /* if (new) */
+  /*   { */
+  /*     memset(new, 0, sizeof(*new)); */
+  /*     new->size = size; */
+  /*     new->alloc_pc = pc; */
+  /*     new->alloc_func_pc = start_pc; */
+  /*     new->alloc_func_sym = hashtable_lookup(sym_hashtab, start_pc); */
+  /*   } */
+  /* return new; */
 }
 
 void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
 		     int realloc)
 {
+  tree_t	*new_node;
+
   if (!start && block)
     {
       if (!realloc)
         {
           dr_printf("alloc of size %d failed\n", block->size);
-          remove_block(block);
+          /* remove_block(block->data); */
+	  dr_global_free(block, sizeof(*block));
         }
-      // if start == NULL on realloc 
+      // if start == NULL on realloc this is a free
       // set block to free to keep previous access to data
       else if (!(block->flag & FREE))
         {
           dr_printf("Realloc of size %d on %p failed\n",
 		    block->size, block->start);
           block->flag |= FREE;
+	  block->next = old_blocks;
+	  old_blocks = block;
+	  del_from_tree(&active_blocks, block->start, NULL);
         }
     }
   else if (block)
@@ -112,6 +105,20 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
       block->start = start;
       block->end = block->start + block->size;
       block->flag = flag;
+
+      if (!realloc)
+	{
+	  if (!(new_node = dr_global_alloc(sizeof(*new_node))))
+	    {
+	      dr_printf("Can't malloc\n");
+	      dr_global_free(block, sizeof(*block));
+	      return ;
+	    }
+	  new_node->min_addr = block->start;
+	  new_node->high_addr = block->end;
+	  new_node->data = block;
+	  add_to_tree(&active_blocks, new_node);
+	}
     }
   else
     dr_printf("Error : *alloc post wrapping call without pre wrapping\n");
@@ -152,26 +159,26 @@ void free_malloc_block(malloc_t *block)
     }
 }
 
-void remove_block(malloc_t *block)
-{
-  malloc_t      *tmp = blocks;
+/* void remove_block(malloc_t *block) */
+/* { */
+/*   malloc_t      *tmp = blocks; */
  
-  if (tmp == block)
-    {
-      blocks = tmp->next;
-      free_malloc_block(block);
-    }
-  else
-    {
-      while (tmp)
-        {
-          if (tmp->next == block)
-            {
-              tmp->next = tmp->next->next;
-              free_malloc_block(block);
-              break;
-            }
-          tmp = tmp->next;
-        }
-    }
-}
+/*   if (tmp == block) */
+/*     { */
+/*       blocks = tmp->next; */
+/*       free_malloc_block(block); */
+/*     } */
+/*   else */
+/*     { */
+/*       while (tmp) */
+/*         { */
+/*           if (tmp->next == block) */
+/*             { */
+/*               tmp->next = tmp->next->next; */
+/*               free_malloc_block(block); */
+/*               break; */
+/*             } */
+/*           tmp = tmp->next; */
+/*         } */
+/*     } */
+/* } */

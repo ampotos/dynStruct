@@ -98,8 +98,9 @@ static void load_event(__attribute__((unused))void *drcontext,
 
   // store symbols on the hashtable (key : sym addr, value : name);
   dr_mutex_lock(lock);
-  drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap,
-  			     sizeof(drsym_info_t), (void *)mod, 0);
+  // todo check where is this heap overflow (in the dynamorio implem ??)
+  /* drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap, */
+  /* 			     sizeof(drsym_info_t), (void *)mod, 0); */
   // todo parse lib to get start/end addr of plt and store it on a tree
   dr_mutex_unlock(lock);
 
@@ -172,7 +173,7 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
   // init sym hashtab
   sym_hashtab = dr_global_alloc(sizeof(*sym_hashtab));
   DR_ASSERT_MSG(sym_hashtab, "Global alloc fail\n");
-  hashtable_init_ex(sym_hashtab, 8, HASH_INTPTR, false, false,
+  hashtable_init_ex(sym_hashtab, 16, HASH_INTPTR, false, false,
 		    delete_sym, NULL, NULL);
 
   lock = dr_mutex_create();

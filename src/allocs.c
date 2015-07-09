@@ -7,6 +7,7 @@
 #include "../includes/call.h"
 #include "../includes/sym.h"
 
+// TODO check with /bin/cat if we miss the malloc because of this
 static int malloc_init = 0;
 static int realloc_init = 0;
 
@@ -163,7 +164,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
 
 void post_realloc(void *wrapctx, void *user_data)
 {
-  malloc_t	*block_data;
+  malloc_t	*block;
   void          *ret = drwrap_get_retval(wrapctx);
   stack_t       *stack;
   void		*drc;
@@ -178,21 +179,22 @@ void post_realloc(void *wrapctx, void *user_data)
     {
       if (data->block)
         {
-	  block_data = data->block;
-	  set_addr_malloc(data->block, ret, block_data->flag, 1);
-	  block_data->alloc_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx),
+	  block = data->block;
+	  set_addr_malloc(block, ret, block->flag, 1);
+	  block->alloc_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx),
 						    drc);
 	  stack = drmgr_get_tls_field(drc, tls_stack_idx);
-	  block_data->alloc_func_pc = stack->addr;
-	  block_data->alloc_func_sym = hashtable_lookup(sym_hashtab,
-							 stack->addr);
+	  block->alloc_func_pc = stack->addr;
+	  block->alloc_func_sym = hashtable_lookup(sym_hashtab,
+						   stack->addr);
 	}
       // if realloc is use like a malloc set the size here
       // because malloc wrapper receive a null size
-      // maybe add a linked list to store all pc for realloc
-      // maybe not because realloc is usualy used on array
-      else if ((block_data = search_on_tree(active_blocks, ret)))
-	block_data->size = ((realloc_tmp_t*)user_data)->size;
+      else if ((block = search_on_tree(active_blocks, ret)))
+	{
+	  block->size = ((realloc_tmp_t*)user_data)->size;
+	  block->end = block->start + block->size;
+	}
       dr_global_free(user_data, sizeof(realloc_tmp_t));
     }
 

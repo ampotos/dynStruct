@@ -10,21 +10,21 @@ bool sym_to_hashmap(drsym_info_t *info,
 		    drsym_error_t __attribute__((unused))status,
 		    void *data)
 {
-  char		*old_val;
+  char		*old_val = NULL;
   old_sym_t	*old_sym;
   
   old_val = hashtable_add_replace(sym_hashtab, ((module_data_t *)data)->start +
-				  info->start_offs,
-				  ds_strdup(info->name));
-  // if there is an old val for this entry (a lib was unload and a new was load)
-  // store the old sym name in a linked list to keep the string fo the name
+  				  info->start_offs,
+  				  ds_strdup(info->name));
+  /* if there is an old val for this entry (a lib was unload and a new was load) */
+  /* store the old sym name in a linked list to keep the string fo the name */
   if (old_val)
     {
       if (!(old_sym = dr_global_alloc(sizeof(*old_sym))))
-	{
-	  dr_global_free(old_val, ds_strlen(old_val));
-	  return false;
-	}
+  	{
+  	  dr_global_free(old_val, ds_strlen(old_val));
+  	  return false;
+  	}
       old_sym->sym = old_val;
       old_sym->next = old_symlist;
       old_symlist = old_sym;
@@ -42,7 +42,7 @@ void	clean_old_sym(void)
     {
       tmp = old_symlist;
       old_symlist = old_symlist->next;
-      dr_global_free(tmp->sym, ds_strlen(tmp->sym));
+      dr_global_free(tmp->sym, ds_strlen(tmp->sym + 1));
       dr_global_free(tmp, sizeof(*tmp));
     }
 }

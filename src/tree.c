@@ -360,10 +360,10 @@ void	del_from_tree(tree_t **tree, void *start_addr, void (* free_func)(void *))
     {
       balance = get_balance(parent_node);
       if (balance < -1 || balance > 1)
-	{
-	  balance_tree(parent_node, tree);
-	  break ;
-	}	  
+  	{
+  	  balance_tree(parent_node, tree);
+  	  break ;
+  	}
       parent_node = parent_node->parent;
     }
 }

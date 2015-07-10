@@ -1,13 +1,12 @@
 #include "dr_api.h"
 #include "../includes/tree.h"
-
 // Tree are used to store active block (meaning non free) and
 // plt of each module (to have the right calling addr for *alloc and free)
 
 int	get_balance(tree_t *node)
 {
-  int	left = 0;
-  int	right = 0;
+  int	left = -1;
+  int	right = -1;
 
   if (node->left)
     left = node->left->height;
@@ -46,12 +45,13 @@ void	recompute_height(tree_t *node)
       else if (node->right)
 	node->height = node->right->height + 1;
       else
-	node->height = 1;
+	node->height = 0;
       if (node->height == old_height)
 	break;
       node = node->parent;
     }
 }
+
 
 void	balance_tree(tree_t *node, tree_t **tree)
 {
@@ -203,7 +203,7 @@ void	add_to_tree(tree_t **tree, tree_t *node)
       else
 	parent->right = node;
       
-      recompute_height(node);
+      recompute_height(node->parent);
       
       while (parent)
 	{
@@ -246,6 +246,7 @@ void	del_branch(tree_t **tree, tree_t *node)
 	    parent->left = node->right;
 	  else
 	    parent->left = node->left;
+	  parent->left->parent = parent;
 	}
       else
 	{
@@ -253,6 +254,7 @@ void	del_branch(tree_t **tree, tree_t *node)
 	    parent->right = node->right;
 	  else
 	    parent->right = node->left;
+	  parent->right->parent = parent;
 	}
       recompute_height(parent);
     }
@@ -262,6 +264,7 @@ void	del_branch(tree_t **tree, tree_t *node)
 	*tree = node->left;
       else
 	*tree = node->right;
+      (*tree)->parent = NULL;
     }
 }
 
@@ -298,7 +301,7 @@ void	del_from_tree(tree_t **tree, void *start_addr, void (* free_func)(void *))
     {
       to_switch = node->right;
       while (to_switch->left)
-	to_switch = to_switch->left;
+      	to_switch = to_switch->left;
 
       parent_switch = to_switch->parent;
 
@@ -307,18 +310,18 @@ void	del_from_tree(tree_t **tree, void *start_addr, void (* free_func)(void *))
       to_switch->height = tmp_height;
 
       if (parent_node)
-	{
-	  if (parent_node->left == node)
-	    parent_node->left = to_switch;
-	  else
-	    parent_node->right = to_switch;
-	  to_switch->parent = parent_node;
-	}
+      	{
+      	  if (parent_node->left == node)
+      	    parent_node->left = to_switch;
+      	  else
+      	    parent_node->right = to_switch;
+      	  to_switch->parent = parent_node;
+      	}
       else
-	{
-	  to_switch->parent = NULL;
-	  *tree = to_switch;
-	}
+      	{
+      	  to_switch->parent = NULL;
+      	  *tree = to_switch;
+      	}
 
       if (parent_switch)
         {
@@ -333,22 +336,22 @@ void	del_from_tree(tree_t **tree, void *start_addr, void (* free_func)(void *))
       to_switch->left = node->left;
       node->left = tmp_node;
       if (to_switch->left)
-	to_switch->left->parent = to_switch;
+      	to_switch->left->parent = to_switch;
       if (node->left)
-	node->left->parent = node;
+      	node->left->parent = node;
 	
       tmp_node = to_switch->right;
       to_switch->right = node->right;
       node->right = tmp_node;
       if (to_switch->right)
-	to_switch->right->parent = to_switch;
+      	to_switch->right->parent = to_switch;
       if (node->right)
-	node->right->parent = node;
+      	node->right->parent = node;
 
       if (!(node->height))
-	del_leaf(tree, node);
+      	del_leaf(tree, node);
       else
-	del_branch(tree, node);
+      	del_branch(tree, node);
     }
   else
     del_branch(tree, node);

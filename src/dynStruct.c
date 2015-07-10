@@ -35,7 +35,8 @@ static dr_emit_flags_t bb_app2app_event(void *drcontext,
   return DR_EMIT_DEFAULT;
 }
 
-// instrument each read or write instruction in order to monitor them, also instrument each call/return to update the stack of functions
+// instrument each read or write instruction in order to monitor them
+// also instrument each call/return to update the stack of functions
 static dr_emit_flags_t bb_insert_event( void *drcontext,
 					__attribute__((unused))void *tag,
 					instrlist_t *bb, instr_t *instr, 
@@ -98,16 +99,16 @@ static void load_event(__attribute__((unused))void *drcontext,
 
   // store symbols on the hashtable (key : sym addr, value : name);
   dr_mutex_lock(lock);
-  // todo check where is this heap overflow (in the dynamorio implem ??)
-  /* drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap, */
-  /* 			     sizeof(drsym_info_t), (void *)mod, 0); */
+  // todo check where is this heap overflow detected by debug mode
+  drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap,
+  			     sizeof(drsym_info_t), (void *)mod, 0);
   // todo parse lib to get start/end addr of plt and store it on a tree
   dr_mutex_unlock(lock);
 
   // free all data relative to sym (like debug info) after loading symbol
   drsym_free_resources(mod->full_path);
 
-  // only wrap libc because we suppose our appli use standard malloc
+  // TODO : get module to wrap un parameter of the client (ld.so for example do a lot of malloc)
   if (ds_strncmp("libc.so", mod_name, 7))
     return;
 

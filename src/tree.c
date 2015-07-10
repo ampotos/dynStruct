@@ -3,7 +3,7 @@
 // Tree are used to store active block (meaning non free) and
 // plt of each module (to have the right calling addr for *alloc and free)
 
-int	get_balance(tree_t *node)
+int get_balance(tree_t *node)
 {
   int	left = -1;
   int	right = -1;
@@ -16,7 +16,7 @@ int	get_balance(tree_t *node)
   return left - right;
 }
 
-tree_t	*get_parent(tree_t *tree, tree_t *node)
+tree_t *get_parent(tree_t *tree, tree_t *node)
 {
   if (tree->high_addr < node->min_addr && tree->right)
     return get_parent(tree->right, node);
@@ -26,7 +26,7 @@ tree_t	*get_parent(tree_t *tree, tree_t *node)
   return tree;
 }
 
-void	recompute_height(tree_t *node)
+void recompute_height(tree_t *node)
 {
   int	old_height;
 
@@ -53,7 +53,7 @@ void	recompute_height(tree_t *node)
 }
 
 
-void	balance_tree(tree_t *node, tree_t **tree)
+void balance_tree(tree_t *node, tree_t **tree)
 {
   tree_t	*parent = node->parent;
   tree_t	*tmp;
@@ -179,13 +179,13 @@ void	balance_tree(tree_t *node, tree_t **tree)
       }
 }
 
-void	add_to_tree(tree_t **tree, tree_t *node)
+void add_to_tree(tree_t **tree, tree_t *node)
 {
   tree_t	*parent;
   int		balance;
 
   if (!node)
-    return ;
+    return;
   node->height = 0;
   node->left = NULL;
   node->right = NULL;
@@ -218,7 +218,7 @@ void	add_to_tree(tree_t **tree, tree_t *node)
     }
 }
 
-void	del_leaf(tree_t **tree, tree_t *node)
+void del_leaf(tree_t **tree, tree_t *node)
 {
   tree_t	*parent = node->parent;
 
@@ -234,7 +234,7 @@ void	del_leaf(tree_t **tree, tree_t *node)
     *tree = NULL;
 }
 
-void	del_branch(tree_t **tree, tree_t *node)
+void del_branch(tree_t **tree, tree_t *node)
 {
   tree_t	*parent = node->parent;
 
@@ -268,7 +268,7 @@ void	del_branch(tree_t **tree, tree_t *node)
     }
 }
 
-void    *get_node(tree_t *tree, void *addr)
+void *get_node(tree_t *tree, void *addr)
 {
   if (!tree)
     return NULL;
@@ -281,7 +281,8 @@ void    *get_node(tree_t *tree, void *addr)
   return tree;
 }
 
-void	del_from_tree(tree_t **tree, void *start_addr, void (* free_func)(void *))
+void del_from_tree(tree_t **tree, void *start_addr,
+		      void (* free_func)(void *))
 {
   tree_t	*node = get_node(*tree, start_addr);
   tree_t	*to_switch;
@@ -292,7 +293,7 @@ void	del_from_tree(tree_t **tree, void *start_addr, void (* free_func)(void *))
   int		balance;
 
   if (!node)
-    return ;
+    return;
   parent_node = node->parent;
   if (!(node->right) && !(node->left))
     del_leaf(tree, node);
@@ -365,13 +366,13 @@ void	del_from_tree(tree_t **tree, void *start_addr, void (* free_func)(void *))
       if (balance < -1 || balance > 1)
   	{
   	  balance_tree(parent_node, tree);
-  	  break ;
+  	  break;
   	}
       parent_node = parent_node->parent;
     }
 }
 
-void	*search_on_tree(tree_t *tree, void *addr)
+void *search_on_tree(tree_t *tree, void *addr)
 {
   if (!tree)
     return NULL;
@@ -384,8 +385,9 @@ void	*search_on_tree(tree_t *tree, void *addr)
   return tree->data;
 }
 
-void	clean_tree(tree_t **tree, void (* free_func)(void *))
+void clean_tree(tree_t **tree, void (* free_func)(void *))
 {
   while (*tree)
     del_from_tree(tree, (*tree)->min_addr, free_func);
 }
+ 

@@ -48,31 +48,6 @@ malloc_t *add_block(size_t size, void *pc, void *start_pc)
     }
 
   return new;
-
-  /* malloc_t new = blocks; */
-  /* if (new) */
-  /*   { */
-  /*     while (new->next) */
-  /*       new = new->next; */
-  /*     if (!(new->next = dr_global_alloc(sizeof(*new)))) */
-  /*       dr_printf("dr_malloc fail\n"); */
-  /*     new = new->next; */
-  /*   } */
-  /* else */
-  /*   if (!(blocks = dr_global_alloc(sizeof(*new)))) */
-  /*     dr_printf("dr_malloc fail\n"); */
-  /*   else */
-  /*     new = blocks; */
-
-  /* if (new) */
-  /*   { */
-  /*     memset(new, 0, sizeof(*new)); */
-  /*     new->size = size; */
-  /*     new->alloc_pc = pc; */
-  /*     new->alloc_func_pc = start_pc; */
-  /*     new->alloc_func_sym = hashtable_lookup(sym_hashtab, start_pc); */
-  /*   } */
-  /* return new; */
 }
 
 void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
@@ -85,8 +60,7 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
       if (!realloc)
         {
           dr_printf("alloc of size %d failed\n", block->size);
-          /* remove_block(block->data); */
-	  dr_global_free(block, sizeof(*block));
+	  free_malloc_block(block);
         }
       // if start == NULL on realloc this is a free
       // set block to free to keep previous access to data
@@ -158,27 +132,3 @@ void free_malloc_block(malloc_t *block)
       dr_global_free(block, sizeof(*block));
     }
 }
-
-/* void remove_block(malloc_t *block) */
-/* { */
-/*   malloc_t      *tmp = blocks; */
- 
-/*   if (tmp == block) */
-/*     { */
-/*       blocks = tmp->next; */
-/*       free_malloc_block(block); */
-/*     } */
-/*   else */
-/*     { */
-/*       while (tmp) */
-/*         { */
-/*           if (tmp->next == block) */
-/*             { */
-/*               tmp->next = tmp->next->next; */
-/*               free_malloc_block(block); */
-/*               break; */
-/*             } */
-/*           tmp = tmp->next; */
-/*         } */
-/*     } */
-/* } */

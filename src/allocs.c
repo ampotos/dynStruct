@@ -7,7 +7,6 @@
 #include "../includes/call.h"
 #include "../includes/sym.h"
 
-// TODO check with /bin/cat if we miss the malloc because of this
 static int malloc_init = 0;
 static int realloc_init = 0;
 

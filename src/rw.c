@@ -7,7 +7,7 @@
 #include "../includes/call.h"
 #include "../includes/sym.h"
 
-void	incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
+void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 {
   orig_t	*tmp_orig = access->origs;
   orig_t	*orig = NULL;
@@ -45,7 +45,7 @@ void	incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
     orig->nb_hit++;
 }
 
-void	add_hit(void *pc, size_t size, void *target, int read, void *drcontext)
+void add_hit(void *pc, size_t size, void *target, int read, void *drcontext)
 {
   malloc_t	*block = search_on_tree(active_blocks, target);
   access_t	*access;
@@ -67,7 +67,7 @@ void	add_hit(void *pc, size_t size, void *target, int read, void *drcontext)
   dr_mutex_unlock(lock);  
 }
 
-void	memory_read(void *pc)
+void memory_read(void *pc)
 {
   void		*drcontext = dr_get_current_drcontext();
   instr_t	*instr = instr_create(drcontext);
@@ -101,7 +101,7 @@ void	memory_read(void *pc)
   instr_destroy(drcontext, instr);
 }
 
-void	memory_write(void *pc)
+void memory_write(void *pc)
 {
   void		*drcontext = dr_get_current_drcontext();
   instr_t	*instr = instr_create(drcontext);

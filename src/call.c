@@ -9,7 +9,7 @@
 // is going to be fucked up
 
 // TODO : check is the pc of the caller is on plt(plt's addr of each lib are going to be store on a tree), if yes take prev addr on the stack
-void	dir_call_monitor(void *pc)
+void dir_call_monitor(void *pc)
 {
   stack_t	*new_func;
   stack_t	*stack;
@@ -29,7 +29,7 @@ void	dir_call_monitor(void *pc)
 }
 
 
-void	ind_call_monitor(app_pc __attribute__((unused))caller, app_pc callee)
+void ind_call_monitor(app_pc __attribute__((unused))caller, app_pc callee)
 {
   stack_t	*new_func;
   stack_t	*stack;
@@ -49,7 +49,7 @@ void	ind_call_monitor(app_pc __attribute__((unused))caller, app_pc callee)
 }
 
 
-void	ret_monitor()
+void ret_monitor()
 {
   stack_t       *stack;
   void          *drcontext = dr_get_current_drcontext();
@@ -62,7 +62,7 @@ void	ret_monitor()
     }
 }
 
-void	clean_stack(void *drcontext)
+void clean_stack(void *drcontext)
 {
   stack_t       *stack;
   stack_t       *stack_tmp;

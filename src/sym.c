@@ -12,7 +12,7 @@ bool sym_to_hashmap(drsym_info_t *info,
 {
   char		*old_val = NULL;
   old_sym_t	*old_sym;
-  
+
   old_val = hashtable_add_replace(sym_hashtab, ((module_data_t *)data)->start +
   				  info->start_offs,
   				  ds_strdup(info->name));
@@ -34,7 +34,7 @@ bool sym_to_hashmap(drsym_info_t *info,
 }
 
 
-void	clean_old_sym(void)
+void clean_old_sym(void)
 {
   old_sym_t	*tmp;
 
@@ -47,7 +47,7 @@ void	clean_old_sym(void)
     }
 }
 
-void	delete_sym(void *sym)
+void delete_sym(void *sym)
 {
   dr_global_free(sym, ds_strlen((char *)sym));
 }

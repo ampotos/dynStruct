@@ -1,7 +1,7 @@
 #include "dr_api.h"
 
 
-size_t	ds_strlen(const char *s)
+size_t ds_strlen(const char *s)
 {
   for (int ct = 0; ; ct++)
     if (!s[ct])

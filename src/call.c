@@ -23,7 +23,7 @@ void dir_call_monitor(void *pc)
     {
       new_func->next = stack;
       new_func->addr = pc;
-      new_func->name = hashtable_lookup(sym_hashtab, pc);
+      new_func->name = hashtable_lookup(&sym_hashtab, pc);
       drmgr_set_tls_field(drcontext, tls_stack_idx, new_func);
     }
 }
@@ -43,7 +43,7 @@ void ind_call_monitor(app_pc __attribute__((unused))caller, app_pc callee)
     {
       new_func->next = stack;
       new_func->addr = callee;
-      new_func->name = hashtable_lookup(sym_hashtab, callee);
+      new_func->name = hashtable_lookup(&sym_hashtab, callee);
       drmgr_set_tls_field(drcontext, tls_stack_idx, new_func);
     }
 }

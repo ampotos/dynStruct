@@ -44,7 +44,7 @@ malloc_t *add_block(size_t size, void *pc, void *start_pc)
       new->size = size;
       new->alloc_pc = pc;
       new->alloc_func_pc = start_pc;
-      new->alloc_func_sym = hashtable_lookup(sym_hashtab, start_pc);
+      new->alloc_func_sym = hashtable_lookup(&sym_hashtab, start_pc);
     }
 
   return new;

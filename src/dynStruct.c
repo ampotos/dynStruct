@@ -132,7 +132,8 @@ static void exit_event(void)
   process_recover();
 
   clean_old_sym();
-  hashtable_delete(sym_hashtab);
+
+  hashtable_delete(&sym_hashtab);
 
   dr_mutex_unlock(lock);
   dr_mutex_destroy(lock);
@@ -172,10 +173,7 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
   DR_ASSERT_MSG(tls_stack_idx != -1, "Can't register tls field\n");
 
   // init sym hashtab
-  sym_hashtab = dr_global_alloc(sizeof(*sym_hashtab));
-  DR_ASSERT_MSG(sym_hashtab, "Global alloc fail\n");
-  hashtable_init_ex(sym_hashtab, 16, HASH_INTPTR, false, false,
-		    delete_sym, NULL, NULL);
+  hashtable_init(&sym_hashtab, 16, HASH_INTPTR, true);
 
   lock = dr_mutex_create();
   DR_ASSERT_MSG(lock, "Can't create mutex\n");

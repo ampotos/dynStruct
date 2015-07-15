@@ -184,7 +184,7 @@ void post_realloc(void *wrapctx, void *user_data)
 						    drc);
 	  stack = drmgr_get_tls_field(drc, tls_stack_idx);
 	  block->alloc_func_pc = stack->addr;
-	  block->alloc_func_sym = hashtable_lookup(sym_hashtab,
+	  block->alloc_func_sym = hashtable_lookup(&sym_hashtab,
 						   stack->addr);
 	}
       // if realloc is use like a malloc set the size here
@@ -219,7 +219,7 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
       block->flag |= FREE;
       block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
       block->free_func_pc = stack->addr;
-      block->free_func_sym = hashtable_lookup(sym_hashtab, block->free_pc);
+      block->free_func_sym = hashtable_lookup(&sym_hashtab, block->free_pc);
 
       block->next = old_blocks;
       old_blocks = block;

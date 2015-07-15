@@ -3,7 +3,7 @@
 #include "../includes/sym.h"
 #include "../includes/utils.h"
 
-hashtable_t      *sym_hashtab;
+hashtable_t      sym_hashtab;
 old_sym_t        *old_symlist = NULL;
 
 bool sym_to_hashmap(drsym_info_t *info,
@@ -13,10 +13,10 @@ bool sym_to_hashmap(drsym_info_t *info,
   char		*old_val = NULL;
   old_sym_t	*old_sym;
 
-  old_val = hashtable_add_replace(sym_hashtab, ((module_data_t *)data)->start +
+  old_val = hashtable_add_replace(&sym_hashtab, ((module_data_t *)data)->start +
   				  info->start_offs,
-  				  ds_strdup(info->name));
-  /* if there is an old val for this entry (a lib was unload and a new was load) */
+  				  info->name);
+  /* if there is an old val for this entry (a lib was unload and a new is load) */
   /* store the old sym name in a linked list to keep the string fo the name */
   if (old_val)
     {
@@ -45,9 +45,4 @@ void clean_old_sym(void)
       dr_global_free(tmp->sym, ds_strlen(tmp->sym + 1));
       dr_global_free(tmp, sizeof(*tmp));
     }
-}
-
-void delete_sym(void *sym)
-{
-  dr_global_free(sym, ds_strlen((char *)sym));
 }

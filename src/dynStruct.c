@@ -99,7 +99,7 @@ static void load_event(__attribute__((unused))void *drcontext,
 
   // store symbols on the hashtable (key : sym addr, value : name);
   dr_mutex_lock(lock);
-  // todo check where is this heap overflow detected by debug mode
+
   drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap,
   			     sizeof(drsym_info_t), (void *)mod, 0);
   // todo parse lib to get start/end addr of plt and store it on a tree
@@ -108,7 +108,7 @@ static void load_event(__attribute__((unused))void *drcontext,
   // free all data relative to sym (like debug info) after loading symbol
   drsym_free_resources(mod->full_path);
 
-  // TODO : get module to wrap un parameter of the client (ld.so for example do a lot of malloc)
+  // TODO : get module name to wrap in a parameter of the client
   if (ds_strncmp("libc.so", mod_name, 7))
     return;
 

@@ -12,6 +12,7 @@
 #include "../includes/call.h"
 #include "../includes/sym.h"
 #include "../includes/tree.h"
+#include "../includes/elf.h"
 
 malloc_t  *old_blocks = NULL;
 tree_t	  *active_blocks = NULL;
@@ -37,6 +38,7 @@ static dr_emit_flags_t bb_app2app_event(void *drcontext,
 
 // instrument each read or write instruction in order to monitor them
 // also instrument each call/return to update the stack of functions
+// TODO add an arg to monitor r/w only on a certain (or multiple) module
 static dr_emit_flags_t bb_insert_event( void *drcontext,
 					__attribute__((unused))void *tag,
 					instrlist_t *bb, instr_t *instr, 
@@ -102,7 +104,7 @@ static void load_event(__attribute__((unused))void *drcontext,
 
   drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap,
   			     sizeof(drsym_info_t), (void *)mod, 0);
-  // todo parse lib to get start/end addr of plt and store it on a tree
+  get_plt(mod);
   dr_mutex_unlock(lock);
 
   // free all data relative to sym (like debug info) after loading symbol

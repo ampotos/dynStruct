@@ -4,7 +4,7 @@
 #include "tree.h"
 
 //sotre nb_hit and size of the hit by pc on access instruction
-// todo : orig must not stay a linked list, find something faster
+// todo : orig must not stay a linked list, find something faster (llok at splaytree)
 typedef struct orig_s orig_t;
 struct orig_s
 {
@@ -17,7 +17,7 @@ struct orig_s
 };
 
 // sort at insert by offset typedef struct access_s access_t;
-// todo : access must not stay a linked list, find something faster
+// todo : access must not stay a linked list, find something faster (look at splaytree)
 typedef struct access_s access_t;
 struct access_s
 {

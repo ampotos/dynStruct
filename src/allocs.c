@@ -10,12 +10,8 @@
 static int malloc_init = 0;
 static int realloc_init = 0;
 
-// maybe the following solution to get the previous pc is better
-// take the ddr of the start of function on the stack (when the stack handle plt)
-// use decode_next_pc to parcour the instructions and when decode_next_pc return 
-// the retaddr take the pc give to decode_next_pc as addr calling
-
-// return the addr of he previous instructions
+// return the addr of the previous instructions
+// a bad addr can be return in some specific case but generally work good
 // the prev instr is supposed to be a call
 void *get_prev_instr_pc(void *pc, void *drc)
 {
@@ -170,12 +166,12 @@ void post_realloc(void *wrapctx, void *user_data)
   realloc_tmp_t	*data = user_data;
   
   drc = drwrap_get_drcontext(wrapctx);
-  dr_mutex_lock(lock);
 
   // if user_data is not set realloc was called to do a free
   // or is the realloc's first call
   if (data)
     {
+      dr_mutex_lock(lock);
       if (data->block)
         {
 	  block = data->block;
@@ -195,9 +191,8 @@ void post_realloc(void *wrapctx, void *user_data)
 	  block->end = block->start + block->size;
 	}
       dr_global_free(user_data, sizeof(realloc_tmp_t));
+      dr_mutex_unlock(lock);
     }
-
-  dr_mutex_unlock(lock);
 }
 
 void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
@@ -205,14 +200,15 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
   malloc_t	*block;
   stack_t	*stack;
   void		*drc;
+  void		*addr;
   
-  // free(0) du nothing
-  if (!drwrap_get_arg(wrapctx,0))
+  // free(0) do nothing
+  if (!(addr = drwrap_get_arg(wrapctx, 0)))
     return;
 
   drc = drwrap_get_drcontext(wrapctx);
   dr_mutex_lock(lock);
-  block = search_on_tree(active_blocks, drwrap_get_arg(wrapctx, 0));
+  block = search_on_tree(active_blocks, addr);
   if (block)
     {
       stack = drmgr_get_tls_field(drc, tls_stack_idx);
@@ -226,7 +222,7 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
       del_from_tree(&active_blocks, block->start, NULL);
     }
   else
-    dr_printf("free of non alloc adress : %p\n", drwrap_get_arg(wrapctx, 0));
+    dr_printf("free of non alloc adress : %p\n", addr);
 
   dr_mutex_unlock(lock);
 }

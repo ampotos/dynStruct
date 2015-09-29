@@ -27,7 +27,7 @@ struct access_s
   orig_t	   *origs;
 };
 
-//maybe store module_names for realloc
+//maybe store module_names if the bloc was realloc
 typedef struct malloc_s malloc_t;
 struct malloc_s
 {

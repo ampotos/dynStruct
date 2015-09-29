@@ -63,7 +63,7 @@ void get_plt(const module_data_t *mod)
 		      if ((new_node = dr_global_alloc(sizeof(*new_node))))
 			{
 			  /* ds_memset(new_node, 0, sizeof(*new_node)); */
-			  /* // todo : find plt addr and refoctor this sheet */
+			  /* // todo : find plt addr and refoctor this shit */
 			  /* new_node->high_addr = ;//end of plt; */
 			  /* new_node->min_addr = ;//start of plt; */
 			  /* // we don't need to store specific data */

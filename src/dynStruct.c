@@ -39,6 +39,7 @@ static dr_emit_flags_t bb_app2app_event(void *drcontext,
 // instrument each read or write instruction in order to monitor them
 // also instrument each call/return to update the stack of functions
 // TODO add an arg to monitor r/w only on a certain (or multiple) module
+// for now maybe monitor only access on main module or all except libc
 static dr_emit_flags_t bb_insert_event( void *drcontext,
 					__attribute__((unused))void *tag,
 					instrlist_t *bb, instr_t *instr, 
@@ -52,7 +53,7 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
   // check if the instruction is valid
   if (pc == NULL)
     return DR_EMIT_DEFAULT;
-
+  
   if (instr_reads_memory(instr))
     for (int i = 0; i < instr_num_srcs(instr); i++)
       if (opnd_is_memory_reference(instr_get_src(instr, i)))

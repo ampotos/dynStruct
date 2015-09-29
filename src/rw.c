@@ -23,7 +23,7 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
       tmp_orig  = tmp_orig->next;
     }
 
-  // if a similar access with the actual is not found we create it
+  // if a similar access with the actual orig is not found we create it
   if (!orig)
     {
       if (!(orig = dr_global_alloc(sizeof(*orig))))

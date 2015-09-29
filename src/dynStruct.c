@@ -175,7 +175,7 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
   DR_ASSERT_MSG(tls_stack_idx != -1, "Can't register tls field\n");
 
   // init sym hashtab
-  hashtable_init(&sym_hashtab, 16, HASH_INTPTR, true);
+  hashtable_init(&sym_hashtab, 16, HASH_INTPTR, false);
 
   lock = dr_mutex_create();
   DR_ASSERT_MSG(lock, "Can't create mutex\n");

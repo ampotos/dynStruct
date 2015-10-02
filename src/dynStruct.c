@@ -105,7 +105,7 @@ static void load_event(__attribute__((unused))void *drcontext,
 
   drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap,
   			     sizeof(drsym_info_t), (void *)mod, 0);
-  get_plt(mod);
+  add_plt(mod);
   dr_mutex_unlock(lock);
 
   // free all data relative to sym (like debug info) after loading symbol
@@ -126,6 +126,12 @@ static void load_event(__attribute__((unused))void *drcontext,
 
   if (free)
     DR_ASSERT(drwrap_wrap(free, pre_free, NULL));
+}
+
+void unload_event(__attribute__((unused)) void *drcontext,
+		 const module_data_t *mod)
+{
+  remove_plt(mod);
 }
 
 static void exit_event(void)
@@ -163,8 +169,10 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
   drmgr_init();
   drutil_init();
 
+  // add unload module event for removing plt's module
   dr_register_exit_event(&exit_event);
   if (!drmgr_register_module_load_event(&load_event) ||
+      !drmgr_register_module_unload_event(&unload_event) ||
       !drmgr_register_bb_app2app_event(&bb_app2app_event, &p) ||
       !drmgr_register_thread_exit_event(&thread_exit_event) ||
       //only use insert event because we only need to monitor single instruction

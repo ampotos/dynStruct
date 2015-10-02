@@ -3,6 +3,7 @@
 #include "dr_ir_opnd.h"
 #include "../includes/call.h"
 #include "../includes/sym.h"
+#include "../includes/elf.h"
 
 // actually we only follow call and return, so if a program use a jump instead
 // of a call we don't add it on the stack and there is a tricky return the stack
@@ -73,5 +74,21 @@ void clean_stack(void *drcontext)
       stack_tmp = stack;
       stack = stack->next;
       dr_thread_free(drcontext, stack_tmp, sizeof(*stack_tmp));
+    }
+}
+
+
+void get_caller_data(void **addr, char **sym, void *drcontext)
+{
+  for (stack_t *func = drmgr_get_tls_field(drcontext, tls_stack_idx); func; func = func->next)
+    {
+      if (search_on_tree(plt_tree, func->addr) != (void *)IN_PLT)
+	{
+	  if (addr)
+	    *addr = func->addr;
+	  if (sym)
+	    *sym = hashtable_lookup(&sym_hashtab, func->addr);
+	  break;
+	}
     }
 }

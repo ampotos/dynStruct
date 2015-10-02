@@ -34,19 +34,16 @@ void *get_prev_instr_pc(void *pc, void *drc)
 
 void pre_calloc(void *wrapctx, OUT void **user_data)
 {
-  stack_t	*stack;
   void		*drc;
   
   drc = drwrap_get_drcontext(wrapctx);
 
   dr_mutex_lock(lock);
 
-  stack = drmgr_get_tls_field(drc, tls_stack_idx);
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 1) *
 			 (size_t)drwrap_get_arg(wrapctx, 0),
 			 get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc),
-			 stack->addr);
-
+			 drc);
   dr_mutex_unlock(lock);
 }
 
@@ -64,7 +61,6 @@ void post_calloc(void *wrapctx, void *user_data)
 
 void pre_malloc(void *wrapctx, OUT void **user_data)
 {
-  stack_t	*stack;
   void		*drc;
   
   drc = drwrap_get_drcontext(wrapctx);
@@ -79,11 +75,9 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
       return;
     }
 
-  stack = drmgr_get_tls_field(drc, tls_stack_idx);
-
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0),
 			 get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc),
-			 stack->addr);
+			 drc);
 
   dr_mutex_unlock(lock);
 }
@@ -198,7 +192,6 @@ void post_realloc(void *wrapctx, void *user_data)
 void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
 {
   malloc_t	*block;
-  stack_t	*stack;
   void		*drc;
   void		*addr;
   
@@ -211,12 +204,9 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
   block = search_on_tree(active_blocks, addr);
   if (block)
     {
-      stack = drmgr_get_tls_field(drc, tls_stack_idx);
       block->flag |= FREE;
       block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
-      block->free_func_pc = stack->addr;
-      block->free_func_sym = hashtable_lookup(&sym_hashtab, block->free_pc);
-
+      get_caller_data(&block->free_func_pc, &block->free_func_sym, drc);
       block->next = old_blocks;
       old_blocks = block;
       del_from_tree(&active_blocks, block->start, NULL);

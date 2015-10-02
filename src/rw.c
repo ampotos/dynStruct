@@ -11,7 +11,6 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 {
   orig_t	*tmp_orig = access->origs;
   orig_t	*orig = NULL;
-  stack_t	*stack;
 
   while (tmp_orig)
     {
@@ -35,10 +34,9 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 	  orig->addr = pc;
 	  orig->next = access->origs;
 	  access->origs = orig;
-	  // get the start value of the function doing the access
-	  stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
-	  orig->start_func_addr = stack->addr;
-	  orig->start_func_sym = hashtable_lookup(&sym_hashtab, stack->addr);
+	  // get the start addr of the function doing the access
+	  get_caller_data(&orig->start_func_addr,
+			  &orig->start_func_sym, drcontext);
 	}
     }
   if (orig)

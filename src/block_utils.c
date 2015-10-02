@@ -3,6 +3,7 @@
 #include "../includes/utils.h"
 #include "../includes/block_utils.h"
 #include "../includes/sym.h"
+#include "../includes/call.h"
 
 access_t *get_access(size_t offset, access_t **l_access)
 {
@@ -29,7 +30,7 @@ access_t *get_access(size_t offset, access_t **l_access)
   return access;
 }
 
-malloc_t *add_block(size_t size, void *pc, void *start_pc)
+malloc_t *add_block(size_t size, void *pc, void *drcontext)
 {
   malloc_t      *new = dr_global_alloc(sizeof(*new));
 
@@ -43,8 +44,8 @@ malloc_t *add_block(size_t size, void *pc, void *start_pc)
       ds_memset(new, 0, sizeof(*new));
       new->size = size;
       new->alloc_pc = pc;
-      new->alloc_func_pc = start_pc;
-      new->alloc_func_sym = hashtable_lookup(&sym_hashtab, start_pc);
+      get_caller_data(&new->alloc_func_pc,
+		      &new->alloc_func_sym, drcontext);
     }
 
   return new;
@@ -84,7 +85,7 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
 	{
 	  if (!(new_node = dr_global_alloc(sizeof(*new_node))))
 	    {
-	      dr_printf("Can't malloc\n");
+	      dr_printf("Can't alloc\n");
 	      dr_global_free(block, sizeof(*block));
 	      return ;
 	    }

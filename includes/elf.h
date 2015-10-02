@@ -4,6 +4,9 @@
 // following define is for opti on avl tree 
 // (we don't alloc a struc just the node on the tree)
 #define IN_PLT 42
+// looks like dynamo doesn't care about the p_align
+// and align section with 0x1000
+#define DYNAMO_ALIGN 0x1000 
 
 #include "../includes/tree.h"
 #include <stdint.h>
@@ -11,6 +14,17 @@
 extern tree_t	*plt_tree;
 
 #define PLT_NAME ".plt"
+
+typedef struct
+{
+  size_t	plt_offset;
+  size_t	plt_size;
+  size_t	size_seg;
+  uint		seg_perm;
+} plt_tmp_data;
+
+void add_plt(const module_data_t *mod);
+void remove_plt(const module_data_t *mod);
 
 // Following struct, typedef and define are copied from elf.h
 
@@ -40,7 +54,13 @@ typedef uint64_t Elf64_Off;
 
 #define EI_NIDENT (16)
 
+#define ELFMAG          "\177ELF"
+
+#define ELFCLASS32      1               /* 32-bit objects */
+#define ELFCLASS64      2               /* 64-bit objects */
+
 typedef struct{
+  unsigned char e_ident[EI_NIDENT];     /* Magic number and other info */
   Elf32_Half    e_type;                 /* Object file type */
   Elf32_Half    e_machine;              /* Architecture */
   Elf32_Word    e_version;              /* Object file version */
@@ -57,6 +77,7 @@ typedef struct{
 } Elf32_Ehdr;
 
 typedef struct{
+  unsigned char e_ident[EI_NIDENT];     /* Magic number and other info */
   Elf64_Half    e_type;                 /* Object file type */
   Elf64_Half    e_machine;              /* Architecture */
   Elf64_Word    e_version;              /* Object file version */
@@ -71,11 +92,6 @@ typedef struct{
   Elf64_Half    e_shnum;                /* Section header table entry count */
   Elf64_Half    e_shstrndx;             /* Section header string table index */
 } Elf64_Ehdr;
-
-#define ELFMAG          "\177ELF"
-
-#define ELFCLASS32      1               /* 32-bit objects */
-#define ELFCLASS64      2               /* 64-bit objects */
 
 /* Section header.  */
 

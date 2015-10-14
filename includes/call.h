@@ -6,6 +6,7 @@ typedef struct stack_s
   void			*addr;
   char			*name;
   struct stack_s	*next;
+  int			on_plt;
 } stack_t;
 
 // store the index of the tls slot who contain stack data

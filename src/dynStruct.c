@@ -100,6 +100,7 @@ static void load_event(__attribute__((unused))void *drcontext,
   app_pc	free = (app_pc)dr_get_proc_address(mod->handle, "free");
   const char	*mod_name = dr_module_preferred_name(mod);
 
+  // todo if the module is a dynamorio library do nothing.
   // store symbols on the hashtable (key : sym addr, value : name);
   dr_mutex_lock(lock);
 
@@ -138,7 +139,7 @@ static void exit_event(void)
 {
   dr_mutex_lock(lock);
 
-  process_recover();
+  /* process_recover(); */
 
   clean_old_sym();
 

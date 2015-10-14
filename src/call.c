@@ -5,26 +5,64 @@
 #include "../includes/sym.h"
 #include "../includes/elf.h"
 
-// actually we only follow call and return, so if a program use a jump instead
-// of a call we don't add it on the stack and there is a tricky return the stack
-// is going to be fucked up
+void *get_real_func_addr(void *pc, void *got)
+{
+  void          *drcontext = dr_get_current_drcontext();
+  instr_t       *instr = instr_create(drcontext);
+  int		offset;
 
-// TODO : check is the pc of the caller is on plt(plt's addr of each lib are going to be store on a tree), if yes take prev addr on the stack
+  pc = dr_app_pc_for_decoding(pc);
+
+  instr_init(drcontext, instr);
+  if (!decode(drcontext, pc, instr))
+    {
+      dr_printf("Decode of instruction at %p failed\n", pc);
+      return NULL;
+    }
+
+  // in the plt we want to find the first push in order to know
+  // the offset of the got who contain the addr of the target func
+  while (instr_get_opcode(instr) != OP_push_imm)
+    {
+      instr_reset(drcontext, instr);
+      pc = decode_next_pc(drcontext, pc);
+      if (!decode(drcontext, pc, instr))
+	{
+	  dr_printf("Decode of instruction at %p failed\n", pc);
+	  return NULL;
+	}
+    }
+  offset = opnd_get_immed_int(instr_get_src(instr, 0));
+  instr_destroy(drcontext, instr);
+  got = got + (2 + offset) * sizeof(void*);
+  // todo find a way to read this ptr and got shloud be fine
+  dr_printf("got : %p => \n", got);
+  dr_printf("\tfunc %p\n", *((ptr_int_t **)got));
+  return *((ptr_int_t **)got);
+}
+
 void dir_call_monitor(void *pc)
 {
   stack_t	*new_func;
   stack_t	*stack;
   void		*drcontext = dr_get_current_drcontext();
-
+  
   stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
-
   if (!(new_func = dr_thread_alloc(drcontext, sizeof(*new_func))))
     dr_printf("dr_malloc fail\n");
   else
     {
       new_func->next = stack;
+      // we check is the addr is on plt here for performance issue
+      // the plt addr is going to be replace by the real addr
+      // of the target function the first time we need to get
+      // this information
+      if (search_on_tree(plt_tree, pc))
+	new_func->on_plt = 1;
+      else
+	new_func->on_plt = 0;
+      new_func->name = NULL;
       new_func->addr = pc;
-      new_func->name = hashtable_lookup(&sym_hashtab, pc);
       drmgr_set_tls_field(drcontext, tls_stack_idx, new_func);
     }
 }
@@ -35,16 +73,23 @@ void ind_call_monitor(app_pc __attribute__((unused))caller, app_pc callee)
   stack_t	*new_func;
   stack_t	*stack;
   void		*drcontext = dr_get_current_drcontext();
-
+  
   stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
-
   if (!(new_func = dr_thread_alloc(drcontext, sizeof(*new_func))))
     dr_printf("dr_malloc fail\n");
   else
     {
       new_func->next = stack;
+      // we check is the addr is on plt here for performance issue
+      // the plt addr is going to be replace by the real addr
+      // of the target function the first time we need to get
+      // this information
+      if (search_on_tree(plt_tree, callee))
+	new_func->on_plt = 1;
+      else
+	new_func->on_plt = 0;
+      new_func->name = NULL;
       new_func->addr = callee;
-      new_func->name = hashtable_lookup(&sym_hashtab, callee);
       drmgr_set_tls_field(drcontext, tls_stack_idx, new_func);
     }
 }
@@ -77,18 +122,27 @@ void clean_stack(void *drcontext)
     }
 }
 
-
 void get_caller_data(void **addr, char **sym, void *drcontext)
 {
-  for (stack_t *func = drmgr_get_tls_field(drcontext, tls_stack_idx); func; func = func->next)
+  stack_t *func = drmgr_get_tls_field(drcontext, tls_stack_idx);
+  void	* got;
+
+  // we read the got here, because at the time when the plt is called
+  // the got may not contain the addr of the target function
+  // the check to know if the addr is in plt or not is done at the same
+  // as the calling for performance issue.
+  if (func->on_plt)
     {
-      if (search_on_tree(plt_tree, func->addr) != (void *)IN_PLT)
-	{
-	  if (addr)
-	    *addr = func->addr;
-	  if (sym)
-	    *sym = hashtable_lookup(&sym_hashtab, func->addr);
-	  break;
-	}
+      got = search_on_tree(plt_tree, func->addr);
+      func->addr = get_real_func_addr(func->addr, got);
+      func->on_plt = 0;
+    }
+  if (addr)
+    *addr = func->addr;
+  if (sym)
+    {
+      if (!func->name)
+	func->name = hashtable_lookup(&sym_hashtab, func->addr);
+      *sym = func->name;
     }
 }

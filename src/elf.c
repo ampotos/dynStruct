@@ -6,7 +6,9 @@
 
 tree_t	*plt_tree = NULL;
 
-void get_tmp_data_32(Elf32_Ehdr *elf_hdr, plt_tmp_data *tmp_data)
+
+void get_tmp_data_32(Elf32_Ehdr *elf_hdr,
+		     sect_tmp_data *tmp_data, char *sect_name)
 {
   Elf32_Shdr	*sect;
   Elf32_Phdr	*seg;
@@ -20,33 +22,35 @@ void get_tmp_data_32(Elf32_Ehdr *elf_hdr, plt_tmp_data *tmp_data)
     {
       sect = (Elf32_Shdr *)((void *)elf_hdr +
 			    elf_hdr->e_shoff + elf_hdr->e_shentsize * idx_sect);
-      if (!ds_strcmp(string_table + sect->sh_name, PLT_NAME))
+      if (!ds_strcmp(string_table + sect->sh_name, sect_name))
 	{
-	  tmp_data->plt_offset = sect->sh_offset;
-	  tmp_data->plt_size = sect->sh_size;
+	  tmp_data->sect_offset = sect->sh_offset;
+	  tmp_data->sect_size = sect->sh_size;
 	  break;
 	}
     }
 
-  if (!tmp_data->plt_offset && !tmp_data->plt_size)
+  if (!tmp_data->sect_offset && !tmp_data->sect_size)
     return;
   
   for (int idx_seg = 0; idx_seg < elf_hdr->e_phnum; idx_seg++)
     {
       seg = (Elf32_Phdr *)((void *)elf_hdr +
 			   elf_hdr->e_phoff + elf_hdr->e_phentsize * idx_seg);
-      if (seg->p_offset <= tmp_data->plt_offset &&
-	  seg->p_offset + seg->p_filesz > tmp_data->plt_offset)
+      if (seg->p_offset <= tmp_data->sect_offset &&
+	  seg->p_offset + seg->p_filesz > tmp_data->sect_offset)
 	{
 	  tmp_data->size_seg = (seg->p_memsz / DYNAMO_ALIGN) * DYNAMO_ALIGN +
 	    (seg->p_memsz % DYNAMO_ALIGN ? DYNAMO_ALIGN : 0);
 	  tmp_data->seg_perm = seg->p_flags;
-	  tmp_data->plt_offset -= seg->p_offset;
+	  tmp_data->sect_offset -= seg->p_offset;
+	  break;
 	}
     }
 }
 
-void get_tmp_data_64(Elf64_Ehdr *elf_hdr, plt_tmp_data *tmp_data)
+void get_tmp_data_64(Elf64_Ehdr *elf_hdr,
+		     sect_tmp_data *tmp_data, char *sect_name)
 {
   Elf64_Shdr	*sect;
   Elf64_Phdr	*seg;
@@ -60,33 +64,35 @@ void get_tmp_data_64(Elf64_Ehdr *elf_hdr, plt_tmp_data *tmp_data)
     {
       sect = (Elf64_Shdr *)((void *)elf_hdr +
 			    elf_hdr->e_shoff + elf_hdr->e_shentsize * idx_sect);
-      if (!ds_strcmp(string_table + sect->sh_name, PLT_NAME))
+      if (!ds_strcmp(string_table + sect->sh_name, sect_name))
 	{
-	  tmp_data->plt_offset = sect->sh_offset;
-	  tmp_data->plt_size = sect->sh_size;
+	  tmp_data->sect_offset = sect->sh_offset;
+	  tmp_data->sect_size = sect->sh_size;
 	  break;
 	}
     }
 
-  if (!tmp_data->plt_offset && !tmp_data->plt_size)
+  if (!tmp_data->sect_offset && !tmp_data->sect_size)
     return;
 
   for (int idx_seg = 0; idx_seg < elf_hdr->e_phnum; idx_seg++)
     {
       seg = (Elf64_Phdr *)((void *)elf_hdr +
 			   elf_hdr->e_phoff + elf_hdr->e_phentsize * idx_seg);
-      if (seg->p_offset <= tmp_data->plt_offset &&
-	  seg->p_offset + seg->p_filesz > tmp_data->plt_offset)
+      if (seg->p_offset <= tmp_data->sect_offset &&
+	  seg->p_offset + seg->p_filesz > tmp_data->sect_offset &&
+	  seg->p_type == PT_LOAD)
 	{
 	  tmp_data->size_seg = (seg->p_memsz / DYNAMO_ALIGN) * DYNAMO_ALIGN +
 	    (seg->p_memsz % DYNAMO_ALIGN ? DYNAMO_ALIGN : 0);
 	  tmp_data->seg_perm = seg->p_flags;
-	  tmp_data->plt_offset -= seg->p_offset;
+	  break;
 	}
     }
 }
 
-module_segment_data_t *find_load_plt(const module_data_t *mod, plt_tmp_data *tmp_data)
+module_segment_data_t *find_load_section(const module_data_t *mod,
+				     sect_tmp_data *tmp_data, char *sect_name)
 {
   file_t	file = dr_open_file(mod->full_path, DR_FILE_READ);
   size_t	file_sz;
@@ -107,9 +113,9 @@ module_segment_data_t *find_load_plt(const module_data_t *mod, plt_tmp_data *tmp
     }
   
   if (((char*)map_file)[4] == ELFCLASS32)
-    get_tmp_data_32(map_file, tmp_data);
+    get_tmp_data_32(map_file, tmp_data, sect_name);
   else if (((char*)map_file)[4] == ELFCLASS64)
-    get_tmp_data_64(map_file, tmp_data);
+    get_tmp_data_64(map_file, tmp_data, sect_name);
   else
     {
       dr_close_file(file);
@@ -119,52 +125,58 @@ module_segment_data_t *find_load_plt(const module_data_t *mod, plt_tmp_data *tmp
   dr_unmap_file(map_file, file_sz);
   dr_close_file(file);
 
-  if (!tmp_data->plt_offset && !tmp_data->plt_size)
+  if (!tmp_data->sect_offset && !tmp_data->sect_size)
     return NULL;
-  
+
+  // todo one plt as a bad size and perm and no got found for this module
+  // check that shit
   for (uint idx_seg = 0; idx_seg < mod->num_segments; idx_seg++)
     {
-      // add check for perm (there are the same)
       if ((size_t)mod->segments[idx_seg].end -
 	  (size_t)mod->segments[idx_seg].start == tmp_data->size_seg &&
-	  mod->segments[idx_seg].prot == tmp_data->seg_perm)
+	  (mod->segments[idx_seg].prot == tmp_data->seg_perm ||
+	   //it seem dynamorio change permission for the segment who contain the got
+	   (tmp_data->seg_perm == 6 && mod->segments[idx_seg].prot == 3)))
 	return mod->segments + idx_seg;
     }
-
   return NULL;
 }
 
 void	add_plt(const module_data_t *mod)
 {
-  plt_tmp_data		tmp_data;
+  sect_tmp_data		tmp_data_plt;
+  sect_tmp_data		tmp_data_got;
   tree_t		*new_node;
-  module_segment_data_t	*seg;
-
-  if (!(seg = find_load_plt(mod, &tmp_data)))
-    return;
+  module_segment_data_t	*seg_plt;
+  module_segment_data_t	*seg_got;
   
+  
+  if (!(seg_plt = find_load_section(mod, &tmp_data_plt, PLT_NAME)))
+    return;
+  if (!(seg_got = find_load_section(mod, &tmp_data_got, GOT_NAME)))
+    return;
   if (!(new_node = dr_global_alloc(sizeof(*new_node))))
     {
       dr_printf("Can't alloc\n");
       return;
     }
-  new_node->min_addr = seg->start + tmp_data.plt_offset;
-  new_node->high_addr = new_node->min_addr + tmp_data.plt_size;
-  // we don't need to store any data
-  // we just want to know if a pc is in a plt or not
-  new_node->data = (void *)IN_PLT;
+  new_node->min_addr = seg_plt->start + tmp_data_plt.sect_offset;
+  new_node->high_addr = new_node->min_addr + tmp_data_plt.sect_size;
+  // we store the addr of the got of the module
+  // with that we can find where we are going to jump when we are in the plt
+  new_node->data = seg_got->start + tmp_data_got.sect_offset;
   add_to_tree(&plt_tree, new_node);
 }
 
 
 void	remove_plt(const module_data_t *mod)
 {
-  plt_tmp_data		tmp_data;
+  sect_tmp_data		tmp_data;
   module_segment_data_t	*seg;
 
-  if (!(seg = find_load_plt(mod, &tmp_data)))
+  if (!(seg = find_load_section(mod, &tmp_data, PLT_NAME)))
     return;
 
-  del_from_tree(&plt_tree, seg->start + tmp_data.plt_offset, NULL);
+  del_from_tree(&plt_tree, seg->start + tmp_data.sect_offset, NULL);
   return;
 }

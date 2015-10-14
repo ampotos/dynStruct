@@ -1,9 +1,6 @@
 #ifndef ELF_H_
 #define ELF_H_
 
-// following define is for opti on avl tree 
-// (we don't alloc a struc just the node on the tree)
-#define IN_PLT 42
 // looks like dynamo doesn't care about the p_align
 // and align section with 0x1000
 #define DYNAMO_ALIGN 0x1000 
@@ -14,14 +11,17 @@
 extern tree_t	*plt_tree;
 
 #define PLT_NAME ".plt"
+#define GOT_NAME ".got"
+
+#define PT_LOAD 1
 
 typedef struct
 {
-  size_t	plt_offset;
-  size_t	plt_size;
+  size_t	sect_offset;
+  size_t	sect_size;
   size_t	size_seg;
   uint		seg_perm;
-} plt_tmp_data;
+} sect_tmp_data;
 
 void add_plt(const module_data_t *mod);
 void remove_plt(const module_data_t *mod);

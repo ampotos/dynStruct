@@ -4,10 +4,8 @@
 #include "tree.h"
 
 //store nb_hit and size of the hit by pc on access instruction
-// todo : orig must not stay a linked list, find something faster
-// tree with addr or size ??
-typedef struct orig_s orig_t;
-struct orig_s
+// todo : trre on addr and linked list for size on each node4 
+typedef struct orig_s
 {
   struct orig_s	*next;
   size_t	size;
@@ -15,29 +13,25 @@ struct orig_s
   void		*addr;
   void		*start_func_addr;
   char		*start_func_sym;
-};
+} orig_t;
 
-// todo : access must not stay a linked list, find something faster
-// hashtab on offset ???
-typedef struct access_s access_t;
-struct access_s
+// todo : => go to avl tree (hi_addr and min_addr = offset)
+typedef struct access_s
 {
-  struct access_s  *next;
   size_t           offset;
   size_t	   total_hits;
   orig_t	   *origs;
-};
+} access_t;
 
 //maybe store module_names if the bloc was realloc
-typedef struct malloc_s malloc_t;
-struct malloc_s
+typedef struct malloc_s
 {
   struct malloc_s *next;
   void            *start;
   void            *end;
   size_t          size;
-  access_t        *read;
-  access_t        *write;
+  tree_t          *read;
+  tree_t          *write;
   unsigned int    flag;
   void		  *alloc_pc;
   void		  *alloc_func_pc;
@@ -45,7 +39,7 @@ struct malloc_s
   void		  *free_pc;
   void		  *free_func_pc;
   char		  *free_func_sym;
-};
+} malloc_t;
 
 // this struct is only use as a user_data for realloc wrapping
 typedef struct

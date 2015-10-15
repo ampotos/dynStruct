@@ -4,11 +4,11 @@
 
 // maybe call drsym_demangle_symbol to have clean cpp sym demangle
 
-void print_orig(orig_t *orig, const char *type)
+void print_orig(orig_t *orig)
 {
   while (orig)
     {
-      dr_printf("\t\t\t %d bytes was %s by %p (%s : %p) %d times\n", orig->size, type,
+      dr_printf("\t\t\t %d bytes was accessed by %p (%s : %p) %d times\n", orig->size,
 		orig->addr, orig->start_func_sym, orig->start_func_addr, orig->nb_hit);
       orig  = orig->next;
     }
@@ -16,26 +16,10 @@ void print_orig(orig_t *orig, const char *type)
 
 void print_access(malloc_t *block)
 {
-  access_t	*access_read = block->read;
-  access_t	*access_write = block->write;
-
-  while (access_read)
-    {
-      dr_printf("\t was read at offset %d (%lu times)\n", access_read->offset,
-		access_read->total_hits);
-      dr_printf("\tdetails :\n");
-      print_orig(access_read->origs, "read");
-      access_read = access_read->next;
-    }
-
-  while (access_write)
-    {
-      dr_printf("\t was write at offset %d (%lu times)\n", access_write->offset,
-		access_write->total_hits);
-      dr_printf("\tdetails :\n");
-      print_orig(access_write->origs, "write");
-      access_write = access_write->next;
-    }
+  dr_printf("\t READ :\n");
+  clean_tree(&(block->read), (void (*)(void*))free_access);
+  dr_printf("\t WRITE :\n");
+  clean_tree(&(block->write), (void (*)(void*))free_access);
 }
 
 void print_block(malloc_t *block)

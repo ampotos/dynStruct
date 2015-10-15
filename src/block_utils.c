@@ -4,29 +4,38 @@
 #include "../includes/block_utils.h"
 #include "../includes/sym.h"
 #include "../includes/call.h"
+#include "../includes/out.h"
 
-access_t *get_access(size_t offset, access_t **l_access)
+access_t *get_access(size_t offset, tree_t **t_access)
 {
-  access_t	*access = *l_access;
-
-  while (access)
-    {
-      if (access->offset == offset)
-	return access;
-      access = access->next;
-    }
+  access_t	*access;
+  tree_t	*new_node;
   
+  if ((access = search_on_tree(*t_access, (void *)offset)))
+    return access;
+
   // if no access with this offset is found we create a new one
+  if (!(new_node = dr_global_alloc(sizeof(*new_node))))
+    {
+      dr_printf("dr_malloc fail\n");
+      return NULL;
+    }
   if (!(access = dr_global_alloc(sizeof(*access))))
     {
       dr_printf("dr_malloc fail\n");
+      dr_global_free(new_node, sizeof(*new_node));
       return NULL;
     }
   
   ds_memset(access, 0, sizeof(*access));
   access->offset = offset;
-  access->next = *l_access;
-  *l_access = access;
+
+  new_node->data = access;
+  new_node->high_addr = (void *)offset;
+  new_node->min_addr = (void *)offset;
+
+  add_to_tree(t_access, new_node);
+
   return access;
 }
 
@@ -113,23 +122,21 @@ void free_orig(orig_t *orig)
 
 void free_access(access_t *access)
 {
-  access_t	*tmp;
-
-  while (access)
-    {
-      tmp = access->next;
-      free_orig(access->origs);
-      dr_global_free(access, sizeof(*access));
-      access = tmp;
-    }
+  dr_printf("\t was access at offset %d (%lu times)\n", access->offset,
+	    access->total_hits);
+  dr_printf("\tdetails :\n");
+  print_orig(access->origs);
+  free_orig(access->origs);
+  dr_global_free(access, sizeof(*access));
 }
 
 void free_malloc_block(malloc_t *block)
 {
   if (block)
     {
-      free_access(block->read);
-      free_access(block->write);
+      // actually cleaning is done at printing time
+      /* clean_tree(&(block->read), (void (*)(void*))free_access); */
+      /* clean_tree(&(block->write), (void (*)(void*))free_access); */
       dr_global_free(block, sizeof(*block));
     }
 }

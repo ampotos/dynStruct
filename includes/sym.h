@@ -10,7 +10,6 @@ typedef struct old_sym_s
   char			*sym;
 } old_sym_t;
 
-// todo add a struct for store ((module_data_t *)data)->start and a ptr for the got
 typedef struct ds_module_data_s
 {
   void	*start;

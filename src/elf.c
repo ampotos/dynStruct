@@ -129,8 +129,6 @@ module_segment_data_t *find_load_section(const module_data_t *mod,
   if (!tmp_data->sect_offset && !tmp_data->sect_size)
     return NULL;
 
-  // todo one plt as a bad size and perm and no got found for this module
-  // check that shit
   for (uint idx_seg = 0; idx_seg < mod->num_segments; idx_seg++)
     {
       if ((size_t)mod->segments[idx_seg].end -

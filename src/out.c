@@ -31,7 +31,8 @@ void print_block(malloc_t *block)
 		  block->alloc_func_pc, block->free_pc,
 		  block->free_func_sym, block->free_func_pc);
       else
-	dr_printf("was not free\nalloc by %p\n", block->alloc_pc); 
+	dr_printf("was not free\nalloc by %p(%s : %p)\n", block->alloc_pc,
+		  block->alloc_func_sym, block->alloc_func_pc); 
   if (block->read || block->write)
     print_access(block);
   free_malloc_block(block);

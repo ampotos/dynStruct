@@ -34,8 +34,7 @@ void *get_real_func_addr(void *pc, void *got)
     }
   offset = opnd_get_immed_int(instr_get_src(instr, 0));
   instr_destroy(drcontext, instr);
-  got = got + (3 + offset) * sizeof(void*);
-  return *((ptr_int_t **)got);
+  return *((ptr_int_t **)(got + offset * sizeof(void*)));
 }
 
 void dir_call_monitor(void *pc)
@@ -119,6 +118,8 @@ void clean_stack(void *drcontext)
     }
 }
 
+
+// todo some plt entry are not find as plt entry in yes or cat
 void get_caller_data(void **addr, char **sym, void *drcontext, int alloc)
 {
   stack_t *func = drmgr_get_tls_field(drcontext, tls_stack_idx);

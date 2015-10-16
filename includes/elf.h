@@ -23,7 +23,7 @@ typedef struct
   uint		seg_perm;
 } sect_tmp_data;
 
-void add_plt(const module_data_t *mod, void *got);
+void add_plt(const module_data_t *mod, void *got, void *drcontext);
 void remove_plt(const module_data_t *mod);
 
 // Following struct, typedef and define are copied from elf.h

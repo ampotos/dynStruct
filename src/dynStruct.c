@@ -90,7 +90,7 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
   return DR_EMIT_DEFAULT;
 }
 
-static void load_event(__attribute__((unused))void *drcontext,
+static void load_event(void *drcontext,
 		       const module_data_t *mod,
 		       __attribute__((unused))bool loaded)
 {
@@ -110,8 +110,7 @@ static void load_event(__attribute__((unused))void *drcontext,
   drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap,
   			     sizeof(drsym_info_t), &tmp_data,
 			     DRSYM_DEMANGLE_FULL);
-  if (tmp_data.got)
-    add_plt(mod, tmp_data.got);
+  add_plt(mod, tmp_data.got, drcontext);
   dr_mutex_unlock(lock);
 
   // free all data relative to sym (like debug info) after loading symbol

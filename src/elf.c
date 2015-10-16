@@ -139,7 +139,26 @@ module_segment_data_t *find_load_section(const module_data_t *mod,
   return NULL;
 }
 
-void	add_plt(const module_data_t *mod, void *got)
+void	*get_got_from_plt(void *plt, void *drcontext)
+{
+  void		*jmp_pc = dr_app_pc_for_decoding(decode_next_pc(drcontext, plt));
+  instr_t       *instr = instr_create(drcontext);
+  void		*got = NULL;
+  
+  instr_init(drcontext, instr);
+  if (!decode(drcontext, jmp_pc, instr))
+    {
+      dr_printf("Decode of instruction at %p failed\n", jmp_pc);
+      instr_destroy(drcontext, instr);
+      return NULL;
+    }
+  if (instr_get_opcode(instr) == OP_jmp_ind)
+    instr_get_rel_addr_target(instr, (app_pc *)(&got));
+  instr_destroy(drcontext, instr);
+  return got + sizeof(void *);
+}
+
+void	add_plt(const module_data_t *mod, void *got, void *drcontext)
 {
   sect_tmp_data		tmp_data_plt;
   tree_t		*new_node;
@@ -157,7 +176,17 @@ void	add_plt(const module_data_t *mod, void *got)
   new_node->high_addr = new_node->min_addr + tmp_data_plt.sect_size;
   // we store the addr of the got of the module
   // with that we can find where we are going to jump when we are in the plt
-  new_node->data = got;//seg_got->start + tmp_data_got.sect_offset;
+  if (!got)
+    {
+      if (!(got = get_got_from_plt(new_node->min_addr, drcontext)))
+	{
+	  dr_global_free(new_node, sizeof(*new_node));
+	  return;
+	}
+    }
+  else
+    got += 3 * sizeof(void *);
+  new_node->data = got;
   add_to_tree(&plt_tree, new_node);
 }
 

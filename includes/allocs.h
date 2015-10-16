@@ -15,7 +15,6 @@ typedef struct orig_s
   char		*start_func_sym;
 } orig_t;
 
-// todo : => go to avl tree (hi_addr and min_addr = offset)
 typedef struct access_s
 {
   size_t           offset;

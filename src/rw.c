@@ -36,7 +36,7 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 	  access->origs = orig;
 	  // get the start addr of the function doing the access
 	  get_caller_data(&orig->start_func_addr,
-			  &orig->start_func_sym, drcontext);
+			  &orig->start_func_sym, drcontext, 0);
 	}
     }
   if (orig)

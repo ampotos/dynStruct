@@ -206,7 +206,7 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
     {
       block->flag |= FREE;
       block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
-      get_caller_data(&block->free_func_pc, &block->free_func_sym, drc);
+      get_caller_data(&block->free_func_pc, &block->free_func_sym, drc, 1);
       block->next = old_blocks;
       old_blocks = block;
       del_from_tree(&active_blocks, block->start, NULL);

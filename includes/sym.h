@@ -4,12 +4,18 @@
 #include "drsyms.h"
 #include "hashtable.h"
 
-typedef struct old_sym_s old_sym_t;
-struct old_sym_s
+typedef struct old_sym_s
 {
   struct old_sym_s	*next;
   char			*sym;
-};
+} old_sym_t;
+
+// todo add a struct for store ((module_data_t *)data)->start and a ptr for the got
+typedef struct ds_module_data_s
+{
+  void	*start;
+  void	*got;
+} ds_module_data_t;
 
 bool sym_to_hashmap(drsym_info_t *, drsym_error_t, void *);
 void clean_old_sym(void);

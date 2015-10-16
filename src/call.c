@@ -34,10 +34,7 @@ void *get_real_func_addr(void *pc, void *got)
     }
   offset = opnd_get_immed_int(instr_get_src(instr, 0));
   instr_destroy(drcontext, instr);
-  got = got + (2 + offset) * sizeof(void*);
-  // todo find a way to read this ptr and got shloud be fine
-  dr_printf("got : %p => \n", got);
-  dr_printf("\tfunc %p\n", *((ptr_int_t **)got));
+  got = got + (3 + offset) * sizeof(void*);
   return *((ptr_int_t **)got);
 }
 
@@ -122,11 +119,13 @@ void clean_stack(void *drcontext)
     }
 }
 
-void get_caller_data(void **addr, char **sym, void *drcontext)
+void get_caller_data(void **addr, char **sym, void *drcontext, int alloc)
 {
   stack_t *func = drmgr_get_tls_field(drcontext, tls_stack_idx);
   void	* got;
 
+  if (alloc && func->on_plt)
+    func = func->next;
   // we read the got here, because at the time when the plt is called
   // the got may not contain the addr of the target function
   // the check to know if the addr is in plt or not is done at the same

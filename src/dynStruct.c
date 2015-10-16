@@ -94,19 +94,24 @@ static void load_event(__attribute__((unused))void *drcontext,
 		       const module_data_t *mod,
 		       __attribute__((unused))bool loaded)
 {
-  app_pc	malloc = (app_pc)dr_get_proc_address(mod->handle, "malloc");
-  app_pc	calloc = (app_pc)dr_get_proc_address(mod->handle, "calloc");
-  app_pc	realloc = (app_pc)dr_get_proc_address(mod->handle, "realloc");
-  app_pc	free = (app_pc)dr_get_proc_address(mod->handle, "free");
-  const char	*mod_name = dr_module_preferred_name(mod);
-
+  app_pc		malloc = (app_pc)dr_get_proc_address(mod->handle, "malloc");
+  app_pc		calloc = (app_pc)dr_get_proc_address(mod->handle, "calloc");
+  app_pc		realloc = (app_pc)dr_get_proc_address(mod->handle, "realloc");
+  app_pc		free = (app_pc)dr_get_proc_address(mod->handle, "free");
+  const char		*mod_name = dr_module_preferred_name(mod);
+  ds_module_data_t	tmp_data;
+  
   // todo if the module is a dynamorio library do nothing.
   // store symbols on the hashtable (key : sym addr, value : name);
   dr_mutex_lock(lock);
 
+  tmp_data.start = mod->start;
+  tmp_data.got = NULL;
   drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap,
-  			     sizeof(drsym_info_t), (void *)mod, 0);
-  add_plt(mod);
+  			     sizeof(drsym_info_t), &tmp_data,
+			     DRSYM_DEMANGLE_FULL);
+  if (tmp_data.got)
+    add_plt(mod, tmp_data.got);
   dr_mutex_unlock(lock);
 
   // free all data relative to sym (like debug info) after loading symbol
@@ -139,7 +144,7 @@ static void exit_event(void)
 {
   dr_mutex_lock(lock);
 
-  /* process_recover(); */
+  process_recover();
 
   clean_old_sym();
 

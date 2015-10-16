@@ -54,7 +54,7 @@ malloc_t *add_block(size_t size, void *pc, void *drcontext)
       new->size = size;
       new->alloc_pc = pc;
       get_caller_data(&new->alloc_func_pc,
-		      &new->alloc_func_sym, drcontext);
+		      &new->alloc_func_sym, drcontext, 1);
     }
 
   return new;

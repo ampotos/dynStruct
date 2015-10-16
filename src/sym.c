@@ -13,7 +13,11 @@ bool sym_to_hashmap(drsym_info_t *info,
   char		*old_val = NULL;
   old_sym_t	*old_sym;
 
-  old_val = hashtable_add_replace(&sym_hashtab, ((module_data_t *)data)->start +
+  // store the got entry to resolve library call
+  if (!ds_strcmp(info->name, "_GLOBAL_OFFSET_TABLE_"))
+    ((ds_module_data_t*)data)->got = ((ds_module_data_t *)data)->start + info->start_offs;
+
+  old_val = hashtable_add_replace(&sym_hashtab, ((ds_module_data_t *)data)->start +
   				  info->start_offs,
   				  ds_strdup(info->name));
   /* if there is an old val for this entry (a lib was unload and a new is load) */

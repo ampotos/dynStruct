@@ -3,6 +3,7 @@
 #include "../includes/tree.h"
 #include "../includes/elf.h"
 #include "../includes/utils.h"
+#include "../includes/sym.h"
 
 tree_t	*plt_tree = NULL;
 
@@ -134,26 +135,20 @@ module_segment_data_t *find_load_section(const module_data_t *mod,
     {
       if ((size_t)mod->segments[idx_seg].end -
 	  (size_t)mod->segments[idx_seg].start == tmp_data->size_seg &&
-	  (mod->segments[idx_seg].prot == tmp_data->seg_perm ||
-	   //it seem dynamorio change permission for the segment who contain the got
-	   (tmp_data->seg_perm == 6 && mod->segments[idx_seg].prot == 3)))
+	  (mod->segments[idx_seg].prot == tmp_data->seg_perm))
 	return mod->segments + idx_seg;
     }
   return NULL;
 }
 
-void	add_plt(const module_data_t *mod)
+void	add_plt(const module_data_t *mod, void *got)
 {
   sect_tmp_data		tmp_data_plt;
-  sect_tmp_data		tmp_data_got;
   tree_t		*new_node;
   module_segment_data_t	*seg_plt;
-  module_segment_data_t	*seg_got;
   
   
   if (!(seg_plt = find_load_section(mod, &tmp_data_plt, PLT_NAME)))
-    return;
-  if (!(seg_got = find_load_section(mod, &tmp_data_got, GOT_NAME)))
     return;
   if (!(new_node = dr_global_alloc(sizeof(*new_node))))
     {
@@ -164,7 +159,7 @@ void	add_plt(const module_data_t *mod)
   new_node->high_addr = new_node->min_addr + tmp_data_plt.sect_size;
   // we store the addr of the got of the module
   // with that we can find where we are going to jump when we are in the plt
-  new_node->data = seg_got->start + tmp_data_got.sect_offset;
+  new_node->data = got;//seg_got->start + tmp_data_got.sect_offset;
   add_to_tree(&plt_tree, new_node);
 }
 

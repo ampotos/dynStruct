@@ -59,7 +59,7 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
       if (opnd_is_memory_reference(instr_get_src(instr, i)))
   	{
   	  dr_insert_clean_call(drcontext, bb, instr, &memory_read,
-			       false, 1, OPND_CREATE_INTPTR(pc));
+	  		       false, 1, OPND_CREATE_INTPTR(pc));
   	  // break to not instrument the same instruction 2 time
   	  break;
   	}
@@ -69,7 +69,7 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
       if (opnd_is_memory_reference(instr_get_dst(instr, i)))
   	{
   	  dr_insert_clean_call(drcontext, bb, instr, &memory_write,
-			       false, 1, OPND_CREATE_INTPTR(pc));
+	  		       false, 1, OPND_CREATE_INTPTR(pc));
   	  // break to not instrument the same instruction 2 time
   	  break;
   	}

@@ -91,13 +91,29 @@ void add_hit(void *pc, size_t size, void *target, int read, void *drcontext)
   dr_mutex_unlock(lock);  
 }
 
+void	check_opnd(opnd_t opnd, void *pc, int read, void *drcontext,
+		  dr_mcontext_t *mctx)
+{
+  if (opnd_is_memory_reference(opnd) && opnd_is_base_disp(opnd))
+    add_hit(pc, opnd_size_in_bytes(opnd_get_size(opnd)),
+	    opnd_get_disp(opnd) + (void *)reg_get_value(opnd_get_base(opnd),
+						       mctx),
+	    read, drcontext);
+  else if (opnd_is_memory_reference(opnd) && opnd_get_addr(opnd))
+    add_hit(pc, opnd_size_in_bytes(opnd_get_size(opnd)), opnd_get_addr(opnd),
+	    read, drcontext);
+  // on all programm tested memory reference always match with one of the 2 prev
+  else if (opnd_is_memory_reference(opnd))
+    dr_printf("need to implem other memory ref\n");
+}
+
 void memory_read(void *pc)
 {
   void		*drcontext = dr_get_current_drcontext();
   instr_t	*instr = instr_create(drcontext);
   dr_mcontext_t mctx;
   opnd_t	src;
-
+  
   pc = dr_app_pc_for_decoding(pc);
 
   mctx.flags = DR_MC_CONTROL|DR_MC_INTEGER;
@@ -114,14 +130,9 @@ void memory_read(void *pc)
   for (int i = 0; i < instr_num_srcs(instr); i++)
     {
       src = instr_get_src(instr, i);
-      // todo there is some acces who are not base_disp
-      if (opnd_is_memory_reference(src) && opnd_is_base_disp(src))
-	add_hit(pc, opnd_size_in_bytes(opnd_get_size(src)),
-		opnd_get_disp(src) + (void *)reg_get_value(opnd_get_base(src),
-							   &mctx),
-		1, drcontext);
+      check_opnd(src, pc, 1, drcontext, &mctx);
     }
-
+ 
   instr_destroy(drcontext, instr);
 }
 
@@ -148,13 +159,7 @@ void memory_write(void *pc)
   for (int i = 0; i < instr_num_dsts(instr); i++)
     {
       dst = instr_get_dst(instr, i);
-      // todo there is some acces who are not base_disp
-      if (opnd_is_memory_reference(dst) && opnd_is_base_disp(dst))
-	add_hit(pc, opnd_size_in_bytes(opnd_get_size(dst)),
-		opnd_get_disp(dst) + (void *)reg_get_value(opnd_get_base(dst),
-							   &mctx),
-		0, drcontext);
-      
+      check_opnd(dst, pc, 0, drcontext, &mctx);
     }
 
   instr_destroy(drcontext, instr);

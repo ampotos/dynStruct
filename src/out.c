@@ -2,8 +2,6 @@
 #include "../includes/allocs.h"
 #include "../includes/block_utils.h"
 
-// todo maybe call drsym_demangle_symbol to have clean cpp sym demangle
-
 void print_access(malloc_t *block)
 {
   dr_printf("\t READ :\n");

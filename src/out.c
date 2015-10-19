@@ -2,17 +2,7 @@
 #include "../includes/allocs.h"
 #include "../includes/block_utils.h"
 
-// maybe call drsym_demangle_symbol to have clean cpp sym demangle
-
-void print_orig(orig_t *orig)
-{
-  while (orig)
-    {
-      dr_printf("\t\t\t %d bytes was accessed by %p (%s : %p) %d times\n", orig->size,
-		orig->addr, orig->start_func_sym, orig->start_func_addr, orig->nb_hit);
-      orig  = orig->next;
-    }
-}
+// todo maybe call drsym_demangle_symbol to have clean cpp sym demangle
 
 void print_access(malloc_t *block)
 {

@@ -14,7 +14,6 @@ bool sym_to_hashmap(drsym_info_t *info,
   old_sym_t	*old_sym;
 
   // store the got entry to resolve library call
-  // the first 3 got entry are reserved
   if (!ds_strcmp(info->name, "_GLOBAL_OFFSET_TABLE_"))
     ((ds_module_data_t*)data)->got = ((ds_module_data_t *)data)->start +
       info->start_offs;

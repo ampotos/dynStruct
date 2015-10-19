@@ -114,6 +114,8 @@ void free_orig(orig_t *orig)
 
   while (orig)
     {
+      dr_printf("\t\t\t %d bytes was accessed by %p (%s : %p) %d times\n", orig->size,
+		orig->addr, orig->start_func_sym, orig->start_func_addr, orig->nb_hit);
       tmp = orig->next;
       dr_global_free(orig, sizeof(*orig));
       orig = tmp;
@@ -125,8 +127,9 @@ void free_access(access_t *access)
   dr_printf("\t was access at offset %d (%lu times)\n", access->offset,
 	    access->total_hits);
   dr_printf("\tdetails :\n");
-  print_orig(access->origs);
-  free_orig(access->origs);
+  /* print_orig(access->origs); */
+  /* free_orig(access->origs); */
+  clean_tree(&(access->origs), (void (*)(void *))free_orig);
   dr_global_free(access, sizeof(*access));
 }
 
@@ -135,8 +138,9 @@ void free_malloc_block(malloc_t *block)
   if (block)
     {
       // actually cleaning is done at printing time
-      /* clean_tree(&(block->read), (void (*)(void*))free_access); */
-      /* clean_tree(&(block->write), (void (*)(void*))free_access); */
+      // todo if not print clean here
+      /* clean_tree(&(block->read), (void (*)(void *))free_access); */
+      /* clean_tree(&(block->write), (void (*)(void *))free_access); */
       dr_global_free(block, sizeof(*block));
     }
 }

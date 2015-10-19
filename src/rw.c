@@ -7,40 +7,66 @@
 #include "../includes/call.h"
 #include "../includes/sym.h"
 
+orig_t	*new_orig(size_t size, void *pc, void *drcontext)
+{
+  orig_t	*orig;
+  
+  if (!(orig = dr_global_alloc(sizeof(*orig))))
+    dr_printf("dr_malloc fail\n");
+
+  orig->size = size;
+  orig->nb_hit = 0;
+  orig->addr = pc;
+  orig->next = NULL;
+  // get the start addr of the function doing the access
+  get_caller_data(&(orig->start_func_addr),
+		  &(orig->start_func_sym), drcontext, 0);
+
+  return orig;
+}
+
 void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 {
-  orig_t	*tmp_orig = access->origs;
-  orig_t	*orig = NULL;
+  orig_t	*orig_tree = search_on_tree(access->origs, pc);
+  orig_t	*orig_list = orig_tree;
+  tree_t	*new_node;
 
-  while (tmp_orig)
+  while (orig_list && orig_list->size != size)
+    orig_list = orig_list->next;
+
+  if (orig_list)
     {
-      if (tmp_orig->size == size && tmp_orig->addr == pc)
-	{
-	  orig = tmp_orig;
-	  break;
-	}
-      tmp_orig  = tmp_orig->next;
+      orig_list->nb_hit++;
+      return;
     }
 
-  // if a similar access with the actual orig is not found we create it
-  if (!orig)
+  if (!orig_tree)
     {
-      if (!(orig = dr_global_alloc(sizeof(*orig))))
+      if (!(orig_tree = new_orig(size, pc, drcontext)))
 	dr_printf("dr_malloc fail\n");
-      else
-	{
-	  orig->size = size;
-	  orig->nb_hit = 0;
-	  orig->addr = pc;
-	  orig->next = access->origs;
-	  access->origs = orig;
-	  // get the start addr of the function doing the access
-	  get_caller_data(&orig->start_func_addr,
-			  &orig->start_func_sym, drcontext, 0);
-	}
+      if (!(new_node = dr_global_alloc(sizeof(*new_node))))
+	dr_printf("dr_malloc fail\n");
+
+      new_node->high_addr = pc;
+      new_node->min_addr = pc;
+      new_node->data = orig_tree;
+      add_to_tree(&(access->origs), new_node);
+      return;
     }
-  if (orig)
-    orig->nb_hit++;
+
+  // if a an orig have the same addr but not the same size we create an other entry
+  // and put it in the linked list for this node;
+  if (!orig_list)
+    {
+      if (!(orig_list = new_orig(size, pc, drcontext)))
+	dr_printf("dr_malloc fail\n");
+      if (!(new_node = dr_global_alloc(sizeof(*new_node))))
+	dr_printf("dr_malloc fail\n");
+
+      while (orig_tree->next)
+	orig_tree = orig_tree->next;
+      orig_tree->next = orig_list;
+    }
 }
 
 void add_hit(void *pc, size_t size, void *target, int read, void *drcontext)

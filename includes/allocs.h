@@ -3,10 +3,10 @@
 
 #include "tree.h"
 
-//store nb_hit and size of the hit by pc on access instruction
-// todo : trre on addr and linked list for size on each node4 
+// store nb_hit and size of the hit by pc on access instruction
 typedef struct orig_s
 {
+  // next is use if an orig have the same addr but the same access size
   struct orig_s	*next;
   size_t	size;
   size_t	nb_hit;
@@ -19,10 +19,10 @@ typedef struct access_s
 {
   size_t           offset;
   size_t	   total_hits;
-  orig_t	   *origs;
+  tree_t	   *origs;
 } access_t;
 
-//maybe store module_names if the bloc was realloc
+// todo maybe store module_names if the bloc was realloc
 typedef struct malloc_s
 {
   struct malloc_s *next;

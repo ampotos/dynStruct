@@ -158,6 +158,8 @@ static void exit_event(void)
   drutil_exit();
 }
 
+// todo add an option for printing in term or in a file for the python viewer
+
 DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
 {
   drmgr_priority_t p = {

@@ -118,8 +118,6 @@ void clean_stack(void *drcontext)
     }
 }
 
-
-// todo some plt entry are not find as plt entry in yes or cat
 void get_caller_data(void **addr, char **sym, void *drcontext, int alloc)
 {
   stack_t *func = drmgr_get_tls_field(drcontext, tls_stack_idx);

@@ -145,7 +145,10 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   if (!(block = search_on_tree(active_blocks, start)))
     dr_printf("Realloc on %p error : addr was not previously malloc\n", start);
   else
-    block->size = size;
+    {
+      del_from_tree(&active_blocks, start, NULL);
+      block->size = size;
+    }
   tmp->block = block;
 
   dr_mutex_unlock(lock);
@@ -155,7 +158,6 @@ void post_realloc(void *wrapctx, void *user_data)
 {
   malloc_t	*block;
   void          *ret = drwrap_get_retval(wrapctx);
-  stack_t       *stack;
   void		*drc;
   realloc_tmp_t	*data = user_data;
   
@@ -170,12 +172,9 @@ void post_realloc(void *wrapctx, void *user_data)
         {
 	  block = data->block;
 	  set_addr_malloc(block, ret, block->flag, 1);
+	  get_caller_data(&(block->alloc_func_pc), &(block->alloc_func_sym), drc, 1);
 	  block->alloc_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx),
-						    drc);
-	  stack = drmgr_get_tls_field(drc, tls_stack_idx);
-	  block->alloc_func_pc = stack->addr;
-	  block->alloc_func_sym = hashtable_lookup(&sym_hashtab,
-						   stack->addr);
+					      drc);
 	}
       // if realloc is use like a malloc set the size here
       // because malloc wrapper receive a null size
@@ -201,12 +200,11 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
 
   drc = drwrap_get_drcontext(wrapctx);
   dr_mutex_lock(lock);
-  block = search_on_tree(active_blocks, addr);
-  if (block)
+  if ((block = search_on_tree(active_blocks, addr)))
     {
       block->flag |= FREE;
       block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
-      get_caller_data(&block->free_func_pc, &block->free_func_sym, drc, 1);
+      get_caller_data(&(block->free_func_pc), &(block->free_func_sym), drc, 1);
       block->next = old_blocks;
       old_blocks = block;
       del_from_tree(&active_blocks, block->start, NULL);

@@ -75,7 +75,10 @@ void add_hit(void *pc, size_t size, void *target, int read, void *drcontext)
   access_t	*access;
 
   // if the access is not on a malloc block we do nothing
-  if (!block)
+  // because the tree return a block if we target the last offset
+  // we have to check it here (because last offset is out of the user
+  // data and use only for malloc's internal purposes)
+  if (!block || target == block->end)
     return;
 
   dr_mutex_lock(lock);

@@ -74,6 +74,8 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
   	  break;
   	}
 
+  // if one day dynStruct has to be used on arm, maybe some call will be missed
+  
   // if it's a direct call we send the callee addr as parameter
   if (instr_is_call_direct(instr))
     {

@@ -90,19 +90,16 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
       block->end = block->start + block->size;
       block->flag = flag;
 
-      if (!realloc)
+      if (!(new_node = dr_global_alloc(sizeof(*new_node))))
 	{
-	  if (!(new_node = dr_global_alloc(sizeof(*new_node))))
-	    {
-	      dr_printf("Can't alloc\n");
-	      dr_global_free(block, sizeof(*block));
-	      return ;
-	    }
-	  new_node->min_addr = block->start;
-	  new_node->high_addr = block->end;
-	  new_node->data = block;
-	  add_to_tree(&active_blocks, new_node);
+	  dr_printf("Can't alloc\n");
+	  dr_global_free(block, sizeof(*block));
+	  return ;
 	}
+      new_node->min_addr = block->start;
+      new_node->high_addr = block->end;
+      new_node->data = block;
+      add_to_tree(&active_blocks, new_node);
     }
   else
     dr_printf("Error : *alloc post wrapping call without pre wrapping\n");

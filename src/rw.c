@@ -15,7 +15,7 @@ orig_t	*new_orig(size_t size, void *pc, void *drcontext)
     dr_printf("dr_malloc fail\n");
 
   orig->size = size;
-  orig->nb_hit = 0;
+  orig->nb_hit = 1;
   orig->addr = pc;
   orig->next = NULL;
   // get the start addr of the function doing the access

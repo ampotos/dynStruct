@@ -22,7 +22,6 @@ typedef struct access_s
   tree_t	   *origs;
 } access_t;
 
-// todo maybe store module_names if the bloc was realloc
 typedef struct malloc_s
 {
   struct malloc_s *next;

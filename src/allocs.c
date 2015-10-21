@@ -103,10 +103,12 @@ void post_malloc(void *wrapctx, void *user_data)
 void pre_realloc(void *wrapctx, OUT void **user_data)
 {
   malloc_t      *block;
+  malloc_t	*new_block;
   realloc_tmp_t *tmp = NULL;
   void          *start = drwrap_get_arg(wrapctx, 0);
   size_t        size = (size_t)drwrap_get_arg(wrapctx, 1);
-
+  void		*drc = drwrap_get_drcontext(wrapctx);
+  
   dr_mutex_lock(lock);
 
   // if is the first call of realloc it's an init call and we have to do nothing
@@ -120,6 +122,13 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   // if size == 0 => realloc call free
   if (!size)
     {
+      if (!(block = search_on_tree(active_blocks, start)))
+	{
+	  dr_printf("realloc call with size 0 and non valid block addr\n");
+	  return ;
+	}
+      block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
+      get_caller_data(&(block->free_func_pc), &(block->free_func_sym), drc, 1);      
       dr_mutex_unlock(lock);
       return;
     }
@@ -147,6 +156,21 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   else
     {
       del_from_tree(&active_blocks, start, NULL);
+
+      if ((new_block = dr_global_alloc(sizeof(*new_block))))
+	{
+	  block->flag |= FREE_BY_REALLOC;
+	  block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
+	  get_caller_data(&(block->free_func_pc), &(block->free_func_sym), drc, 1);
+	  block->next = old_blocks;
+	  old_blocks = block;
+
+	  ds_memset(new_block, 0, sizeof(*new_block));
+	  new_block->flag |= ALLOC_BY_REALLOC;
+	  block = new_block;
+	}
+      else
+	dr_printf("fail alloc\n");
       block->size = size;
     }
   tmp->block = block;
@@ -158,13 +182,12 @@ void post_realloc(void *wrapctx, void *user_data)
 {
   malloc_t	*block;
   void          *ret = drwrap_get_retval(wrapctx);
-  void		*drc;
+  void		*drc = drwrap_get_drcontext(wrapctx);;
   realloc_tmp_t	*data = user_data;
   
-  drc = drwrap_get_drcontext(wrapctx);
-
   // if user_data is not set realloc was called to do a free
-  // or is the realloc's first call
+  // or the call to realloc
+  
   if (data)
     {
       dr_mutex_lock(lock);
@@ -203,8 +226,11 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
   if ((block = search_on_tree(active_blocks, addr)))
     {
       block->flag |= FREE;
-      block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
-      get_caller_data(&(block->free_func_pc), &(block->free_func_sym), drc, 1);
+      if (!(block->free_pc))
+	{
+	  block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
+	  get_caller_data(&(block->free_func_pc), &(block->free_func_sym), drc, 1);
+	}
       block->next = old_blocks;
       old_blocks = block;
       del_from_tree(&active_blocks, block->start, NULL);

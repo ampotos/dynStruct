@@ -44,10 +44,7 @@ malloc_t *add_block(size_t size, void *pc, void *drcontext)
   malloc_t      *new = dr_global_alloc(sizeof(*new));
 
   if (!new)
-    {
-      dr_printf("dr_malloc fail\n");
-      return NULL;
-    }
+    dr_printf("dr_malloc fail\n");
   else
     {
       ds_memset(new, 0, sizeof(*new));
@@ -133,11 +130,5 @@ void free_access(access_t *access)
 void free_malloc_block(malloc_t *block)
 {
   if (block)
-    {
-      // actually cleaning is done at printing time
-      // todo if not print clean here
-      /* clean_tree(&(block->read), (void (*)(void *))free_access); */
-      /* clean_tree(&(block->write), (void (*)(void *))free_access); */
-      dr_global_free(block, sizeof(*block));
-    }
+    dr_global_free(block, sizeof(*block));
 }

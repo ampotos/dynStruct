@@ -13,10 +13,13 @@
 #include "../includes/sym.h"
 #include "../includes/tree.h"
 #include "../includes/elf.h"
+#include "../includes/args.h"
 
 malloc_t  *old_blocks = NULL;
 tree_t	  *active_blocks = NULL;
 void      *lock;
+
+// todo code ouput in json
 
 static void thread_exit_event(void *drcontext)
 {
@@ -48,7 +51,6 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
 				        __attribute__((unused))void *user_data)
 {
   app_pc	pc = instr_get_app_pc(instr);
-  
   
   // check if the instruction is valid
   if (pc == NULL)
@@ -102,11 +104,12 @@ static void load_event(void *drcontext,
   app_pc		free = (app_pc)dr_get_proc_address(mod->handle, "free");
   const char		*mod_name = dr_module_preferred_name(mod);
   ds_module_data_t	tmp_data;
-  
-  // todo if the module is a dynamorio library do nothing.
-  // store symbols on the hashtable (key : sym addr, value : name);
+
   dr_mutex_lock(lock);
 
+  if (!maj_args(mod))
+    return ;
+  
   tmp_data.start = mod->start;
   tmp_data.got = NULL;
   drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap,
@@ -151,6 +154,8 @@ static void exit_event(void)
 
   hashtable_delete(&sym_hashtab);
 
+  clean_args();
+  
   dr_mutex_unlock(lock);
   dr_mutex_destroy(lock);
   
@@ -160,17 +165,17 @@ static void exit_event(void)
   drutil_exit();
 }
 
-// todo add an option for printing in term or in a file for the python viewer
-
-DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
+DR_EXPORT void dr_init(client_id_t id)
 {
+  char	**argv;
+  int	argc;
   drmgr_priority_t p = {
     sizeof(p),
     "reccord heap access and recover datas structures",
     NULL,
     NULL,
     0};
-
+  
   dr_set_client_name("dynStruct", "");
 
   drsym_init(0);
@@ -178,9 +183,12 @@ DR_EXPORT void dr_init(__attribute__((unused))client_id_t id)
   drmgr_init();
   drutil_init();
 
-  // add unload module event for removing plt's module
+  dr_get_option_array(id, &argc, (const char ***)&argv);
+  if(!parse_arg(argc, argv))
+    dr_abort();
   dr_register_exit_event(&exit_event);
   if (!drmgr_register_module_load_event(&load_event) ||
+      // only use to remove plt from plt tree if a library is unload at runtime
       !drmgr_register_module_unload_event(&unload_event) ||
       !drmgr_register_bb_app2app_event(&bb_app2app_event, &p) ||
       !drmgr_register_thread_exit_event(&thread_exit_event) ||

@@ -11,8 +11,8 @@ void	print_usage()
 
   dr_printf("  -h \t\t\tprint this help\n");
 
-  dr_printf("  -o <file_name>\tset output file name (default: <prog_name>.ds_out.\n");
-
+  dr_printf("  -o <file_name>\tset output file name for json (default: <prog_name>.ds_out.\n");
+  
   dr_printf("  - \t\t\tprint output on console\n");
 
   dr_printf("  -w <module_name>\twrap <module_name>\n");

@@ -23,16 +23,17 @@ void	print_usage()
   dr_printf("\t\t\t dynStruct record memory access only if\n");
   dr_printf("\t\t\t they are done by a monitore module\n");
 
-  dr_printf("  -a <module_name>\tis used to tell dynStruct this is this module who have\n");
-  dr_printf("\t\t\t the implementation of malloc, calloc, realloc and free\n");
-  dr_printf("\t\t\t for example this can be use with \"-w ld\" to wrap all ld-linux internal alloc\n");
-  dr_printf("\t\t\t if option -a is not the <module_name> by default si \"libc.so\"\n\n");
+  dr_printf("  -a <module_name>\tis used to tell dynStruct the module that implements\n");
+  dr_printf("\t\t\t allocs functions (malloc, calloc, realloc and free)\n");
+  dr_printf("\t\t\t this has to be used with the -w option (ex : \"-a ld -w ld\")\n");
+  dr_printf("\t\t\t this option can only be used one time\n");
   
   dr_printf("for -w, -a and -m options modules names are matched like <module_name>*\n");
   dr_printf("this allow to don't care about the version of a library\n");
   dr_printf("-m libc.so match with all libc verison\n\n");
   
   dr_printf("The main module is always monitored and wrapped\n");
+  dr_printf("Tha libc allocs functions are always used (regardless the use of the -a option)\n");
   
   dr_printf("\nExample : drrun -c dynStruct -m libc.so - -- ls -l\n\n");
   dr_printf("This command run \"ls -l\" and will only look at block allocated by the program\n");

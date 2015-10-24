@@ -15,8 +15,8 @@ void	print_usage()
   dr_printf("  - \t\t\tprint output on console\n");
 
   dr_printf("  -w <module_name>\twrap <module_name>\n");
-  dr_printf("\t\t\t dynStruct recorde memory blocks only\n");
-  dr_printf("\t\t\t if they are allocated by a wrapped module\n");
+  dr_printf("\t\t\t dynStruct record memory blocks only\n");
+  dr_printf("\t\t\t if they are by a symbol *alloc or free from this module\n");
 
   dr_printf("  -m <module_name>\tmonitor <module_name>\n");
   dr_printf("\t\t\t dynStruct record memory access only if\n");
@@ -26,7 +26,7 @@ void	print_usage()
   dr_printf("this allow to don't care about the version of a library\n");
   dr_printf("-m libc.so match with all libc verison\n\n");
   
-  dr_printf("The main module is always wrapped and monitored\n");
+  dr_printf("The main module is always monitored and the libc is always wrapped\n");
   
   dr_printf("\nExample : drrun -c dynStruct -m libc.so - -- ls -l\n\n");
   dr_printf("This command run \"ls -l\" and will only look at block allocated by the program\n");
@@ -91,8 +91,7 @@ int	alloc_array()
   ds_memset(args->monitor_modules, 0,
 	    sizeof(*(args->monitor_modules)) * args->size_monitor);
 
-  if (!(args->monitor_modules[0] = dr_get_main_module()) ||
-      !(args->wrap_modules[0] = dr_get_main_module()))
+  if (!(args->monitor_modules[0] = dr_get_main_module()))
     {
       dr_printf("Can't get main module\n");
       return false;
@@ -146,7 +145,8 @@ int	parse_arg(int argc, char **argv)
 	  return false;
 	}
     }
-  
+
+  add_arg(&(args->wrap_modules_s), "libc.so");
   return alloc_array();
 }
 
@@ -204,8 +204,8 @@ int	maj_args(const module_data_t *mod)
 {
   if (!search_name(&(args->wrap_modules_s), mod,
 		   args->wrap_modules, args->size_wrap) ||
-      !search_name(&(args->wrap_modules_s), mod,
-		   args->wrap_modules, args->size_wrap))
+      !search_name(&(args->monitor_modules_s), mod,
+		   args->monitor_modules, args->size_wrap))
     return false;
   
   return true;
@@ -213,6 +213,8 @@ int	maj_args(const module_data_t *mod)
 
 void clean_args()
 {
+  // todo clean linked list if something is still present
+
   for (int ct = 0; ct < args->size_wrap; ct++)
     if (args->wrap_modules[ct])
       dr_free_module_data(args->wrap_modules[ct]);
@@ -226,4 +228,29 @@ void clean_args()
 
   dr_global_free(args->monitor_modules,
   		 sizeof(*(args->monitor_modules)) * args->size_monitor);
+}
+
+
+int module_is_monitored(const module_data_t *mod)
+{
+  const char *name;
+  
+  for (int ct = 0; ct < args->size_wrap; ct++)
+    if (args->wrap_modules[ct])
+      {
+	name = dr_module_preferred_name(args->wrap_modules[ct]);
+	if (!ds_strncmp(name, dr_module_preferred_name(mod), ds_strlen(name)))
+	  return true;
+      }
+  return false;
+}
+
+int pc_is_monitored(app_pc pc)
+{
+  for (int ct = 0; ct < args->size_monitor; ct++)
+    if (args->monitor_modules[ct] &&
+	dr_module_contains_addr(args->monitor_modules[ct], pc))
+      return true;
+
+  return false;
 }

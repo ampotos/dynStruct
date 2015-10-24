@@ -41,8 +41,6 @@ static dr_emit_flags_t bb_app2app_event(void *drcontext,
 
 // instrument each read or write instruction in order to monitor them
 // also instrument each call/return to update the stack of functions
-// TODO add an arg to monitor r/w only on a certain (or multiple) module
-// for now maybe monitor only access on main module or all except libc
 static dr_emit_flags_t bb_insert_event( void *drcontext,
 					__attribute__((unused))void *tag,
 					instrlist_t *bb, instr_t *instr, 
@@ -51,30 +49,36 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
 				        __attribute__((unused))void *user_data)
 {
   app_pc	pc = instr_get_app_pc(instr);
-  
-  // check if the instruction is valid
+
   if (pc == NULL)
     return DR_EMIT_DEFAULT;
-  
-  if (instr_reads_memory(instr))
-    for (int i = 0; i < instr_num_srcs(instr); i++)
-      if (opnd_is_memory_reference(instr_get_src(instr, i)))
-  	{
-  	  dr_insert_clean_call(drcontext, bb, instr, &memory_read,
-	  		       false, 1, OPND_CREATE_INTPTR(pc));
-  	  // break to not instrument the same instruction 2 time
-  	  break;
-  	}
+   
 
-  if (instr_writes_memory(instr))
-    for (int i = 0; i < instr_num_dsts(instr); i++)
-      if (opnd_is_memory_reference(instr_get_dst(instr, i)))
-  	{
-  	  dr_insert_clean_call(drcontext, bb, instr, &memory_write,
-	  		       false, 1, OPND_CREATE_INTPTR(pc));
-  	  // break to not instrument the same instruction 2 time
-  	  break;
-  	}
+  // if the module is not monitored, we have to instrument we still
+  // have to maj our stack with call addr
+  if (pc_is_monitored(pc))
+    {
+
+      if (instr_reads_memory(instr))
+	for (int i = 0; i < instr_num_srcs(instr); i++)
+	  if (opnd_is_memory_reference(instr_get_src(instr, i)))
+	    {
+	      dr_insert_clean_call(drcontext, bb, instr, &memory_read,
+				   false, 1, OPND_CREATE_INTPTR(pc));
+	      // break to not instrument the same instruction 2 time
+	      break;
+	    }
+
+      if (instr_writes_memory(instr))
+	for (int i = 0; i < instr_num_dsts(instr); i++)
+	  if (opnd_is_memory_reference(instr_get_dst(instr, i)))
+	    {
+	      dr_insert_clean_call(drcontext, bb, instr, &memory_write,
+				   false, 1, OPND_CREATE_INTPTR(pc));
+	      // break to not instrument the same instruction 2 time
+	      break;
+	    }
+    }
 
   // if one day dynStruct has to be used on arm, maybe some call will be missed
   
@@ -102,7 +106,6 @@ static void load_event(void *drcontext,
   app_pc		calloc = (app_pc)dr_get_proc_address(mod->handle, "calloc");
   app_pc		realloc = (app_pc)dr_get_proc_address(mod->handle, "realloc");
   app_pc		free = (app_pc)dr_get_proc_address(mod->handle, "free");
-  const char		*mod_name = dr_module_preferred_name(mod);
   ds_module_data_t	tmp_data;
 
   dr_mutex_lock(lock);
@@ -121,10 +124,9 @@ static void load_event(void *drcontext,
   // free all data relative to sym (like debug info) after loading symbol
   drsym_free_resources(mod->full_path);
 
-  // TODO : get module name to wrap in a parameter of the client
-  if (ds_strncmp("libc.so", mod_name, 7))
+  if (!module_is_monitored(mod))
     return;
-
+  
   if (malloc)
     DR_ASSERT(drwrap_wrap(malloc, pre_malloc, post_malloc));
 
@@ -176,7 +178,7 @@ DR_EXPORT void dr_init(client_id_t id)
     NULL,
     0};
   
-  dr_set_client_name("dynStruct", "");
+  dr_set_client_name("dynStruct", "ampotos@gmail.com");
 
   drsym_init(0);
   drwrap_init();
@@ -184,6 +186,7 @@ DR_EXPORT void dr_init(client_id_t id)
   drutil_init();
 
   dr_get_option_array(id, &argc, (const char ***)&argv);
+
   if(!parse_arg(argc, argv))
     dr_abort();
   dr_register_exit_event(&exit_event);

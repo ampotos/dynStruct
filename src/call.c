@@ -121,13 +121,14 @@ void clean_stack(void *drcontext)
 void get_caller_data(void **addr, char **sym, void *drcontext, int alloc)
 {
   stack_t *func = drmgr_get_tls_field(drcontext, tls_stack_idx);
-  void	* got;
+  void	*got;
 
   // alloc si set for *alloc and free, because on for this caller_data
   // we have to skip the first entry if the plt to get the instruction
   // who called *alloc or printf
   if (alloc && func->on_plt)
     func = func->next;
+
   // we read the got here, because at the time when the plt is called
   // the got may not contain the addr of the target function
   // the check to know if the addr is in plt or not is done at the same

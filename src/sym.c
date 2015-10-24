@@ -17,7 +17,7 @@ bool sym_to_hashmap(drsym_info_t *info,
   if (!ds_strcmp(info->name, "_GLOBAL_OFFSET_TABLE_"))
     ((ds_module_data_t*)data)->got = ((ds_module_data_t *)data)->start +
       info->start_offs;
-
+  
   old_val = hashtable_add_replace(&sym_hashtab, ((ds_module_data_t *)data)->start +
   				  info->start_offs,
   				  ds_strdup(info->name));

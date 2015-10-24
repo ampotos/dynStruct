@@ -27,4 +27,6 @@ int   parse_arg(int argc, char **argv);
 int   maj_args(const module_data_t *mod);
 void  clean_args();
 
+int module_is_monitored(const module_data_t *mod);
+int pc_is_monitored(app_pc pc);
 #endif

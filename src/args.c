@@ -1,6 +1,7 @@
 #include "dr_api.h"
 #include "../includes/args.h"
 #include "../includes/utils.h"
+#include "../includes/call.h"
 
 args_t *args;
 
@@ -16,17 +17,22 @@ void	print_usage()
 
   dr_printf("  -w <module_name>\twrap <module_name>\n");
   dr_printf("\t\t\t dynStruct record memory blocks only\n");
-  dr_printf("\t\t\t if they are by a symbol *alloc or free from this module\n");
+  dr_printf("\t\t\t if *alloc is called from this module\n");
 
   dr_printf("  -m <module_name>\tmonitor <module_name>\n");
   dr_printf("\t\t\t dynStruct record memory access only if\n");
-  dr_printf("\t\t\t they are done by a monitore module\n\n");
+  dr_printf("\t\t\t they are done by a monitore module\n");
 
-  dr_printf("for -w and -m options modules names are matched like <module_name>*\n");
+  dr_printf("  -a <module_name>\tis used to tell dynStruct this is this module who have\n");
+  dr_printf("\t\t\t the implementation of malloc, calloc, realloc and free\n");
+  dr_printf("\t\t\t for example this can be use with \"-w ld\" to wrap all ld-linux internal alloc\n");
+  dr_printf("\t\t\t if option -a is not the <module_name> by default si \"libc.so\"\n\n");
+  
+  dr_printf("for -w, -a and -m options modules names are matched like <module_name>*\n");
   dr_printf("this allow to don't care about the version of a library\n");
   dr_printf("-m libc.so match with all libc verison\n\n");
   
-  dr_printf("The main module is always monitored and the libc is always wrapped\n");
+  dr_printf("The main module is always monitored and wrapped\n");
   
   dr_printf("\nExample : drrun -c dynStruct -m libc.so - -- ls -l\n\n");
   dr_printf("This command run \"ls -l\" and will only look at block allocated by the program\n");
@@ -63,39 +69,59 @@ int	add_arg(module_name_t **list, char *name)
   return true;
 }
 
+int	do_alloc_array(module_name_t *list, module_data_t ***array, int *size)
+{
+  for (; list; list = list->next)
+    (*size)++;
+
+  if (!(*array =
+	dr_global_alloc(sizeof(**array) * *size)))
+    return false;
+
+  ds_memset(*array, 0, sizeof(**array) * *size);
+
+  return true;
+}
+
 int	alloc_array()
 {
-  module_name_t	*tmp;
-  
-  // size start at one because mais module is always wrapped
-  for (args->size_wrap = 1, tmp = args->wrap_modules_s;
-       tmp; tmp = tmp->next)
-    args->size_wrap++;
+  args->size_wrap = 1;
+  args->size_monitor = 1;
 
-  if (!(args->wrap_modules =
-	dr_global_alloc(sizeof(*(args->wrap_modules)) * args->size_wrap)))
+  if (!do_alloc_array(args->wrap_modules_s, &(args->wrap_modules),
+		     &(args->size_wrap)) ||
+      !do_alloc_array(args->monitor_modules_s, &(args->monitor_modules),
+		      &(args->size_monitor)))
     return false;
-
-  ds_memset(args->wrap_modules, 0,
-	    sizeof(*(args->wrap_modules)) * args->size_wrap);
   
-  // size start at one because mais module is always monitored
-  for (args->size_monitor = 1, tmp = args->monitor_modules_s; tmp;
-       tmp = tmp->next)
-    args->size_monitor++;
-
-  if (!(args->monitor_modules =
-	dr_global_alloc(sizeof(*(args->monitor_modules)) * args->size_monitor)))
-    return false;
-
-  ds_memset(args->monitor_modules, 0,
-	    sizeof(*(args->monitor_modules)) * args->size_monitor);
-
-  if (!(args->monitor_modules[0] = dr_get_main_module()))
+  if (!(args->monitor_modules[0] = dr_get_main_module()) ||
+      !(args->wrap_modules[0] = dr_get_main_module()))
     {
       dr_printf("Can't get main module\n");
       return false;
     }
+
+  return true;
+}
+
+int	set_alloc(char *name)
+{
+  if (args->alloc)
+    dr_printf("-a option have to be use only ont time\n");
+
+  if (!name)
+    {
+      dr_printf("Missing name for -w or -m option\n");
+      return false;
+    }
+
+  if (name[0] == '-')
+    {
+      dr_printf("Bad module name : %s\n", name);
+      return false;
+    }
+
+  args->alloc = name;
 
   return true;
 }
@@ -138,6 +164,11 @@ int	parse_arg(int argc, char **argv)
 	    return false;
 	  ct++;
 	  break;
+	case 'a':
+	  if (!set_alloc(argv[ct + 1]))
+	    return false;
+	  ct++;
+	  break;
 	default:
 	  dr_printf("Bad arg %s\n", argv[ct]);
 	case 'h':
@@ -146,7 +177,6 @@ int	parse_arg(int argc, char **argv)
 	}
     }
 
-  add_arg(&(args->wrap_modules_s), "libc.so");
   return alloc_array();
 }
 
@@ -176,7 +206,7 @@ int	search_name(module_name_t **list, const module_data_t *mod,
     {
       if (!add_to_array(mod, array, size_array))
 	return false;
-
+      
       *list = tmp_list->next;
       dr_global_free(tmp_list, sizeof(*tmp_list));
     }
@@ -205,43 +235,52 @@ int	maj_args(const module_data_t *mod)
   if (!search_name(&(args->wrap_modules_s), mod,
 		   args->wrap_modules, args->size_wrap) ||
       !search_name(&(args->monitor_modules_s), mod,
-		   args->monitor_modules, args->size_wrap))
+		   args->monitor_modules, args->size_monitor))
     return false;
   
   return true;
 }
 
+void	clean_array_args(int size, module_data_t **array)
+{
+  for (int ct = 0; ct < size; ct++)
+    if (array[ct])
+      dr_free_module_data(array[ct]);
+
+  dr_global_free(array, sizeof(*(array)) * size);
+}
+
+void	clean_list_args(module_name_t *list)
+{
+  module_name_t *tmp;
+
+  for (; list; list = list->next)
+    {
+      tmp = list;
+      list = list->next;
+      dr_global_free(tmp, sizeof(*tmp));
+    }
+}
 void clean_args()
 {
-  // todo clean linked list if something is still present
-
-  for (int ct = 0; ct < args->size_wrap; ct++)
-    if (args->wrap_modules[ct])
-      dr_free_module_data(args->wrap_modules[ct]);
-
-  dr_global_free(args->wrap_modules,
-  		 sizeof(*(args->wrap_modules)) * args->size_wrap);
-
-  for (int ct = 0; ct < args->size_monitor; ct++)
-    if (args->monitor_modules[ct])
-      dr_free_module_data(args->monitor_modules[ct]);
-
-  dr_global_free(args->monitor_modules,
-  		 sizeof(*(args->monitor_modules)) * args->size_monitor);
+  clean_list_args(args->wrap_modules_s);
+  clean_list_args(args->monitor_modules_s);
+  clean_array_args(args->size_wrap, args->wrap_modules);
+  clean_array_args(args->size_monitor, args->monitor_modules);
 }
 
 
-int module_is_monitored(const module_data_t *mod)
+int module_is_wrapped(void *drcontext)
 {
-  const char *name;
+  void	*addr;
+
+  get_caller_data(&addr, NULL, drcontext, 1);
   
   for (int ct = 0; ct < args->size_wrap; ct++)
-    if (args->wrap_modules[ct])
-      {
-	name = dr_module_preferred_name(args->wrap_modules[ct]);
-	if (!ds_strncmp(name, dr_module_preferred_name(mod), ds_strlen(name)))
-	  return true;
-      }
+    if (args->wrap_modules[ct] &&
+	dr_module_contains_addr(args->wrap_modules[ct], addr))
+      return true;
+
   return false;
 }
 
@@ -251,6 +290,19 @@ int pc_is_monitored(app_pc pc)
     if (args->monitor_modules[ct] &&
 	dr_module_contains_addr(args->monitor_modules[ct], pc))
       return true;
+
+  return false;
+}
+
+int module_is_alloc(const module_data_t *mod)
+{
+  const char	*name = dr_module_preferred_name(mod);
+
+  if (!ds_strncmp("libc.so", name, ds_strlen("libc.so")))
+    return true;
+  
+  if (args->alloc && !ds_strncmp(args->alloc, name, ds_strlen(args->alloc)))
+    return true;
 
   return false;
 }

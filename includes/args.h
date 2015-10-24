@@ -19,6 +19,7 @@ typedef struct
   module_data_t		**wrap_modules;
   int			size_wrap;
   int			size_monitor;
+  char			*alloc;
 } args_t;
 
 extern args_t *args;
@@ -27,6 +28,8 @@ int   parse_arg(int argc, char **argv);
 int   maj_args(const module_data_t *mod);
 void  clean_args();
 
-int module_is_monitored(const module_data_t *mod);
+int module_is_wrapped(void *drcontext);
 int pc_is_monitored(app_pc pc);
+int module_is_alloc(const module_data_t *mod);
+
 #endif

@@ -124,7 +124,7 @@ static void load_event(void *drcontext,
   // free all data relative to sym (like debug info) after loading symbol
   drsym_free_resources(mod->full_path);
 
-  if (!module_is_monitored(mod))
+  if (!module_is_alloc(mod))
     return;
   
   if (malloc)

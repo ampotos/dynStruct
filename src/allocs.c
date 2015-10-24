@@ -6,6 +6,7 @@
 #include "../includes/block_utils.h"
 #include "../includes/call.h"
 #include "../includes/sym.h"
+#include "../includes/args.h"
 
 static int malloc_init = 0;
 static int realloc_init = 0;
@@ -39,6 +40,12 @@ void pre_calloc(void *wrapctx, OUT void **user_data)
   drc = drwrap_get_drcontext(wrapctx);
 
   dr_mutex_lock(lock);
+
+  if (!module_is_wrapped(drc))
+    {
+      dr_mutex_unlock(lock);
+      return;
+    }
 
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 1) *
 			 (size_t)drwrap_get_arg(wrapctx, 0),
@@ -75,6 +82,12 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
       return;
     }
 
+  if (!module_is_wrapped(drc))
+    {
+      dr_mutex_unlock(lock);
+      return;
+    }
+  
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0),
 			 get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc),
 			 drc);
@@ -87,7 +100,7 @@ void post_malloc(void *wrapctx, void *user_data)
   malloc_t      *block = (malloc_t *)user_data;
 
   dr_mutex_lock(lock);
-
+  
   // first malloc don't set user_data because is call for init
   if (!block)
     {
@@ -133,6 +146,13 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
       return;
     }
 
+  // we accept free from every where
+  if (!module_is_wrapped(drc))
+    {
+      dr_mutex_unlock(lock);
+      return;
+    }
+
   if (!(tmp = dr_global_alloc(sizeof(realloc_tmp_t))))
     {
       dr_printf("dr_malloc fail\n");
@@ -174,7 +194,6 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
       block->size = size;
     }
   tmp->block = block;
-
   dr_mutex_unlock(lock);
 }
 
@@ -222,7 +241,9 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
     return;
 
   drc = drwrap_get_drcontext(wrapctx);
+
   dr_mutex_lock(lock);
+  
   if ((block = search_on_tree(active_blocks, addr)))
     {
       block->flag |= FREE;
@@ -235,8 +256,6 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
       old_blocks = block;
       del_from_tree(&active_blocks, block->start, NULL);
     }
-  else
-    dr_printf("free of non alloc adress : %p\n", addr);
 
   dr_mutex_unlock(lock);
 }

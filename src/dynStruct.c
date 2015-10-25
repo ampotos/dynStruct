@@ -19,8 +19,6 @@ malloc_t  *old_blocks = NULL;
 tree_t	  *active_blocks = NULL;
 void      *lock;
 
-// todo code ouput in json
-
 static void thread_exit_event(void *drcontext)
 {
   clean_stack(drcontext);
@@ -120,7 +118,7 @@ static void load_event(void *drcontext,
 			     DRSYM_DEMANGLE_FULL);
   add_plt(mod, tmp_data.got, drcontext);
   dr_mutex_unlock(lock);
-
+  
   // free all data relative to sym (like debug info) after loading symbol
   drsym_free_resources(mod->full_path);
 
@@ -150,7 +148,7 @@ static void exit_event(void)
 {
   dr_mutex_lock(lock);
 
-  process_recover();
+  output();
 
   clean_old_sym();
 

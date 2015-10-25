@@ -11,7 +11,7 @@ void	print_usage()
 
   dr_printf("  -h \t\t\tprint this help\n");
 
-  dr_printf("  -o <file_name>\tset output file name for json (default: <prog_name>.ds_out.\n");
+  dr_printf("  -o <file_name>\tset output file name for json (default: <prog_name>.ds_out\n");
   
   dr_printf("  - \t\t\tprint output on console\n");
 
@@ -23,7 +23,7 @@ void	print_usage()
   dr_printf("\t\t\t dynStruct record memory access only if\n");
   dr_printf("\t\t\t they are done by a monitore module\n");
 
-  dr_printf("  -a <module_name>\tis used to tell dynStruct the module that implements\n");
+  dr_printf("  -a <module_name>\tis used to tell dynStruct which module implements\n");
   dr_printf("\t\t\t allocs functions (malloc, calloc, realloc and free)\n");
   dr_printf("\t\t\t this has to be used with the -w option (ex : \"-a ld -w ld\")\n");
   dr_printf("\t\t\t this option can only be used one time\n");
@@ -306,4 +306,38 @@ int module_is_alloc(const module_data_t *mod)
     return true;
 
   return false;
+}
+
+void *get_output_name()
+{
+  module_data_t	*mod;
+  char		*filename;
+  const char	*mod_name;
+  
+  if (args->console)
+    return NULL;
+
+  if (args->out_file)
+    return ds_strdup(args->out_file);
+
+  if (!(mod = dr_get_main_module()))
+    return NULL;
+
+  mod_name = dr_module_preferred_name(mod);
+  
+  if (!(filename = dr_global_alloc(sizeof(*filename) * ds_strlen(mod_name)
+				   + 8)))
+    {
+      dr_free_module_data(mod);
+      return NULL;
+    }
+
+  ds_memset(filename, 0, sizeof(*filename) * ds_strlen(mod_name) + 8);
+  
+  ds_strncpy(filename, mod_name, ds_strlen(mod_name));
+  ds_strncpy(filename + ds_strlen(filename), ".ds_out", 8);
+
+  dr_free_module_data(mod);
+
+  return filename;
 }

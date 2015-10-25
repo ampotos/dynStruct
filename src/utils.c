@@ -47,3 +47,11 @@ void ds_memset(void *ptr, int c, size_t size)
     ((char *)ptr)[size] = (char)c;
   *((char *)ptr) = (char)c;
 }
+
+char *ds_strncpy(char *dest, const char *src, size_t size)
+{
+  for (size_t ct = 0; ct < size; ct++)
+    dest[ct] = src[ct];
+
+  return dest;
+}

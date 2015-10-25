@@ -1,13 +1,30 @@
 #include "dr_api.h"
 #include "../includes/allocs.h"
 #include "../includes/block_utils.h"
+#include "../includes/args.h"
+#include "../includes/out_json.h"
 
-void print_access(malloc_t *block)
+void free_orig(orig_t *orig)
 {
-  dr_printf("\t READ :\n");
-  clean_tree(&(block->read), (void (*)(void*))free_access);
-  dr_printf("\t WRITE :\n");
-  clean_tree(&(block->write), (void (*)(void*))free_access);
+  orig_t        *tmp;
+
+  while (orig)
+    {
+      dr_printf("\t\t\t %d bytes were accessed by %p (%s : %p) %d times\n", orig->size,
+		orig->addr, orig->start_func_sym, orig->start_func_addr, orig->nb_hit);
+      tmp = orig->next;
+      dr_global_free(orig, sizeof(*orig));
+      orig = tmp;
+    }
+}
+
+void free_access(access_t *access)
+{
+  dr_printf("\t was access at offset %d (%lu times)\n", access->offset,
+	    access->total_hits);
+  dr_printf("\tdetails :\n");
+  clean_tree(&(access->origs), (void (*)(void *))free_orig);
+  dr_global_free(access, sizeof(*access));
 }
 
 void print_block(malloc_t *block)
@@ -40,12 +57,20 @@ void print_block(malloc_t *block)
   else
     dr_printf("\n");
   
-  if (block->read || block->write)
-    print_access(block);
-  free_malloc_block(block);
+  if (block->read)
+    {
+      dr_printf("\t READ :\n");
+      clean_tree(&(block->read), (void (*)(void*))free_access);
+    }
+  if (block->write)
+    {
+      dr_printf("\t WRITE :\n");
+      clean_tree(&(block->write), (void (*)(void*))free_access);
+    }
+  dr_global_free(block, sizeof(*block));
 }
 
-void process_recover(void)
+void print_console(void)
 {
   malloc_t      *tmp;
 
@@ -57,3 +82,18 @@ void process_recover(void)
     }
   clean_tree(&active_blocks, (void (*)(void*))print_block);
 }
+
+void output(void)
+{
+  char *filename = get_output_name();
+  
+  if (!filename)
+    print_console();
+  else
+    {
+      args->file_out = dr_open_file(filename, DR_FILE_WRITE_OVERWRITE);
+      write_json();
+      dr_close_file(args->file_out);
+    }
+}
+	 

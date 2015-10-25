@@ -19,7 +19,7 @@ This database may be modified via the webui.
 Set the environment variable DYNAMORIO_HOME to the absolute path of your
 DynamoRIO installation
 
-execute `setup.sh`
+execute `build.sh`
 
 ## Usage
 * collector :

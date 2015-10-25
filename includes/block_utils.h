@@ -13,9 +13,6 @@
 
 access_t *get_access(size_t, tree_t **);
 malloc_t *add_block(size_t, void *, void *);
-void free_malloc_block(malloc_t *);
-void remove_block(malloc_t *);
 void set_addr_malloc(malloc_t *, void *, unsigned int, int);
-void free_access(access_t *);
 
 #endif

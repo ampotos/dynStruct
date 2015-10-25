@@ -13,6 +13,7 @@ typedef struct
 {
   int			console;
   char			*out_file; 
+  file_t		file_out;
   module_name_t		*wrap_modules_s;
   module_name_t		*monitor_modules_s; 
   module_data_t		**monitor_modules;
@@ -31,5 +32,7 @@ void  clean_args();
 int module_is_wrapped(void *drcontext);
 int pc_is_monitored(app_pc pc);
 int module_is_alloc(const module_data_t *mod);
+
+void *get_output_name();
 
 #endif

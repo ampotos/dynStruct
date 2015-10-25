@@ -67,7 +67,7 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
       if (!realloc)
         {
           dr_printf("alloc of size %d failed\n", block->size);
-	  free_malloc_block(block);
+	  dr_global_free(block, sizeof(*block));
         }
       // if start == NULL on realloc this is a free
       // set block to free to keep previous access to data
@@ -102,33 +102,5 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
     dr_printf("Error : *alloc post wrapping call without pre wrapping\n");
 }
 
-void free_orig(orig_t *orig)
-{
-  orig_t	*tmp;
 
-  while (orig)
-    {
-      dr_printf("\t\t\t %d bytes was accessed by %p (%s : %p) %d times\n", orig->size,
-		orig->addr, orig->start_func_sym, orig->start_func_addr, orig->nb_hit);
-      tmp = orig->next;
-      dr_global_free(orig, sizeof(*orig));
-      orig = tmp;
-    }
-}
 
-void free_access(access_t *access)
-{
-  dr_printf("\t was access at offset %d (%lu times)\n", access->offset,
-	    access->total_hits);
-  dr_printf("\tdetails :\n");
-  /* print_orig(access->origs); */
-  /* free_orig(access->origs); */
-  clean_tree(&(access->origs), (void (*)(void *))free_orig);
-  dr_global_free(access, sizeof(*access));
-}
-
-void free_malloc_block(malloc_t *block)
-{
-  if (block)
-    dr_global_free(block, sizeof(*block));
-}

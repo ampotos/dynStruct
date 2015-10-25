@@ -18,10 +18,11 @@ bool sym_to_hashmap(drsym_info_t *info,
     ((ds_module_data_t*)data)->got = ((ds_module_data_t *)data)->start +
       info->start_offs;
   
-  old_val = hashtable_add_replace(&sym_hashtab, ((ds_module_data_t *)data)->start +
-  				  info->start_offs,
+  old_val = hashtable_add_replace(&sym_hashtab,
+				  ((ds_module_data_t *)data)->start +
+				  info->start_offs,
   				  ds_strdup(info->name));
-  /* if there is an old val for this entry (a lib was unload and a new is load) */
+  /* if there is an old val for this entry */
   /* store the old sym name in a linked list to keep the string fo the name */
   if (old_val)
     {

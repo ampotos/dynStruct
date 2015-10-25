@@ -51,15 +51,15 @@ extern malloc_t  *old_blocks;
 extern tree_t	 *active_blocks;
 extern void      *lock;
 
-void pre_malloc(void *, OUT void **);
-void post_malloc(void *, void *);
+void pre_malloc(void *wrapctx, OUT void **user_data);
+void post_malloc(void *wrapctx, void *user_data);
 
-void pre_calloc(void *, OUT void **);
-void post_calloc(void *, void *);
+void pre_calloc(void *wrapctx,, OUT void **user_data);
+void post_calloc(void *wrapctx, void *user_data);
 
-void pre_realloc(void *, OUT void **);
-void post_realloc(void *, void *);
+void pre_realloc(void *wrapctx, OUT void **user_data);
+void post_realloc(void *wrapctx, void *user_data);
 
-void pre_free(void *, OUT void **);
+void pre_free(void *wrapctx, OUT void **user_data);
 
 #endif

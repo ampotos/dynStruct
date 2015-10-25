@@ -78,6 +78,7 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
           block->flag |= FREE;
 	  block->next = old_blocks;
 	  old_blocks = block;
+
 	  del_from_tree(&active_blocks, block->start, NULL);
         }
     }

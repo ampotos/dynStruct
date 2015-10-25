@@ -29,7 +29,9 @@ void *get_prev_instr_pc(void *pc, void *drc)
 	}
       instr_reuse(drc, instr);
     }
+
   instr_destroy(drc, instr);
+
   return tmp_pc;
 }
 
@@ -51,6 +53,7 @@ void pre_calloc(void *wrapctx, OUT void **user_data)
 			 (size_t)drwrap_get_arg(wrapctx, 0),
 			 get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc),
 			 drc);
+
   dr_mutex_unlock(lock);
 }
 
@@ -141,7 +144,8 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
 	  return ;
 	}
       block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
-      get_caller_data(&(block->free_func_pc), &(block->free_func_sym), drc, 1);      
+      get_caller_data(&(block->free_func_pc), &(block->free_func_sym),
+		      drc, 1);
       dr_mutex_unlock(lock);
       return;
     }
@@ -159,7 +163,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
       return;
     }
 
-  // if realloc is use like a malloc save the size to set it on the post wrapping
+  // if realloc is use like malloc save the size to set it on the post wrapping
   tmp->size = size;
   *user_data = tmp;
 
@@ -181,7 +185,8 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
 	{
 	  block->flag |= FREE_BY_REALLOC;
 	  block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
-	  get_caller_data(&(block->free_func_pc), &(block->free_func_sym), drc, 1);
+	  get_caller_data(&(block->free_func_pc), &(block->free_func_sym),
+			  drc, 1);
 	  block->next = old_blocks;
 	  old_blocks = block;
 
@@ -194,6 +199,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
       block->size = size;
     }
   tmp->block = block;
+
   dr_mutex_unlock(lock);
 }
 
@@ -214,7 +220,8 @@ void post_realloc(void *wrapctx, void *user_data)
         {
 	  block = data->block;
 	  set_addr_malloc(block, ret, block->flag, 1);
-	  get_caller_data(&(block->alloc_func_pc), &(block->alloc_func_sym), drc, 1);
+	  get_caller_data(&(block->alloc_func_pc), &(block->alloc_func_sym),
+			  drc, 1);
 	  block->alloc_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx),
 					      drc);
 	}
@@ -225,7 +232,9 @@ void post_realloc(void *wrapctx, void *user_data)
 	  block->size = ((realloc_tmp_t*)user_data)->size;
 	  block->end = block->start + block->size;
 	}
+
       dr_global_free(user_data, sizeof(realloc_tmp_t));
+
       dr_mutex_unlock(lock);
     }
 }
@@ -250,10 +259,12 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
       if (!(block->free_pc))
 	{
 	  block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
-	  get_caller_data(&(block->free_func_pc), &(block->free_func_sym), drc, 1);
+	  get_caller_data(&(block->free_func_pc), &(block->free_func_sym),
+			  drc, 1);
 	}
       block->next = old_blocks;
       old_blocks = block;
+
       del_from_tree(&active_blocks, block->start, NULL);
     }
 

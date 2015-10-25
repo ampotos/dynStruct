@@ -1,7 +1,5 @@
 #include "dr_api.h"
 #include "../includes/tree.h"
-// Tree are used to store active block (meaning non free) and
-// plt of each module (to have the right calling addr for *alloc and free)
 
 int get_balance(tree_t *node)
 {
@@ -189,6 +187,7 @@ void add_to_tree(tree_t **tree, tree_t *node)
   node->height = 0;
   node->left = NULL;
   node->right = NULL;
+
   if (!(*tree))
     {
       node->parent = NULL;
@@ -295,6 +294,7 @@ void del_from_tree(tree_t **tree, void *start_addr,
   if (!node)
     return;
   parent_node = node->parent;
+
   if (!(node->right) && !(node->left))
     del_leaf(tree, node);
   // swap and delete
@@ -360,6 +360,7 @@ void del_from_tree(tree_t **tree, void *start_addr,
   if (free_func)
     free_func(node->data);
   dr_global_free(node, sizeof(*node));
+
   while (parent_node)
     {
       balance = get_balance(parent_node);

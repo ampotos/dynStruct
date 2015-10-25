@@ -10,13 +10,13 @@ typedef struct old_sym_s
   char			*sym;
 } old_sym_t;
 
-typedef struct ds_module_data_s
+typedef struct
 {
   void	*start;
   void	*got;
 } ds_module_data_t;
 
-bool sym_to_hashmap(drsym_info_t *, drsym_error_t, void *);
+bool sym_to_hashmap(drsym_info_t *info, drsym_error_t status, void *data);
 void clean_old_sym(void);
 
 extern hashtable_t	sym_hashtab;

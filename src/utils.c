@@ -20,6 +20,7 @@ char *ds_strdup(const char* str)
         ret[len] = str[len];
       ret[len] = 0;
     }
+
   return ret;
 }
 
@@ -28,8 +29,10 @@ int ds_strncmp(const char *s1, const char *s2, size_t size)
   size_t ct;
 
   for (ct = 0; ct < size && s1[ct] && s1[ct] == s2[ct]; ct++);
+  
   if (ct == size)
     return 0;
+
   return s1[ct] - s2[ct];
 }
 
@@ -38,6 +41,7 @@ int ds_strcmp(const char *s1, const char *s2)
   size_t ct;
 
   for (ct = 0; s1[ct] && s1[ct] == s2[ct]; ct++);
+
   return s1[ct] - s2[ct];
 }
 

@@ -7,7 +7,7 @@
 #include "../includes/call.h"
 #include "../includes/sym.h"
 
-orig_t	*new_orig(size_t size, void *pc, void *drcontext)
+orig_t *new_orig(size_t size, void *pc, void *drcontext)
 {
   orig_t	*orig;
   
@@ -51,11 +51,12 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
       new_node->min_addr = pc;
       new_node->data = orig_tree;
       add_to_tree(&(access->origs), new_node);
+
       return;
     }
 
-  // if a an orig have the same addr but not the same size we create an other entry
-  // and put it in the linked list for this node;
+  // if a an orig have the same addr but not the same size we create an other
+  // entry and put it in the linked list for this node;
   if (!orig_list)
     {
       if (!(orig_list = new_orig(size, pc, drcontext)))
@@ -94,7 +95,7 @@ void add_hit(void *pc, size_t size, void *target, int read, void *drcontext)
   dr_mutex_unlock(lock);  
 }
 
-void	check_opnd(opnd_t opnd, void *pc, int read, void *drcontext,
+void check_opnd(opnd_t opnd, void *pc, int read, void *drcontext,
 		  dr_mcontext_t *mctx)
 {
   if (opnd_is_memory_reference(opnd) && opnd_is_base_disp(opnd))
@@ -153,7 +154,7 @@ void memory_write(void *pc)
   dr_get_mcontext(drcontext, &mctx);
 
   instr_init(drcontext, instr);
-  if(!decode(drcontext, pc, instr))
+  if (!decode(drcontext, pc, instr))
     {
       dr_printf("Decode of instruction at %p failed\n", pc);
       return;

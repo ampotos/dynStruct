@@ -136,29 +136,33 @@ module_segment_data_t *find_load_section(const module_data_t *mod,
 	  (mod->segments[idx_seg].prot == tmp_data->seg_perm))
 	return mod->segments + idx_seg;
     }
+
   return NULL;
 }
 
-void	*get_got_from_plt(void *plt, void *drcontext)
+void *get_got_from_plt(void *plt, void *drc)
 {
-  void		*jmp_pc = dr_app_pc_for_decoding(decode_next_pc(drcontext, plt));
-  instr_t       *instr = instr_create(drcontext);
+  void		*jmp_pc = dr_app_pc_for_decoding(decode_next_pc(drc, plt));
+  instr_t       *instr = instr_create(drc);
   void		*got = NULL;
   
-  instr_init(drcontext, instr);
-  if (!decode(drcontext, jmp_pc, instr))
+  instr_init(drc, instr);
+  if (!decode(drc, jmp_pc, instr))
     {
       dr_printf("Decode of instruction at %p failed\n", jmp_pc);
-      instr_destroy(drcontext, instr);
+      instr_destroy(drc, instr);
       return NULL;
     }
+  
   if (instr_get_opcode(instr) == OP_jmp_ind)
     instr_get_rel_addr_target(instr, (app_pc *)(&got));
-  instr_destroy(drcontext, instr);
+
+  instr_destroy(drc, instr);
+
   return got + sizeof(void *);
 }
 
-void	add_plt(const module_data_t *mod, void *got, void *drcontext)
+void add_plt(const module_data_t *mod, void *got, void *drcontext)
 {
   sect_tmp_data		tmp_data_plt;
   tree_t		*new_node;
@@ -174,6 +178,7 @@ void	add_plt(const module_data_t *mod, void *got, void *drcontext)
     }
   new_node->min_addr = seg_plt->start + tmp_data_plt.sect_offset;
   new_node->high_addr = new_node->min_addr + tmp_data_plt.sect_size;
+
   // we store the addr of the got of the module
   // with that we can find where we are going to jump when we are in the plt
   if (!got)
@@ -187,11 +192,12 @@ void	add_plt(const module_data_t *mod, void *got, void *drcontext)
   else
     got += 3 * sizeof(void *);
   new_node->data = got;
+
   add_to_tree(&plt_tree, new_node);
 }
 
 
-void	remove_plt(const module_data_t *mod)
+void remove_plt(const module_data_t *mod)
 {
   sect_tmp_data		tmp_data;
   module_segment_data_t	*seg;
@@ -200,5 +206,4 @@ void	remove_plt(const module_data_t *mod)
     return;
 
   del_from_tree(&plt_tree, seg->start + tmp_data.sect_offset, NULL);
-  return;
 }

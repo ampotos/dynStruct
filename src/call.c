@@ -33,7 +33,9 @@ void *get_real_func_addr(void *pc, void *got)
 	}
     }
   offset = opnd_get_immed_int(instr_get_src(instr, 0));
+
   instr_destroy(drcontext, instr);
+
   return *((ptr_int_t **)(got + offset * sizeof(void*)));
 }
 
@@ -91,7 +93,7 @@ void ind_call_monitor(app_pc __attribute__((unused))caller, app_pc callee)
 }
 
 
-void ret_monitor()
+void ret_monitor(void)
 {
   stack_t       *stack;
   void          *drcontext = dr_get_current_drcontext();

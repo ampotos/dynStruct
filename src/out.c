@@ -10,8 +10,9 @@ void free_orig(orig_t *orig)
 
   while (orig)
     {
-      dr_printf("\t\t\t %d bytes were accessed by %p (%s : %p) %d times\n", orig->size,
-		orig->addr, orig->start_func_sym, orig->start_func_addr, orig->nb_hit);
+      dr_printf("\t\t\t %d bytes were accessed by %p (%s : %p) %d times\n",
+		orig->size, orig->addr, orig->start_func_sym,
+		orig->start_func_addr, orig->nb_hit);
       tmp = orig->next;
       dr_global_free(orig, sizeof(*orig));
       orig = tmp;
@@ -23,6 +24,7 @@ void free_access(access_t *access)
   dr_printf("\t was access at offset %d (%lu times)\n", access->offset,
 	    access->total_hits);
   dr_printf("\tdetails :\n");
+
   clean_tree(&(access->origs), (void (*)(void *))free_orig);
   dr_global_free(access, sizeof(*access));
 }
@@ -85,7 +87,7 @@ void print_console(void)
 
 void output(void)
 {
-  char *filename = get_output_name();
+  char	*filename = get_output_name();
   
   if (!filename)
     print_console();

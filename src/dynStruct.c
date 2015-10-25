@@ -51,7 +51,6 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
   if (pc == NULL)
     return DR_EMIT_DEFAULT;
    
-
   // if the module is not monitored, we have to instrument we still
   // have to maj our stack with call addr
   if (pc_is_monitored(pc))
@@ -79,7 +78,6 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
     }
 
   // if one day dynStruct has to be used on arm, maybe some call will be missed
-  
   // if it's a direct call we send the callee addr as parameter
   if (instr_is_call_direct(instr))
     {
@@ -93,6 +91,7 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
   else if (instr_is_return(instr))
     dr_insert_clean_call(drcontext, bb, instr, &ret_monitor,
 			 false, 0);
+
   return DR_EMIT_DEFAULT;
 }
 
@@ -167,9 +166,9 @@ static void exit_event(void)
 
 DR_EXPORT void dr_init(client_id_t id)
 {
-  char	**argv;
-  int	argc;
-  drmgr_priority_t p = {
+  char			**argv;
+  int			argc;
+  drmgr_priority_t	p = {
     sizeof(p),
     "reccord heap access and recover datas structures",
     NULL,

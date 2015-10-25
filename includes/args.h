@@ -25,14 +25,14 @@ typedef struct
 
 extern args_t *args;
 
-int   parse_arg(int argc, char **argv);
-int   maj_args(const module_data_t *mod);
-void  clean_args();
+int parse_arg(int argc, char **argv);
+int maj_args(const module_data_t *mod);
+void clean_args(void);
 
 int module_is_wrapped(void *drcontext);
 int pc_is_monitored(app_pc pc);
 int module_is_alloc(const module_data_t *mod);
 
-void *get_output_name();
+void *get_output_name(void);
 
 #endif

@@ -96,13 +96,13 @@ module_segment_data_t *find_load_section(const module_data_t *mod,
 				     sect_tmp_data *tmp_data, char *sect_name)
 {
   file_t	file = dr_open_file(mod->full_path, DR_FILE_READ);
-  size_t	file_sz;
+  uint64	file_sz;
   void		*map_file;
 
   
   dr_file_size(file, &file_sz);
 
-  DR_ASSERT_MSG((map_file = dr_map_file(file, &file_sz, 0, NULL,
+  DR_ASSERT_MSG((map_file = dr_map_file(file, (size_t *)(&file_sz), 0, NULL,
   					DR_MEMPROT_READ, DR_MAP_PRIVATE)),
   		"Error mapping file in plt search\n");
 

@@ -58,6 +58,8 @@ void print_usage(void)
 int add_arg(module_name_t **list, char *name)
 {
   module_name_t	*new;
+
+  dr_printf("%s\n", name);
   
   if (!name)
     {
@@ -124,12 +126,6 @@ int set_alloc(char *name)
   if (args->alloc)
     dr_printf("-a option have to be use only ont time\n");
 
-  if (!name)
-    {
-      dr_printf("Missing name for -w or -m option\n");
-      return false;
-    }
-
   if (name[0] == '-')
     {
       dr_printf("Bad module name : %s\n", name);
@@ -170,16 +166,31 @@ int parse_arg(int argc, char **argv)
 	  ct++;
 	  break;
 	case 'w':
+	  if (ct + 1 == argc)
+	    {
+	      dr_printf("missing arg for -w\n");
+	      return false;
+	    }
 	  if (!add_arg(&(args->wrap_modules_s), argv[ct + 1]))
 	    return false;
 	  ct++;
 	  break;
 	case 'm':
+	  if (ct + 1 == argc)
+	    {
+	      dr_printf("missing arg for -m\n");
+	      return false;
+	    }
 	  if (!add_arg(&(args->monitor_modules_s), argv[ct + 1]))
 	    return false;
 	  ct++;
 	  break;
 	case 'a':
+	  if (ct + 1 == argc)
+	    {
+	      dr_printf("missing arg for -a\n");
+	      return false;
+	    }
 	  if (!set_alloc(argv[ct + 1]))
 	    return false;
 	  ct++;

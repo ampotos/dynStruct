@@ -1,15 +1,8 @@
 # dynStruct
-dynStruct is a tool using dynamoRio to recover data
-structure of a ELF binary at runtime.
+dynStruct is a tool using dynamoRio to monitor memory access of an ELF binary via a data gatherer,
+and use this data to revcover structure of the original code.
 
-It will be made of 2 different tools :
-* a client for dynamoRio (the data collector)
-* a webui to visualize the data
-
-The collector will create a file with raw data.
-The webui will get this file and produce a database with guessing structure on it.
-
-This database may be modified via the webui.
+Today only the data gatherer is available, the recovering of structures and a webui will come.
 
 ## Requirements
 * CMake >= 2.8

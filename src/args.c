@@ -5,48 +5,54 @@
 
 args_t *args;
 
+static char *usage[] = {
+  "\nUsage : "
+  "drrun -c <dynStruct_path> <dynStruct_args> -- <prog_path> <prog_args>\n\n",
+  "  -h \t\t\tprint this help\n",
+
+  "  -o <file_name>\tset output file name for json\n",
+  "\t\t\t (default: <prog_name>.ds_out)\n",
+
+  "  - \t\t\tprint output on console\n",
+
+  "  -w <module_name>\twrap <module_name>\n",  
+  "\t\t\t dynStruct record memory blocks only\n",
+  "\t\t\t if *alloc is called from this module\n",
+
+  "  -m <module_name>\tmonitor <module_name>\n",
+  "\t\t\t dynStruct record memory access only if\n",
+  "\t\t\t they are done by a monitore module\n",
+  
+  "  -a <module_name>\tis used to tell dynStruct ",
+  "which module implements\n",
+  "\t\t\t allocs functions (malloc, calloc, realloc and free)\n",
+  "\t\t\t this has to be used with the -w option ",
+  "(ex : \"-a ld -w ld\")\n",
+  "\t\t\t this option can only be used one time\n",
+
+  "for -w, -a and -m options modules names are matched like ",
+  "<module_name>*\n",
+  "this allow to don't care about the version of a library\n",
+  "-m libc.so match with all libc verison\n\n",
+
+  "The main module is always monitored and wrapped\n",
+  "Tha libc allocs functions are always used ",
+  "(regardless the use of the -a option)\n",
+
+  "\nExample : drrun -c dynStruct -m libc.so - -- ls -l\n\n",
+  "This command run \"ls -l\" and will only look at block ",
+  "allocated by the program\n",
+  "but will monitor and record memory access from ",
+  "the program and the libc\n",
+  "and print the result on the console\n\n",
+  
+  NULL
+};
+
 void print_usage(void)
 {
-  dr_printf("\nUsage : drrun -c <dynStruct_path> <dynStruct_args> -- ");
-  dr_printf("<prog_path> <prog_args>\n\n");
-
-  dr_printf("  -h \t\t\tprint this help\n");
-
-  dr_printf("  -o <file_name>\tset output file name for json ");
-  dr_printf("(default: <prog_name>.ds_out)\n");
-  
-  dr_printf("  - \t\t\tprint output on console\n");
-
-  dr_printf("  -w <module_name>\twrap <module_name>\n");
-  dr_printf("\t\t\t dynStruct record memory blocks only\n");
-  dr_printf("\t\t\t if *alloc is called from this module\n");
-
-  dr_printf("  -m <module_name>\tmonitor <module_name>\n");
-  dr_printf("\t\t\t dynStruct record memory access only if\n");
-  dr_printf("\t\t\t they are done by a monitore module\n");
-
-  dr_printf("  -a <module_name>\tis used to tell dynStruct ");
-  dr_printf("which module implements\n");
-  dr_printf("\t\t\t allocs functions (malloc, calloc, realloc and free)\n");
-  dr_printf("\t\t\t this has to be used with the -w option ");
-  dr_printf("(ex : \"-a ld -w ld\")\n");
-  dr_printf("\t\t\t this option can only be used one time\n");
-  
-  dr_printf("for -w, -a and -m options modules names are matched like ");
-  dr_printf("<module_name>*\n");
-  dr_printf("this allow to don't care about the version of a library\n");
-  dr_printf("-m libc.so match with all libc verison\n\n");
-  
-  dr_printf("The main module is always monitored and wrapped\n");
-  dr_printf("Tha libc allocs functions are always used ");
-  dr_printf("(regardless the use of the -a option)\n");
-  
-  dr_printf("\nExample : drrun -c dynStruct -m libc.so - -- ls -l\n\n");
-  dr_printf("This command run \"ls -l\" and will only look at block ");
-  dr_printf("allocated by the program\n");
-  dr_printf("but will monitor and record memory access from ");
-  dr_printf("the program and the libc\n");
-  dr_printf("and print the result on the console\n\n");
+  for (int ct = 0; usage[ct]; ct++)
+    dr_printf("%s", usage[ct]);
 }
 
 int add_arg(module_name_t **list, char *name)

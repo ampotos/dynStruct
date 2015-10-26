@@ -94,7 +94,7 @@ alloc by 0x0000000000400617(main : 0x00000000004005f9) and free by 0x00000000004
 			 4 bytes were accessed by 0x0000000000400624 (main : 0x00000000004005f9) 1 times
 ```
 We see all the right access on str done by the program himsel.
-We can notice the 4 bytes access at offset 0 of the block du to gcc optimisation for initializing the string.
+We can notice the 4 bytes access at offset 0 of the block due to gcc optimisation for initializing the string.
 
 Now if we run `drrun -c  dynStruct -m libc - -- tests/example` we are going to monitor all the libc access, and we get
 ```

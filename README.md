@@ -16,6 +16,8 @@ DynamoRIO installation
 
 execute `build.sh`
 
+to compile dynStruct for a 32bits target on a 64bits os execute `build.sh 32`
+
 ## Data gatherer
 
 ###Usage

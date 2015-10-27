@@ -13,11 +13,11 @@ orig_t *new_orig(size_t size, void *pc, void *drcontext)
   
   if (!(orig = dr_global_alloc(sizeof(*orig))))
     dr_printf("dr_malloc fail\n");
-
+  ds_memset(orig, 0, sizeof(*orig));
+  
   orig->size = size;
   orig->nb_hit = 1;
   orig->addr = pc;
-  orig->next = NULL;
   // get the start addr of the function doing the access
   get_caller_data(&(orig->start_func_addr),
 		  &(orig->start_func_sym), drcontext, 0);
@@ -146,7 +146,7 @@ void memory_write(void *pc)
   instr_t	*instr = instr_create(drcontext);
   dr_mcontext_t mctx;
   opnd_t	dst;
-
+  
   pc = dr_app_pc_for_decoding(pc);
   
   mctx.flags = DR_MC_CONTROL|DR_MC_INTEGER;

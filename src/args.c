@@ -59,8 +59,6 @@ int add_arg(module_name_t **list, char *name)
 {
   module_name_t	*new;
 
-  dr_printf("%s\n", name);
-  
   if (!name)
     {
       dr_printf("Missing name for -w or -m option\n");
@@ -305,12 +303,14 @@ int module_is_wrapped(void *drcontext)
   void	*addr;
 
   get_caller_data(&addr, NULL, drcontext, 1);
-  
-  for (int ct = 0; ct < args->size_wrap; ct++)
-    if (args->wrap_modules[ct] &&
-	dr_module_contains_addr(args->wrap_modules[ct], addr))
-      return true;
 
+  for (int ct = 0; ct < args->size_wrap; ct++)
+    {
+      if (args->wrap_modules[ct] &&
+	  dr_module_contains_addr(args->wrap_modules[ct], addr))
+	return true;
+    }
+  
   return false;
 }
 

@@ -95,11 +95,11 @@ void get_tmp_data_64(Elf64_Ehdr *elf_hdr,
 module_segment_data_t *find_load_section(const module_data_t *mod,
 				     sect_tmp_data *tmp_data, char *sect_name)
 {
-  file_t	file = dr_open_file(mod->full_path, DR_FILE_READ);
+  file_t	file;
   uint64	file_sz;
   void		*map_file;
 
-  
+  file = dr_open_file(mod->full_path, DR_FILE_READ);
   dr_file_size(file, &file_sz);
 
   DR_ASSERT_MSG((map_file = dr_map_file(file, (size_t *)(&file_sz), 0, NULL,
@@ -153,10 +153,13 @@ void *get_got_from_plt(void *plt, void *drc)
       instr_destroy(drc, instr);
       return NULL;
     }
-  
+#ifdef __x86_64__
   if (instr_get_opcode(instr) == OP_jmp_ind)
     instr_get_rel_addr_target(instr, (app_pc *)(&got));
-
+#else
+  // todo fix this with a stripped program
+  dr_printf("%d\n", instr_get_opcode(instr));
+#endif
   instr_destroy(drc, instr);
 
   return got + sizeof(void *);
@@ -167,7 +170,10 @@ void add_plt(const module_data_t *mod, void *got, void *drcontext)
   sect_tmp_data		tmp_data_plt;
   tree_t		*new_node;
   module_segment_data_t	*seg_plt;
-  
+
+  // if the apth to the module is not present we can't get parse the file
+  if (!(mod->full_path))
+    return NULL;
   
   if (!(seg_plt = find_load_section(mod, &tmp_data_plt, PLT_NAME)))
     return;
@@ -191,6 +197,7 @@ void add_plt(const module_data_t *mod, void *got, void *drcontext)
     }
   else
     got += 3 * sizeof(void *);
+
   new_node->data = got;
 
   add_to_tree(&plt_tree, new_node);

@@ -72,11 +72,9 @@ void post_calloc(void *wrapctx, void *user_data)
 void pre_malloc(void *wrapctx, OUT void **user_data)
 {
   void		*drc;
-  
+
   drc = drwrap_get_drcontext(wrapctx);
-
   dr_mutex_lock(lock);
-
   // if is the first call of malloc it's an init call and we have to do nothing
   if (!malloc_init)
     {
@@ -90,7 +88,7 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
       dr_mutex_unlock(lock);
       return;
     }
-  
+
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0),
 			 get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc),
 			 drc);
@@ -138,9 +136,11 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   // if size == 0 => realloc call free
   if (!size)
     {
+      // this can happen if a block is alloc by a non wrap module and realloc
+      // call on it on a wrapped block
       if (!(block = search_on_tree(active_blocks, start)))
 	{
-	  dr_printf("realloc call with size 0 and non valid block addr\n");
+	  dr_mutex_unlock(lock);
 	  return ;
 	}
       block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
@@ -160,6 +160,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   if (!(tmp = dr_global_alloc(sizeof(realloc_tmp_t))))
     {
       dr_printf("dr_malloc fail\n");
+      dr_mutex_unlock(lock);
       return;
     }
 
@@ -220,8 +221,9 @@ void post_realloc(void *wrapctx, void *user_data)
         {
 	  block = data->block;
 	  set_addr_malloc(block, ret, block->flag, 1);
+	  // we dont set alloc because the post wrap happen after the return
 	  get_caller_data(&(block->alloc_func_pc), &(block->alloc_func_sym),
-			  drc, 1);
+			  drc, 0);
 	  block->alloc_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx),
 					      drc);
 	}

@@ -17,7 +17,7 @@ bool sym_to_hashmap(drsym_info_t *info,
   if (!ds_strcmp(info->name, "_GLOBAL_OFFSET_TABLE_"))
     ((ds_module_data_t*)data)->got = ((ds_module_data_t *)data)->start +
       info->start_offs;
-  
+
   old_val = hashtable_add_replace(&sym_hashtab,
 				  ((ds_module_data_t *)data)->start +
 				  info->start_offs,
@@ -28,7 +28,7 @@ bool sym_to_hashmap(drsym_info_t *info,
     {
       if (!(old_sym = dr_global_alloc(sizeof(*old_sym))))
   	{
-  	  dr_global_free(old_val, ds_strlen(old_val));
+  	  dr_global_free(old_val, ds_strlen(old_val) + 1);
   	  return false;
   	}
       old_sym->sym = old_val;
@@ -48,7 +48,7 @@ void clean_old_sym(void)
     {
       tmp = old_symlist;
       old_symlist = old_symlist->next;
-      dr_global_free(tmp->sym, ds_strlen(tmp->sym + 1));
+      dr_global_free(tmp->sym, ds_strlen(tmp->sym) + 1);
       dr_global_free(tmp, sizeof(*tmp));
     }
 }

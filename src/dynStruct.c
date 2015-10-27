@@ -33,7 +33,6 @@ static dr_emit_flags_t bb_app2app_event(void *drcontext,
 					__attribute__((unused))bool translating)
 {
   DR_ASSERT(drutil_expand_rep_string(drcontext, bb));
-
   return DR_EMIT_DEFAULT;
 }
 
@@ -50,48 +49,44 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
 
   if (pc == NULL)
     return DR_EMIT_DEFAULT;
-   
+
   // if the module is not monitored, we have to instrument we still
   // have to maj our stack with call addr
   if (pc_is_monitored(pc))
     {
-
       if (instr_reads_memory(instr))
-	for (int i = 0; i < instr_num_srcs(instr); i++)
-	  if (opnd_is_memory_reference(instr_get_src(instr, i)))
-	    {
-	      dr_insert_clean_call(drcontext, bb, instr, &memory_read,
-				   false, 1, OPND_CREATE_INTPTR(pc));
-	      // break to not instrument the same instruction 2 time
-	      break;
-	    }
+      	for (int i = 0; i < instr_num_srcs(instr); i++)
+      	  if (opnd_is_memory_reference(instr_get_src(instr, i)))
+      	    {
+      	      dr_insert_clean_call(drcontext, bb, instr, &memory_read,
+      	      			   false, 1, OPND_CREATE_INTPTR(pc));
+      	      // break to not instrument the same instruction 2 time
+      	      break;
+      	    }
 
       if (instr_writes_memory(instr))
-	for (int i = 0; i < instr_num_dsts(instr); i++)
-	  if (opnd_is_memory_reference(instr_get_dst(instr, i)))
-	    {
-	      dr_insert_clean_call(drcontext, bb, instr, &memory_write,
-				   false, 1, OPND_CREATE_INTPTR(pc));
-	      // break to not instrument the same instruction 2 time
-	      break;
-	    }
+      	for (int i = 0; i < instr_num_dsts(instr); i++)
+      	  if (opnd_is_memory_reference(instr_get_dst(instr, i)))
+      	    {
+      	      dr_insert_clean_call(drcontext, bb, instr, &memory_write,
+      	      			   false, 1, OPND_CREATE_INTPTR(pc));
+      	      /* break to not instrument the same instruction 2 time */
+      	      break;
+      	    }
     }
 
   // if one day dynStruct has to be used on arm, maybe some call will be missed
   // if it's a direct call we send the callee addr as parameter
   if (instr_is_call_direct(instr))
-    {
-      dr_insert_clean_call(drcontext, bb, instr, &dir_call_monitor,
-			   false, 1, OPND_CREATE_INTPTR(instr_get_branch_target_pc(instr)));
-    }
+    dr_insert_clean_call(drcontext, bb, instr, &dir_call_monitor,
+			 false, 1, OPND_CREATE_INTPTR(instr_get_branch_target_pc(instr)));
   // for indirect call we have to get callee addr on instrumentation function
   else if (instr_is_call_indirect(instr))
-    dr_insert_mbr_instrumentation(drcontext, bb, instr, &ind_call_monitor,
-				  SPILL_SLOT_1);
+      dr_insert_mbr_instrumentation(drcontext, bb, instr, &ind_call_monitor,
+				    SPILL_SLOT_1);
   else if (instr_is_return(instr))
     dr_insert_clean_call(drcontext, bb, instr, &ret_monitor,
 			 false, 0);
-
   return DR_EMIT_DEFAULT;
 }
 
@@ -99,10 +94,14 @@ static void load_event(void *drcontext,
 		       const module_data_t *mod,
 		       __attribute__((unused))bool loaded)
 {
-  app_pc		malloc = (app_pc)dr_get_proc_address(mod->handle, "malloc");
-  app_pc		calloc = (app_pc)dr_get_proc_address(mod->handle, "calloc");
-  app_pc		realloc = (app_pc)dr_get_proc_address(mod->handle, "realloc");
-  app_pc		free = (app_pc)dr_get_proc_address(mod->handle, "free");
+  app_pc		malloc = (app_pc)dr_get_proc_address(mod->handle,
+							     "malloc");
+  app_pc		calloc = (app_pc)dr_get_proc_address(mod->handle,
+							     "calloc");
+  app_pc		realloc = (app_pc)dr_get_proc_address(mod->handle,
+							      "realloc");
+  app_pc		free = (app_pc)dr_get_proc_address(mod->handle,
+							   "free");
   ds_module_data_t	tmp_data;
 
   dr_mutex_lock(lock);
@@ -115,6 +114,7 @@ static void load_event(void *drcontext,
   drsym_enumerate_symbols_ex(mod->full_path, sym_to_hashmap,
   			     sizeof(drsym_info_t), &tmp_data,
 			     DRSYM_DEMANGLE_FULL);
+
   add_plt(mod, tmp_data.got, drcontext);
   dr_mutex_unlock(lock);
   
@@ -123,7 +123,7 @@ static void load_event(void *drcontext,
 
   if (!module_is_alloc(mod))
     return;
-  
+
   if (malloc)
     DR_ASSERT(drwrap_wrap(malloc, pre_malloc, post_malloc));
 

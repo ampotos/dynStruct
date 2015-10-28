@@ -1,8 +1,8 @@
 # dynStruct
 dynStruct is a tool using dynamoRio to monitor memory access of an ELF binary via a data gatherer,
-and use this data to revcover structure of the original code.
+and use this data to recover structures of the original code.
 
-The data gathered can also be used to quickly find where and by who a menber of a structure is write or read.
+The data gathered can also be used to quickly find where and by which function a menber of a structure is write or read.
 
 Today only the data gatherer is available, the recovering of structures and a webui will come.
 
@@ -77,7 +77,7 @@ int main()
 Which after compilation look like this
 ![Example disassembly](http://i.imgur.com/L2i4zJS.png)
 
-If you run `drrun -c  dynStruct - -- tests/example` we get
+If we run `drrun -c  dynStruct - -- tests/example` we get
 ```
 test
 tast
@@ -95,7 +95,7 @@ alloc by 0x0000000000400617(main : 0x00000000004005f9) and free by 0x00000000004
 	details :
 			 4 bytes were accessed by 0x0000000000400624 (main : 0x00000000004005f9) 1 times
 ```
-We see all the right access on str done by the program himsel.
+We see all the right access on str done by the program himself.
 We can notice the 4 bytes access at offset 0 of the block due to gcc optimisation for initializing the string.
 
 Now if we run `drrun -c  dynStruct -m libc - -- tests/example` we are going to monitor all the libc access, and we get
@@ -136,5 +136,4 @@ alloc by 0x0000000000400617(main : 0x00000000004005f9) and free by 0x00000000004
 			 4 bytes were accessed by 0x0000000000400624 (main : 0x00000000004005f9) 1 times
 
 ```
-Now all the read access done by the libc because of the call to puts are listed.
-We can see the 2 strlen used by puts to print our string.
+Now all the read access done by the libc are listed.

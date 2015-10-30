@@ -121,7 +121,11 @@ int is_in_same_module(stack_t *stack, void *func)
   return ret;
 }
 
+#if __LP64__
+void ret_monitor(__attribute__((unused))void *pc)
+#else
 void ret_monitor(void *pc)
+#endif
 {
   stack_t       *stack;
   void          *drcontext = dr_get_current_drcontext();

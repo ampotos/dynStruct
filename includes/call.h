@@ -19,7 +19,7 @@ void ret_monitor(void *pc);
 void clean_stack(void *drcontext);
 void get_caller_data(void **addr, char **sym, void *drcontext, int alloc);
 
-#ifndef __X86_64__
+#if !__LP64__
 extern module_data_t	*dynamo_mod;
 #endif
 

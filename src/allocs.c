@@ -75,13 +75,23 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
 
   drc = drwrap_get_drcontext(wrapctx);
   dr_mutex_lock(lock);
-  // if is the first call of malloc it's an init call and we have to do nothing
+
+  // if is the first call of malloc it's an init call on 64 bit
+  // and the second in 32bit, so we have to do nothing
+#if __LP64__
   if (!malloc_init)
     {
       malloc_init++;
       dr_mutex_unlock(lock);
       return;
     }
+#else
+  if (malloc_init++ == 1)
+    {
+      dr_mutex_unlock(lock);
+      return;
+    }
+#endif
 
   if (!module_is_wrapped(drc))
     {
@@ -125,13 +135,22 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   
   dr_mutex_lock(lock);
 
-  // if is the first call of realloc it's an init call and we have to do nothing
+  // if is the first call of realloc it's an init call on 64 bit
+  // and the second in 32bit, so we have to do nothing
+#if __LP64__
   if (!realloc_init)
     {
       realloc_init++;
       dr_mutex_unlock(lock);
       return;
     }
+#else
+  if (realloc_init++ == 1)
+    {
+      dr_mutex_unlock(lock);
+      return;
+    }
+#endif
 
   // if size == 0 => realloc call free
   if (!size)
@@ -150,12 +169,6 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
       return;
     }
 
-  // we accept free from every where
-  if (!module_is_wrapped(drc))
-    {
-      dr_mutex_unlock(lock);
-      return;
-    }
 
   if (!(tmp = dr_global_alloc(sizeof(realloc_tmp_t))))
     {
@@ -171,13 +184,28 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   // if start == 0 => realloc call malloc
   if (!start)
     {
+      // is a block is alloc by a wrapped function and realloc by
+      // an unwrapped one we should take the realloc
+      // so when realloc is called to do a malloc is the only case
+      // when we have to check if the module is wrapped
+      if(!module_is_wrapped(drc))
+	{
+	  user_data = NULL;
+	  dr_global_free(tmp, sizeof(*tmp));
+	  return;
+	}
       tmp->block = NULL;
       dr_mutex_unlock(lock);
       return;
     }
 
+  // this can happen if the block is alloc by a non wrapped module
   if (!(block = search_on_tree(active_blocks, start)))
-    dr_printf("Realloc on %p error : addr was not previously malloc\n", start);
+    {
+      dr_global_free(tmp, sizeof(*tmp));
+      dr_mutex_unlock(lock);
+      return;
+    }
   else
     {
       del_from_tree(&active_blocks, start, NULL);

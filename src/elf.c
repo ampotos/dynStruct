@@ -153,7 +153,7 @@ void *get_got_from_plt(void *plt, void *drc)
       instr_destroy(drc, instr);
       return NULL;
     }
-#ifdef __x86_64__
+#if __LP64__
   if (instr_get_opcode(instr) == OP_jmp_ind)
     instr_get_rel_addr_target(instr, (app_pc *)(&got));
 #else
@@ -197,7 +197,7 @@ void add_plt(const module_data_t *mod, void *got, void *drcontext)
     }
   else
     got += 3 * sizeof(void *);
-
+    
   new_node->data = got;
 
   add_to_tree(&plt_tree, new_node);

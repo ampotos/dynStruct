@@ -45,48 +45,53 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
 					__attribute__((unused))bool translating,
 				        __attribute__((unused))void *user_data)
 {
-  app_pc	pc = instr_get_app_pc(instr);
+  app_pc	pc;
 
-  if (pc == NULL)
+  pc = instr_get_app_pc(instr);
+  
+  if (pc == NULL || instr_is_meta(instr))
     return DR_EMIT_DEFAULT;
-
+  
   // if the module is not monitored, we have to instrument we still
   // have to maj our stack with call addr
   if (pc_is_monitored(pc))
     {
       if (instr_reads_memory(instr))
-      	for (int i = 0; i < instr_num_srcs(instr); i++)
-      	  if (opnd_is_memory_reference(instr_get_src(instr, i)))
-      	    {
-      	      dr_insert_clean_call(drcontext, bb, instr, &memory_read,
-      	      			   false, 1, OPND_CREATE_INTPTR(pc));
-      	      // break to not instrument the same instruction 2 time
-      	      break;
-      	    }
-
+	for (int i = 0; i < instr_num_srcs(instr); i++)
+	  if (opnd_is_memory_reference(instr_get_src(instr, i)))
+	    {
+	      dr_insert_clean_call(drcontext, bb, instr, &memory_read,
+				   false, 1, OPND_CREATE_INTPTR(pc));
+	      // break to not instrument the same instruction 2 time
+	      break;
+	    }
+      
       if (instr_writes_memory(instr))
-      	for (int i = 0; i < instr_num_dsts(instr); i++)
-      	  if (opnd_is_memory_reference(instr_get_dst(instr, i)))
-      	    {
-      	      dr_insert_clean_call(drcontext, bb, instr, &memory_write,
-      	      			   false, 1, OPND_CREATE_INTPTR(pc));
+	for (int i = 0; i < instr_num_dsts(instr); i++)
+	  if (opnd_is_memory_reference(instr_get_dst(instr, i)))
+	    {
+	      dr_insert_clean_call(drcontext, bb, instr, &memory_write,
+				   false, 1, OPND_CREATE_INTPTR(pc));
       	      /* break to not instrument the same instruction 2 time */
-      	      break;
-      	    }
+	      break;
+	    }
     }
-
+  
   // if one day dynStruct has to be used on arm, maybe some call will be missed
   // if it's a direct call we send the callee addr as parameter
-  if (instr_is_call_direct(instr))
+  if (instr_is_app(instr) && instr_is_call_direct(instr))
     dr_insert_clean_call(drcontext, bb, instr, &dir_call_monitor,
-			 false, 1, OPND_CREATE_INTPTR(instr_get_branch_target_pc(instr)));
+			 false, 1,
+			 OPND_CREATE_INTPTR(instr_get_branch_target_pc(instr)));
   // for indirect call we have to get callee addr on instrumentation function
-  else if (instr_is_call_indirect(instr))
-      dr_insert_mbr_instrumentation(drcontext, bb, instr, &ind_call_monitor,
-				    SPILL_SLOT_1);
-  else if (instr_is_return(instr))
+  else if (instr_is_app(instr) && instr_is_call_indirect(instr))
+    dr_insert_mbr_instrumentation(drcontext, bb, instr, &ind_call_monitor,
+				  SPILL_SLOT_1);
+  else if (instr_is_app(instr) && instr_is_return(instr) &&
+	   instr_get_opcode(instr) != OP_iret)
     dr_insert_clean_call(drcontext, bb, instr, &ret_monitor,
-			 false, 0);
+			 false, 1, OPND_CREATE_INTPTR(instr_get_app_pc(instr)));
+
   return DR_EMIT_DEFAULT;
 }
 
@@ -106,6 +111,12 @@ static void load_event(void *drcontext,
 
   dr_mutex_lock(lock);
 
+  // temporary fix for the catching dynamorio call
+#if !__LP64__
+  if (!ds_strncmp("libdynamorio", dr_module_preferred_name(mod), ds_strlen("libdynamorio")))
+    dynamo_mod = dr_copy_module_data(mod);
+#endif
+  
   if (!maj_args(mod))
     return ;
   

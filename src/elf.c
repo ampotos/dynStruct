@@ -145,7 +145,7 @@ void *get_got_from_plt(void *plt, void *drc)
   void		*jmp_pc = dr_app_pc_for_decoding(decode_next_pc(drc, plt));
   instr_t       *instr = instr_create(drc);
   void		*got = NULL;
-  
+
   instr_init(drc, instr);
   if (!decode(drc, jmp_pc, instr))
     {
@@ -153,12 +153,11 @@ void *get_got_from_plt(void *plt, void *drc)
       instr_destroy(drc, instr);
       return NULL;
     }
-#if __LP64__
   if (instr_get_opcode(instr) == OP_jmp_ind)
+#if __LP64__
     instr_get_rel_addr_target(instr, (app_pc *)(&got));
 #else
-  // todo fix this with a stripped program
-  dr_printf("%d\n", instr_get_opcode(instr));
+    got = opnd_get_addr(instr_get_target(instr));
 #endif
   instr_destroy(drc, instr);
 
@@ -197,7 +196,7 @@ void add_plt(const module_data_t *mod, void *got, void *drcontext)
     }
   else
     got += 3 * sizeof(void *);
-    
+
   new_node->data = got;
 
   add_to_tree(&plt_tree, new_node);

@@ -35,6 +35,8 @@ static dr_emit_flags_t bb_app2app_event(void *drcontext,
   DR_ASSERT(drutil_expand_rep_string(drcontext, bb));
   return DR_EMIT_DEFAULT;
 }
+file_t f;
+
 
 // instrument each read or write instruction in order to monitor them
 // also instrument each call/return to update the stack of functions
@@ -185,6 +187,8 @@ DR_EXPORT void dr_init(client_id_t id)
     NULL,
     NULL,
     0};
+
+  f = dr_open_file("dump", DR_FILE_WRITE_OVERWRITE);
   
   dr_set_client_name("dynStruct", "ampotos@gmail.com");
 

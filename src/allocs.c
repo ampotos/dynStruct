@@ -79,9 +79,8 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
   // if is the first call of malloc it's an init call on 64 bit
   // and the second in 32bit, so we have to do nothing
 #if __LP64__
-  if (!malloc_init)
+  if (!malloc_init++ && !realloc_init)
     {
-      malloc_init++;
       dr_mutex_unlock(lock);
       return;
     }
@@ -169,7 +168,6 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
       return;
     }
 
-
   if (!(tmp = dr_global_alloc(sizeof(realloc_tmp_t))))
     {
       dr_printf("dr_malloc fail\n");
@@ -198,10 +196,11 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
       dr_mutex_unlock(lock);
       return;
     }
-
+  
   // this can happen if the block is alloc by a non wrapped module
   if (!(block = search_on_tree(active_blocks, start)))
     {
+      user_data = NULL;
       dr_global_free(tmp, sizeof(*tmp));
       dr_mutex_unlock(lock);
       return;
@@ -209,7 +208,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   else
     {
       del_from_tree(&active_blocks, start, NULL);
-
+  
       if ((new_block = dr_global_alloc(sizeof(*new_block))))
 	{
 	  block->flag |= FREE_BY_REALLOC;
@@ -218,7 +217,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
 			  drc, 1);
 	  block->next = old_blocks;
 	  old_blocks = block;
-
+      
 	  ds_memset(new_block, 0, sizeof(*new_block));
 	  new_block->flag |= ALLOC_BY_REALLOC;
 	  block = new_block;
@@ -227,6 +226,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
 	dr_printf("fail alloc\n");
       block->size = size;
     }
+  
   tmp->block = block;
 
   dr_mutex_unlock(lock);

@@ -131,7 +131,7 @@ void ret_monitor(void *pc)
   void          *drcontext = dr_get_current_drcontext();
 
   static int first_plt = 0;
-  
+    
   stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
 
 #if __LP64__
@@ -141,10 +141,10 @@ void ret_monitor(void *pc)
 		(stack->was_on_plt && !first_plt)))
 #endif
     {
-#if __LP64__
+/* #if !__LP64__ */
       if (!first_plt)
 	first_plt++;
-#endif
+/* #endif */
       drmgr_set_tls_field(drcontext, tls_stack_idx, stack->next);
       dr_thread_free(drcontext, stack, sizeof(*stack));
     }

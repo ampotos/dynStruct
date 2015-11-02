@@ -82,18 +82,18 @@ If we run `drrun -c  dynStruct - -- tests/example` we get
 test
 tast
 block : 0x0000000000603010-0x0000000000603015(0x5) was free
-alloc by 0x0000000000400617(main : 0x00000000004005f9) and free by 0x000000000040064c(main : 0x00000000004005f9)
+alloc by 0x0000000000400617(main : 0x00000000004005f9 in example) and free by 0x000000000040064c(main : 0x00000000004005f9 in example)
 	 WRITE :
 	 was access at offset 1 (1 times)
 	details :
-			 1 bytes were accessed by 0x00000000004005e7 (print : 0x00000000004005b6) 1 times
+			 1 bytes were accessed by 0x00000000004005e7 (print : 0x00000000004005b6 in example) 1 times
 	 was access at offset 4 (2 times)
 	details :
-			 1 bytes were accessed by 0x000000000040062a (main : 0x00000000004005f9) 1 times
-			 1 bytes were accessed by 0x0000000000400636 (main : 0x00000000004005f9) 1 times
+			 1 bytes were accessed by 0x000000000040062a (main : 0x00000000004005f9 in example) 1 times
+			 1 bytes were accessed by 0x0000000000400636 (main : 0x00000000004005f9 in example) 1 times
 	 was access at offset 0 (1 times)
 	details :
-			 4 bytes were accessed by 0x0000000000400624 (main : 0x00000000004005f9) 1 times
+			 4 bytes were accessed by 0x0000000000400624 (main : 0x00000000004005f9 in example) 1 times
 ```
 We see all the right access on str done by the program himself.
 We can notice the 4 bytes access at offset 0 of the block due to gcc optimisation for initializing the string.
@@ -103,37 +103,37 @@ Now if we run `drrun -c  dynStruct -m libc - -- tests/example` we are going to m
 test
 tast
 block : 0x0000000000603010-0x0000000000603015(0x5) was free
-alloc by 0x0000000000400617(main : 0x00000000004005f9) and free by 0x000000000040064c(main : 0x00000000004005f9)
+alloc by 0x0000000000400617(main : 0x00000000004005f9 in example) and free by 0x000000000040064c(main : 0x00000000004005f9 in example)
 	 READ :
 	 was access at offset 1 (2 times)
 	details :
-			 1 bytes were accessed by 0x00007fca292156c2 (_IO_default_xsputn : 0x00007fca29215650) 1 times
-			 1 bytes were accessed by 0x00007fca29213c9d (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007fca29213b70) 1 times
+			 1 bytes were accessed by 0x00007fca292156c2 (_IO_default_xsputn : 0x00007fca29215650 in libc.so.6) 1 times
+			 1 bytes were accessed by 0x00007fca29213c9d (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007fca29213b70 in libc.so.6) 1 times
 	 was access at offset 2 (2 times)
 	details :
-			 1 bytes were accessed by 0x00007fca292156c2 (_IO_default_xsputn : 0x00007fca29215650) 1 times
-			 1 bytes were accessed by 0x00007fca29213c9d (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007fca29213b70) 1 times
+			 1 bytes were accessed by 0x00007fca292156c2 (_IO_default_xsputn : 0x00007fca29215650 in libc.so.6) 1 times
+			 1 bytes were accessed by 0x00007fca29213c9d (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007fca29213b70 in libc.so.6) 1 times
 	 was access at offset 3 (2 times)
 	details :
-			 1 bytes were accessed by 0x00007fca292156c2 (_IO_default_xsputn : 0x00007fca29215650) 1 times
-			 1 bytes were accessed by 0x00007fca29213c81 (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007fca29213b70) 1 times
+			 1 bytes were accessed by 0x00007fca292156c2 (_IO_default_xsputn : 0x00007fca29215650 in libc.so.6) 1 times
+			 1 bytes were accessed by 0x00007fca29213c81 (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007fca29213b70 in libc.so.6) 1 times
 	 was access at offset 0 (5 times)
 	details :
-			 1 bytes were accessed by 0x00007fca292156c2 (_IO_default_xsputn : 0x00007fca29215650) 1 times
-			 16 bytes were accessed by 0x00007fca292210ca (strlen : 0x00007fca292210a0) 2 times
-			 4 bytes were accessed by 0x00007fca29224c2e (__mempcpy_sse2 : 0x00007fca29224c00) 1 times
-			 1 bytes were accessed by 0x00007fca29213c9d (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007fca29213b70) 1 times
+			 1 bytes were accessed by 0x00007fca292156c2 (_IO_default_xsputn : 0x00007fca29215650 in libc.so.6) 1 times
+			 16 bytes were accessed by 0x00007fca292210ca (strlen : 0x00007fca292210a0 in libc.so.6) 2 times
+			 4 bytes were accessed by 0x00007fca29224c2e (__mempcpy_sse2 : 0x00007fca29224c00 in libc.so.6) 1 times
+			 1 bytes were accessed by 0x00007fca29213c9d (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007fca29213b70 in libc.so.6) 1 times
 	 WRITE :
 	 was access at offset 1 (1 times)
 	details :
-			 1 bytes were accessed by 0x00000000004005e7 (print : 0x00000000004005b6) 1 times
+			 1 bytes were accessed by 0x00000000004005e7 (print : 0x00000000004005b6 in example) 1 times
 	 was access at offset 4 (2 times)
 	details :
-			 1 bytes were accessed by 0x000000000040062a (main : 0x00000000004005f9) 1 times
-			 1 bytes were accessed by 0x0000000000400636 (main : 0x00000000004005f9) 1 times
+			 1 bytes were accessed by 0x000000000040062a (main : 0x00000000004005f9 in example) 1 times
+			 1 bytes were accessed by 0x0000000000400636 (main : 0x00000000004005f9 in example) 1 times
 	 was access at offset 0 (1 times)
 	details :
-			 4 bytes were accessed by 0x0000000000400624 (main : 0x00000000004005f9) 1 times
+			 4 bytes were accessed by 0x0000000000400624 (main : 0x00000000004005f9 in example) 1 times
 
 ```
 Now all the read access done by the libc are listed.

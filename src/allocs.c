@@ -163,7 +163,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
 	}
       block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
       get_caller_data(&(block->free_func_pc), &(block->free_func_sym),
-		      drc, 1);
+		      &(block->free_module_name), drc, 1);
       dr_mutex_unlock(lock);
       return;
     }
@@ -214,7 +214,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
 	  block->flag |= FREE_BY_REALLOC;
 	  block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
 	  get_caller_data(&(block->free_func_pc), &(block->free_func_sym),
-			  drc, 1);
+			  &(block->free_module_name), drc, 1);
 	  block->next = old_blocks;
 	  old_blocks = block;
       
@@ -251,7 +251,7 @@ void post_realloc(void *wrapctx, void *user_data)
 	  set_addr_malloc(block, ret, block->flag, 1);
 	  // we dont set alloc because the post wrap happen after the return
 	  get_caller_data(&(block->alloc_func_pc), &(block->alloc_func_sym),
-			  drc, 0);
+			  &(block->alloc_module_name), drc, 0);
 	  block->alloc_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx),
 					      drc);
 	}
@@ -290,7 +290,7 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
 	{
 	  block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
 	  get_caller_data(&(block->free_func_pc), &(block->free_func_sym),
-			  drc, 1);
+			  &(block->free_module_name), drc, 1);
 	}
       block->next = old_blocks;
       old_blocks = block;

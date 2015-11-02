@@ -13,6 +13,7 @@ typedef struct orig_s
   void		*addr;
   void		*start_func_addr;
   char		*start_func_sym;
+  const char	*module_name;
 } orig_t;
 
 typedef struct access_s
@@ -34,9 +35,11 @@ typedef struct malloc_s
   void		  *alloc_pc;
   void		  *alloc_func_pc;
   char		  *alloc_func_sym;
+  const char	  *alloc_module_name;
   void		  *free_pc;
   void		  *free_func_pc;
   char		  *free_func_sym;
+  const char	  *free_module_name;
 } malloc_t;
 
 // this struct is only use as a user_data for realloc wrapping

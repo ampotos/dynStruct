@@ -10,6 +10,8 @@
 module_data_t	*dynamo_mod = NULL;
 #endif
 
+module_t	*module_list = NULL;
+
 void *get_real_func_addr(void *pc, void *got)
 {
   void          *drcontext = dr_get_current_drcontext();
@@ -157,10 +159,28 @@ void clean_stack(void *drcontext)
     }
 }
 
-void get_caller_data(void **addr, char **sym, void *drcontext, int alloc)
+int add_to_module_list(const module_data_t *mod)
 {
-  stack_t *func = drmgr_get_tls_field(drcontext, tls_stack_idx);
-  void	*got;
+  module_t	*node;
+
+  if (!(node = dr_global_alloc(sizeof(*node))))
+    return false;
+
+  node->next = module_list;
+  module_list = node;
+
+  if (!(node->module = dr_copy_module_data(mod)))
+    return false;
+
+  return true;
+}
+
+void get_caller_data(void **addr, char **sym, const char **module,
+		     void *drcontext, int alloc)
+{
+  stack_t	*func = drmgr_get_tls_field(drcontext, tls_stack_idx);
+  void		*got;
+  module_t	*mod;
   
   if(!func)
     return;
@@ -190,5 +210,32 @@ void get_caller_data(void **addr, char **sym, void *drcontext, int alloc)
       if (!func->name)
 	func->name = hashtable_lookup(&sym_hashtab, func->addr);
       *sym = func->name;
+    }
+  
+  if (module)
+    {
+      for (mod = module_list; mod; mod = mod->next)
+	{
+	  if (dr_module_contains_addr(mod->module, func->addr))
+	    {
+	      func->module_name = dr_module_preferred_name(mod->module);
+	      *module = func->module_name;
+	      return;
+	    }
+	}
+    }
+}
+
+void clean_module_list()
+{
+  module_t	*mod = module_list;
+  module_t	*tmp;
+  
+  while (mod)
+    {
+      tmp = mod;
+      mod = mod->next;
+      dr_free_module_data(tmp->module);
+      dr_global_free(tmp, sizeof(*tmp));
     }
 }

@@ -302,7 +302,7 @@ int module_is_wrapped(void *drcontext)
 {
   void	*addr;
 
-  get_caller_data(&addr, NULL, drcontext, 1);
+  get_caller_data(&addr, NULL, NULL, drcontext, 1);
 
   for (int ct = 0; ct < args->size_wrap; ct++)
     {

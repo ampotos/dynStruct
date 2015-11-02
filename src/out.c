@@ -10,9 +10,9 @@ void free_orig(orig_t *orig)
 
   while (orig)
     {
-      dr_printf("\t\t\t %d bytes were accessed by %p (%s : %p) %d times\n",
+      dr_printf("\t\t\t %d bytes were accessed by %p (%s : %p in %s) %d times\n",
 		orig->size, orig->addr, orig->start_func_sym,
-		orig->start_func_addr, orig->nb_hit);
+		orig->start_func_addr, orig->module_name, orig->nb_hit);
       tmp = orig->next;
       dr_global_free(orig, sizeof(*orig));
       orig = tmp;
@@ -40,22 +40,22 @@ void print_block(malloc_t *block)
     dr_printf("was not free\n");
   
   if (block->flag & ALLOC)
-    dr_printf("alloc by %p(%s : %p) ",
+    dr_printf("alloc by %p(%s : %p in %s) ",
 	      block->alloc_pc, block->alloc_func_sym,
-	      block->alloc_func_pc);
+	      block->alloc_func_pc, block->alloc_module_name);
   else if (block->flag & ALLOC_BY_REALLOC)
-    dr_printf("alloc (via realloc) by %p(%s : %p) ",
+    dr_printf("alloc (via realloc) by %p(%s : %p in %s) ",
 	      block->alloc_pc, block->alloc_func_sym,
-	      block->alloc_func_pc);
+	      block->alloc_func_pc, block->alloc_module_name);
   
   if (block->flag & FREE)
-    dr_printf("and free by %p(%s : %p)\n",
-	      block->free_pc,
-	      block->free_func_sym, block->free_func_pc);
-  else if (block->flag & FREE_BY_REALLOC)      
-    dr_printf("and free (via a realloc) by %p(%s : %p)\n",
-	      block->free_pc,
-	      block->free_func_sym, block->free_func_pc);
+    dr_printf("and free by %p(%s : %p in %s)\n",
+	      block->free_pc, block->free_func_sym,
+	      block->free_func_pc, block->free_module_name);
+  else if (block->flag & FREE_BY_REALLOC)
+    dr_printf("and free (via a realloc) by %p(%s : %p in %s)\n",
+	      block->free_pc, block->free_func_sym,
+	      block->free_func_pc, block->free_module_name);
   else
     dr_printf("\n");
   
@@ -88,7 +88,7 @@ void print_console(void)
 void output(void)
 {
   char	*filename = get_output_name();
-  
+
   if (!filename)
     print_console();
   else

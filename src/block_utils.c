@@ -50,8 +50,9 @@ malloc_t *add_block(size_t size, void *pc, void *drcontext)
       ds_memset(new, 0, sizeof(*new));
       new->size = size;
       new->alloc_pc = pc;
-      get_caller_data(&new->alloc_func_pc,
-		      &new->alloc_func_sym, drcontext, 1);
+      get_caller_data(&(new->alloc_func_pc),
+		      &(new->alloc_func_sym),
+		      &(new->alloc_module_name), drcontext, 1);
     }
 
   return new;

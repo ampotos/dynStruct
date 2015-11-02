@@ -20,7 +20,8 @@ orig_t *new_orig(size_t size, void *pc, void *drcontext)
   orig->addr = pc;
   // get the start addr of the function doing the access
   get_caller_data(&(orig->start_func_addr),
-		  &(orig->start_func_sym), drcontext, 0);
+		  &(orig->start_func_sym),
+		  &(orig->module_name), drcontext, 0);
 
   return orig;
 }

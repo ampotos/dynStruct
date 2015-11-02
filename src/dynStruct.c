@@ -118,6 +118,9 @@ static void load_event(void *drcontext,
   if (!ds_strncmp("libdynamorio", dr_module_preferred_name(mod), ds_strlen("libdynamorio")))
     dynamo_mod = dr_copy_module_data(mod);
 #endif
+
+  if (!add_to_module_list(mod))
+    return;
   
   if (!maj_args(mod))
     return ;
@@ -162,6 +165,7 @@ static void exit_event(void)
 
   output();
 
+  clean_module_list();
   clean_old_sym();
 
   hashtable_delete(&sym_hashtab);

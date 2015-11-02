@@ -130,21 +130,14 @@ void ret_monitor(void *pc)
   stack_t       *stack;
   void          *drcontext = dr_get_current_drcontext();
 
-  static int first_plt = 0;
-    
   stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
 
 #if __LP64__
   if (stack)
 #else
-  if (stack && (is_in_same_module(stack, pc) ||
-		(stack->was_on_plt && !first_plt)))
+  if (stack && (is_in_same_module(stack, pc) || (stack->was_on_plt)))
 #endif
     {
-/* #if !__LP64__ */
-      if (!first_plt)
-	first_plt++;
-/* #endif */
       drmgr_set_tls_field(drcontext, tls_stack_idx, stack->next);
       dr_thread_free(drcontext, stack, sizeof(*stack));
     }

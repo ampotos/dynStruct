@@ -85,7 +85,7 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
       return;
     }
 #else
-  if (malloc_init++ == 1)
+  if (malloc_init++ == 1 && realloc_init != 1)
     {
       dr_mutex_unlock(lock);
       return;

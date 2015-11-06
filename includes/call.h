@@ -29,6 +29,10 @@ void get_caller_data(void **addr, char **sym, const char **module,
 int add_to_module_list(const module_data_t *mod);
 void clean_module_list();
 
+#if !__X86_64__
+bool indirect_call_ignore(instr_t *isntr);
+#endif
+
 extern module_t		*module_list;
 
 #endif

@@ -78,7 +78,7 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
 
   // if is the first call of malloc it's an init call on 64 bit
   // and the second in 32bit, so we have to do nothing
-#if __X86_64__
+#ifdef BUILD_64
   if (!malloc_init++ && !realloc_init)
     {
       dr_mutex_unlock(lock);
@@ -95,10 +95,11 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
   
   if (!module_is_wrapped(drc))
     {
+      dr_printf("unwrapped malloc of %d\n", drwrap_get_arg(wrapctx, 0));
       dr_mutex_unlock(lock);
       return;
     }
-
+  
   *user_data = add_block((size_t)drwrap_get_arg(wrapctx, 0),
 			 get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc),
 			 drc);
@@ -136,7 +137,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   dr_mutex_lock(lock);
   // if is the first call of realloc it's an init call on 64 bit
   // and the second in 32bit, so we have to do nothing
-#if __X86_64__
+#ifdef BUILD_64
   if (!realloc_init)
     {
       realloc_init++;
@@ -245,12 +246,10 @@ void post_realloc(void *wrapctx, void *user_data)
   if (data)
     {
       dr_mutex_lock(lock);
-      dr_printf("yep\n");
       if (data->block)
         {
 	  block = data->block;
 	  set_addr_malloc(block, ret, block->flag, 1);
-	  dr_printf("nop\n");
 	  // we dont set alloc because the post wrap happen after the return
 	  get_caller_data(&(block->alloc_func_pc), &(block->alloc_func_sym),
 			  &(block->alloc_module_name), drc, 0);

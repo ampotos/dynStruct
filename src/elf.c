@@ -154,7 +154,7 @@ void *get_got_from_plt(void *plt, void *drc)
       return NULL;
     }
   if (instr_get_opcode(instr) == OP_jmp_ind)
-#if __X86_64__
+#ifdef BUILD_64
     instr_get_rel_addr_target(instr, (app_pc *)(&got));
 #else
     got = opnd_get_addr(instr_get_target(instr));

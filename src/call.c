@@ -13,7 +13,7 @@ void *get_real_func_addr(void *pc, void *got)
   void          *drcontext = dr_get_current_drcontext();
   instr_t       *instr = instr_create(drcontext);
   int		offset;
-
+  
   pc = dr_app_pc_for_decoding(pc);
 
   instr_init(drcontext, instr);
@@ -39,7 +39,7 @@ void *get_real_func_addr(void *pc, void *got)
   offset = opnd_get_immed_int(instr_get_src(instr, 0));
   instr_destroy(drcontext, instr);
 
-#if __X86_64__
+#ifdef BUILD_64
   return *((ptr_int_t **)(got + offset * sizeof(void*)));
 #else
   return *((ptr_int_t **)(got + offset / 2));
@@ -59,20 +59,37 @@ void dir_call_monitor(void *pc)
     {
       ds_memset(new_func, 0, sizeof(*new_func));
       new_func->next = stack;
-      // we check is the addr is on plt here for performance issue
+      // we check if the addr is on plt here for performance
       // the plt addr is going to be replace by the real addr
-      // of the target function the first time we need to get
-      // this information
+      // of the target function the first time we need to get it
       if (search_on_tree(plt_tree, pc))
 	{
 	  new_func->on_plt = 1;
 	  new_func->was_on_plt = 1;
 	}
       new_func->addr = pc;
-      
       drmgr_set_tls_field(drcontext, tls_stack_idx, new_func);
     }
 }
+
+/* apparently call relative to gs segment don't have proper return on 32 bits */
+/* this made the stack to be false and make the wrapped and monitoring. */
+/* detection do false positive */
+/* That kind af call don't have symbol so it's not a problem to just */
+/* ignore them. */
+/* for now no problem was detected on 64 bits build */
+#ifdef BUILD_32
+bool indirect_call_ignore(instr_t *instr)
+{
+  opnd_t	src;
+
+  src = instr_get_src(instr, 0);
+
+  if (opnd_is_far_base_disp(src) && opnd_get_segment(src) == DR_SEG_GS)
+    return true;
+  return false;
+}
+#endif
 
 
 void ind_call_monitor(app_pc __attribute__((unused))caller, app_pc callee)
@@ -87,8 +104,6 @@ int is_in_same_module(stack_t *stack, void *func)
   void		*got;
   void		*tmp_addr;
 
-  static int first_malloc= 0;
-  
   if (stack->on_plt)
     {
       got = search_on_tree(plt_tree, stack->addr);
@@ -104,17 +119,11 @@ int is_in_same_module(stack_t *stack, void *func)
   ret = dr_module_contains_addr(mod, func);
 
   dr_free_module_data(mod);
-
-  if (!ret && !first_malloc)
-    {
-      first_malloc++;
-      return true;
-    }
   
   return ret;
 }
 
-#if __X86_64__
+#ifdef BUILD_64
 void ret_monitor(__attribute__((unused))void *pc)
 #else
 void ret_monitor(void *pc)
@@ -125,7 +134,7 @@ void ret_monitor(void *pc)
 
   stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
 
-#if __X86_64__
+#ifdef BUILD_64
   if (stack)
 #else
   if (stack && (is_in_same_module(stack, pc) || (stack->was_on_plt)))
@@ -180,7 +189,6 @@ void get_caller_data(void **addr, char **sym, const char **module,
   // that called *alloc or free
   if (alloc && func->next)
     func = func->next;
-  
   // we read the got here, because at the time when the plt is called
   // the got may not contain the addr of the target function
   // the check to know if the addr is in plt or not is done at the same

@@ -92,6 +92,7 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
     }
 #endif
 
+  
   if (!module_is_wrapped(drc))
     {
       dr_mutex_unlock(lock);
@@ -133,7 +134,6 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   void		*drc = drwrap_get_drcontext(wrapctx);
   
   dr_mutex_lock(lock);
-
   // if is the first call of realloc it's an init call on 64 bit
   // and the second in 32bit, so we have to do nothing
 #if __X86_64__
@@ -200,7 +200,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   // this can happen if the block is alloc by a non wrapped module
   if (!(block = search_on_tree(active_blocks, start)))
     {
-      user_data = NULL;
+      *user_data = NULL;
       dr_global_free(tmp, sizeof(*tmp));
       dr_mutex_unlock(lock);
       return;
@@ -245,10 +245,12 @@ void post_realloc(void *wrapctx, void *user_data)
   if (data)
     {
       dr_mutex_lock(lock);
+      dr_printf("yep\n");
       if (data->block)
         {
 	  block = data->block;
 	  set_addr_malloc(block, ret, block->flag, 1);
+	  dr_printf("nop\n");
 	  // we dont set alloc because the post wrap happen after the return
 	  get_caller_data(&(block->alloc_func_pc), &(block->alloc_func_sym),
 			  &(block->alloc_module_name), drc, 0);

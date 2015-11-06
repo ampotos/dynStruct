@@ -51,7 +51,7 @@ void dir_call_monitor(void *pc)
   stack_t	*new_func;
   stack_t	*stack;
   void		*drcontext = dr_get_current_drcontext();
-  
+
   stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
   if (!(new_func = dr_thread_alloc(drcontext, sizeof(*new_func))))
     dr_printf("dr_malloc fail\n");
@@ -175,7 +175,6 @@ void get_caller_data(void **addr, char **sym, const char **module,
   
   if(!func)
     return;
-
   // alloc is set for *alloc and free, because in this case we have to
   // skip the first entry on the stack to get the function
   // that called *alloc or free

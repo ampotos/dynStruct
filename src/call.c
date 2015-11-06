@@ -6,10 +6,6 @@
 #include "../includes/elf.h"
 #include "../includes/utils.h"
 
-#if !__LP64__
-module_data_t	*dynamo_mod = NULL;
-#endif
-
 module_t	*module_list = NULL;
 
 void *get_real_func_addr(void *pc, void *got)
@@ -43,7 +39,7 @@ void *get_real_func_addr(void *pc, void *got)
   offset = opnd_get_immed_int(instr_get_src(instr, 0));
   instr_destroy(drcontext, instr);
 
-#if __LP64__
+#if __X86_64__
   return *((ptr_int_t **)(got + offset * sizeof(void*)));
 #else
   return *((ptr_int_t **)(got + offset / 2));
@@ -56,11 +52,6 @@ void dir_call_monitor(void *pc)
   stack_t	*stack;
   void		*drcontext = dr_get_current_drcontext();
   
-#if !__LP64__
-  if ((dynamo_mod && dr_module_contains_addr(dynamo_mod, pc)))
-    return;
-#endif
-
   stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
   if (!(new_func = dr_thread_alloc(drcontext, sizeof(*new_func))))
     dr_printf("dr_malloc fail\n");
@@ -123,7 +114,7 @@ int is_in_same_module(stack_t *stack, void *func)
   return ret;
 }
 
-#if __LP64__
+#if __X86_64__
 void ret_monitor(__attribute__((unused))void *pc)
 #else
 void ret_monitor(void *pc)
@@ -134,7 +125,7 @@ void ret_monitor(void *pc)
 
   stack = drmgr_get_tls_field(drcontext, tls_stack_idx);
 
-#if __LP64__
+#if __X86_64__
   if (stack)
 #else
   if (stack && (is_in_same_module(stack, pc) || (stack->was_on_plt)))

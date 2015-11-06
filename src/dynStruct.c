@@ -111,12 +111,6 @@ static void load_event(void *drcontext,
 
   dr_mutex_lock(lock);
 
-  // temporary fix for the catching dynamorio call
-#if !__LP64__
-  if (!ds_strncmp("libdynamorio", dr_module_preferred_name(mod), ds_strlen("libdynamorio")))
-    dynamo_mod = dr_copy_module_data(mod);
-#endif
-
   if (!add_to_module_list(mod))
     return;
   

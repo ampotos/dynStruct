@@ -78,7 +78,7 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
 
   // if is the first call of malloc it's an init call on 64 bit
   // and the second in 32bit, so we have to do nothing
-#if __LP64__
+#if __X86_64__
   if (!malloc_init++ && !realloc_init)
     {
       dr_mutex_unlock(lock);
@@ -136,7 +136,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
 
   // if is the first call of realloc it's an init call on 64 bit
   // and the second in 32bit, so we have to do nothing
-#if __LP64__
+#if __X86_64__
   if (!realloc_init)
     {
       realloc_init++;

@@ -29,10 +29,6 @@ void get_caller_data(void **addr, char **sym, const char **module,
 int add_to_module_list(const module_data_t *mod);
 void clean_module_list();
 
-#if !__LP64__
-extern module_data_t	*dynamo_mod;
-#endif
-
 extern module_t		*module_list;
 
 #endif

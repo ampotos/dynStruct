@@ -13,7 +13,6 @@ static int realloc_init = 0;
 
 // return the addr of the previous instructions
 // a bad addr can be return in some specific case but generally work good
-// the prev instr is supposed to be a call
 void *get_prev_instr_pc(void *pc, void *drc)
 {
   instr_t	*instr = instr_create(drc);
@@ -76,8 +75,8 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
   drc = drwrap_get_drcontext(wrapctx);
   dr_mutex_lock(lock);
 
-  // if is the first call of malloc it's an init call on 64 bit
-  // and the second in 32bit, so we have to do nothing
+  // the first call on 64 bit and the second in 32bit
+  // are init call, so we have to do nothing
 #ifdef BUILD_64
   if (!malloc_init++ && !realloc_init)
     {
@@ -113,7 +112,6 @@ void post_malloc(void *wrapctx, void *user_data)
 
   dr_mutex_lock(lock);
   
-  // first malloc don't set user_data because is call for init
   if (!block)
     {
       dr_mutex_unlock(lock);
@@ -135,8 +133,8 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   void		*drc = drwrap_get_drcontext(wrapctx);
   
   dr_mutex_lock(lock);
-  // if is the first call of realloc it's an init call on 64 bit
-  // and the second in 32bit, so we have to do nothing
+  // the first call on 64 bit and the second in 32bit
+  // are init call, so we have to do nothing
 #ifdef BUILD_64
   if (!realloc_init)
     {
@@ -152,11 +150,11 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
     }
 #endif
 
-  // if size == 0 => realloc call free
+  // if size == 0, realloc call free
   if (!size)
     {
       // this can happen if a block is alloc by a non wrap module and realloc
-      // call on it on a wrapped block
+      // on a wrapped one
       if (!(block = search_on_tree(active_blocks, start)))
 	{
 	  dr_mutex_unlock(lock);
@@ -180,11 +178,11 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   tmp->size = size;
   *user_data = tmp;
 
-  // if start == 0 => realloc call malloc
+  // if start == 0, realloc call malloc
   if (!start)
     {
-      // is a block is alloc by a wrapped function and realloc by
-      // an unwrapped one we should take the realloc
+      // if a block is alloc by a wrapped function and realloc by
+      // an unwrapped one we have to take the realloc
       // so when realloc is called to do a malloc is the only case
       // when we have to check if the module is wrapped
       if(!module_is_wrapped(drc))
@@ -241,8 +239,7 @@ void post_realloc(void *wrapctx, void *user_data)
   realloc_tmp_t	*data = user_data;
   
   // if user_data is not set realloc was called to do a free
-  // or the call to realloc
-  
+  // or the call to realloc is an init call  
   if (data)
     {
       dr_mutex_lock(lock);
@@ -250,13 +247,14 @@ void post_realloc(void *wrapctx, void *user_data)
         {
 	  block = data->block;
 	  set_addr_malloc(block, ret, block->flag, 1);
-	  // we dont set alloc because the post wrap happen after the return
+	  // we dont set the alloc arg in get_caller_data
+	  // because the post wrap happen after the return
 	  get_caller_data(&(block->alloc_func_pc), &(block->alloc_func_sym),
 			  &(block->alloc_module_name), drc, 0);
 	  block->alloc_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx),
 					      drc);
 	}
-      // if realloc is use like a malloc set the size here
+      // if realloc is use like a malloc set, we the size here
       // because malloc wrapper receive a null size
       else if ((block = search_on_tree(active_blocks, ret)))
 	{

@@ -70,8 +70,6 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
           dr_printf("alloc of size %d failed\n", block->size);
 	  dr_global_free(block, sizeof(*block));
         }
-      // if start == NULL on realloc this is a free
-      // set block to free to keep previous access to data
       else if (!(block->flag & FREE))
         {
           dr_printf("Realloc of size %d on %p failed\n",

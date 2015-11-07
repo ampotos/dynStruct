@@ -24,7 +24,7 @@ void *get_real_func_addr(void *pc, void *got)
     }
 
   // in the plt we want to find the first push in order to know
-  // the offset of the got who contain the addr of the target func
+  // the offset on the got where we can find the addr of the target func
   while (instr_get_opcode(instr) != OP_push_imm)
     {
       instr_reset(drcontext, instr);
@@ -59,9 +59,9 @@ void dir_call_monitor(void *pc)
     {
       ds_memset(new_func, 0, sizeof(*new_func));
       new_func->next = stack;
-      // we check if the addr is on plt here for performance
+      // we only check if the addr is on plt here for performance
       // the plt addr is going to be replace by the real addr
-      // of the target function the first time we need to get it
+      // of the target function the first time we need this data
       if (search_on_tree(plt_tree, pc))
 	{
 	  new_func->on_plt = 1;
@@ -190,9 +190,9 @@ void get_caller_data(void **addr, char **sym, const char **module,
   if (alloc && func->next)
     func = func->next;
   // we read the got here, because at the time when the plt is called
-  // the got may not contain the addr of the target function
-  // the check to know if the addr is in plt or not is done at the same
-  // as the calling for performance issue.
+  // the got may not contain the addr of the target function.
+  // This also help to have better performance by resolving got addr
+  // only when it's necessary
   if (func->on_plt)
     {
       got = search_on_tree(plt_tree, func->addr);

@@ -24,7 +24,7 @@ static void thread_exit_event(void *drcontext)
   clean_stack(drcontext);
 }
 
-// app2app is the first step of instrumentatiob, only use replace string
+// app2app is the first step of instrumentation, only use to replace string
 // instructions by a loop to have a better monitoring
 static dr_emit_flags_t bb_app2app_event(void *drcontext,
 					__attribute__((unused))void *tag,
@@ -37,7 +37,7 @@ static dr_emit_flags_t bb_app2app_event(void *drcontext,
 }
 
 // instrument each read or write instruction in order to monitor them
-// also instrument each call/return to update the stack of functions
+// also instrument each call/return to update our stack
 static dr_emit_flags_t bb_insert_event( void *drcontext,
 					__attribute__((unused))void *tag,
 					instrlist_t *bb, instr_t *instr, 
@@ -52,8 +52,8 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
   if (pc == NULL || instr_is_meta(instr))
     return DR_EMIT_DEFAULT;
   
-  // if the module is not monitored, we have to instrument we still
-  // have to maj our stack with call addr
+  // if the module is not monitored, we don't have to instrument momery access
+  // but we still have to maj our stack so we instrument call and return
   if (pc_is_monitored(pc))
     {
       if (instr_reads_memory(instr))
@@ -78,12 +78,10 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
     }
   
   // if one day dynStruct has to be used on arm, maybe some call will be missed
-  // if it's a direct call we send the callee addr as parameter
   if (instr_is_app(instr) && instr_is_call_direct(instr))
     dr_insert_clean_call(drcontext, bb, instr, &dir_call_monitor,
 			 false, 1,
 			 OPND_CREATE_INTPTR(instr_get_branch_target_pc(instr)));
-  // for indirect call we have to get callee addr on instrumentation function
 #ifdef BUILD_64
   else if (instr_is_app(instr) && instr_is_call_indirect(instr))
 #else
@@ -129,7 +127,7 @@ static void load_event(void *drcontext,
   add_plt(mod, tmp_data.got, drcontext);
   dr_mutex_unlock(lock);
   
-  // free all data relative to sym (like debug info) after loading symbol
+  // free all data relative to symbols (like debug info) after loading symbol
   drsym_free_resources(mod->full_path);
 
   if (!module_is_alloc(mod))
@@ -212,7 +210,6 @@ DR_EXPORT void dr_init(client_id_t id)
   tls_stack_idx = drmgr_register_tls_field();
   DR_ASSERT_MSG(tls_stack_idx != -1, "Can't register tls field\n");
 
-  // init sym hashtab
   hashtable_init(&sym_hashtab, 16, HASH_INTPTR, false);
 
   lock = dr_mutex_create();

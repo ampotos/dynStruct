@@ -170,7 +170,7 @@ void add_plt(const module_data_t *mod, void *got, void *drcontext)
   tree_t		*new_node;
   module_segment_data_t	*seg_plt;
 
-  // if the apth to the module is not present we can't get parse the file
+  // if the path to the module is not present we can't get the file
   if (!(mod->full_path))
     return NULL;
   

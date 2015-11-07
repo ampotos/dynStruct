@@ -77,8 +77,8 @@ void add_hit(void *pc, size_t size, void *target, int read, void *drcontext)
   access_t	*access;
 
   // if the access is not on a malloc block we do nothing
-  // because the tree return a block if we target the last offset
-  // we have to check it here (because last offset is out of the user
+  // we have to check if the target is not the and of the block
+  // (because last offset is out of the user
   // data and use only for malloc's internal purposes)
   if (!block || target == block->end)
     return;
@@ -107,7 +107,7 @@ void check_opnd(opnd_t opnd, void *pc, int read, void *drcontext,
   else if (opnd_is_memory_reference(opnd) && opnd_get_addr(opnd))
     add_hit(pc, opnd_size_in_bytes(opnd_get_size(opnd)), opnd_get_addr(opnd),
 	    read, drcontext);
-  // on all programm tested memory reference always match with one of the 2 prev
+  // for now no other kind of memory reference are used to access heap data
   else if (opnd_is_memory_reference(opnd))
     dr_printf("need to implem other memory ref\n");
 }

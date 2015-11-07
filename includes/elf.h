@@ -1,7 +1,7 @@
 #ifndef ELF_H_
 #define ELF_H_
 
-// looks like dynamo doesn't care about the p_align
+// looks like dynamo doesn't care about the p_align in the elf header
 // and align section with 0x1000
 #define DYNAMO_ALIGN 0x1000 
 

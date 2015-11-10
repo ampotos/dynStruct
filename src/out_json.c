@@ -4,6 +4,8 @@
 #include "../includes/args.h"
 #include "../includes/block_utils.h"
 
+#define NULL_STR(s) ((s) ? (s) : "")
+
 void print_orig_json(orig_t *orig)
 {
   orig_t        *tmp;
@@ -15,9 +17,10 @@ void print_orig_json(orig_t *orig)
 
       dr_fprintf(args->file_out,
 		 "\"pc\":%lu, \"func_pc\":%lu, \"func_sym\":\"%s\", ",
-		 orig->addr, orig->start_func_addr, orig->start_func_sym);
+		 orig->addr, orig->start_func_addr,
+		 NULL_STR(orig->start_func_sym));
       dr_fprintf(args->file_out, "\"func_module\":\"%s\"}, ",
-		 orig->module_name);
+		 NULL_STR(orig->module_name));
 		 
       tmp = orig->next;
       dr_global_free(orig, sizeof(*orig));
@@ -50,15 +53,17 @@ void print_block_json(malloc_t *block)
 
   dr_fprintf(args->file_out,
 	     "\"alloc_pc\":%lu, \"alloc_func\":%lu, \"alloc_sym\":\"%s\", ",
-	     block->alloc_pc, block->alloc_func_pc, block->alloc_func_sym);
+	     block->alloc_pc, block->alloc_func_pc,
+	     NULL_STR(block->alloc_func_sym));
   dr_fprintf(args->file_out,
-	     "\"alloc_module\":\"%s\", ", block->alloc_module_name);
+	     "\"alloc_module\":\"%s\", ", NULL_STR(block->alloc_module_name));
 
   dr_fprintf(args->file_out,
 	     "\"free_pc\":%lu, \"free_func\":%lu, \"free_sym\":\"%s\", ",
-	     block->free_pc, block->free_func_pc, block->free_func_sym);
+	     block->free_pc, block->free_func_pc,
+	     NULL_STR(block->free_func_sym));
   dr_fprintf(args->file_out,
-	     "\"free_module\":\"%s\", ", block->free_module_name);
+	     "\"free_module\":\"%s\", ", NULL_STR(block->free_module_name));
 
   dr_fprintf(args->file_out, "\"read_access\" : [");
   clean_tree(&(block->read), (void (*)(void*))print_access_json);

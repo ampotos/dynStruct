@@ -94,7 +94,6 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
   
   if (!module_is_wrapped(drc))
     {
-      dr_printf("unwrapped malloc of %d\n", drwrap_get_arg(wrapctx, 0));
       dr_mutex_unlock(lock);
       return;
     }

@@ -19,6 +19,9 @@ def get_args():
                         help='print structures in C style on console')
     parser.add_argument('-n', action='store_false', dest='web_view',
                         help='print structures in C style on console')
+    parser.add_argument('-l', dest='bind_addr', default='127.0.0.1', type=str,
+                        help='addr where the web view will listen,\
+                        default 127.0.0.1')
 
     return parser.parse_args()
     
@@ -29,7 +32,7 @@ def main():
     # if out_file write header C like with all struct and quit
     # if console header C like on console with all struct and quit
     # if out_file open and set as global (each change on structs will rewrite this file)
-    # if web_view start web view alse quit
+    # if web_view start web view alse quit, bind it on bind_addr
     
     
 if __name__ == '__main__':

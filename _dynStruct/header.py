@@ -1,6 +1,8 @@
 
 
 def get_header(l_struct):
+    if len(l_struct) == 0:
+        return "No structure found"
     s = ""
     for struct in l_struct:
         s += str(struct) + "\n"

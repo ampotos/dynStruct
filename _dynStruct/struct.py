@@ -78,7 +78,7 @@ class Struct:
                 old_offset = member.offset
             old_offset += member.size
 
-        if old_offset != self.size:
+        if old_offset < self.size:
             self.add_member_array(len(self.members),
                                   'pad_offset_0x%x' % old_offset, old_offset,
                                   self.size - old_offset, 'uint8_t',

@@ -27,7 +27,9 @@ class Struct:
 
         self.recover(block)
         self.add_block(block)
-        
+
+    # todo : pad with tab of char when offset are not
+    # contiguous
     def __str__(self):
         # for string we don't anything
         # for other tab it's hard to say if it's an array are a struct
@@ -56,6 +58,10 @@ class Struct:
             if self.has_str_access(accesses):
                 self.change_to_str(block)
                 break
+
+            if len(accesses) == 0:
+                actual_offset += 1
+                continue
             
             size_member = self.get_better_size(block, actual_offset, accesses)
             self.members.append(StructMember(actual_offset, size_member, block))

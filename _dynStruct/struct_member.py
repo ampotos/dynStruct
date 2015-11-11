@@ -13,6 +13,8 @@ class StructMember:
         self.number_unit = 0
         self.size_unit = 0
 
+        self.is_padding = False
+        
         self.is_struct = False
         self.sub_struct = None
 

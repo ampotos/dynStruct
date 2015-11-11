@@ -85,7 +85,7 @@ class Struct:
                                       'pad_offset_0x%x' % old_offset,
                                       old_offset, member.offset - old_offset,
                                       'uint8_t', member.offset - old_offset, 1,
-                                      None)
+                                      None, True)
 
                 old_offset = member.offset
             old_offset += member.size
@@ -94,7 +94,7 @@ class Struct:
             self.add_member_array(len(self.members),
                                   'pad_offset_0x%x' % old_offset, old_offset,
                                   self.size - old_offset, 'uint8_t',
-                                  self.size - old_offset, 1, None)
+                                  self.size - old_offset, 1, None, True)
 
     def clean_array(self):
         (index, index_end, nb_unit, size) = self.find_sub_array()
@@ -103,7 +103,7 @@ class Struct:
             self.add_member_array(index,
                                   "array_0x%x" % self.members[index].offset,
                                   self.members[index].offset, size * nb_unit,
-                                  "uint%d_t" % (size * 8), nb_unit, size, None)
+                                  "uint%d_t" % (size * 8), nb_unit, size, None, False)
             for member in tmp_members[index : index_end]:
                 self.members.remove(member)
             (index, index_end, nb_unit, size) = self.find_sub_array()
@@ -119,8 +119,7 @@ class Struct:
             ct = 0
             for m in self.members[self.members.index(member) :]:
                 if (m.size == size and not m.is_array) or\
-                   (m.is_array and m.size_unit == size and\
-                    not m.name.startswith("pad_")):
+                   (m.is_array and m.size_unit == size and not m.is_padding):
                     if m.is_array:
                         ct += m.number_unit
                     else:
@@ -140,12 +139,13 @@ class Struct:
         return (None, 0, 0, 0)
                         
     def add_member_array(self, index, name, offset, size, t,\
-                         nb_unit, size_unit, block):
+                         nb_unit, size_unit, block, padding):
         new_member = StructMember(offset, size, block)
         new_member.name = name
         new_member.set_array(nb_unit, size_unit, t)
+        new_member.is_padding = padding
         self.members.insert(index, new_member)
-            
+                    
     def get_best_size(self, block, offset, accesses):
         sizes = {}
         max_size = 0
@@ -263,6 +263,19 @@ class Struct:
         else:
             self.looks_array = False
 
+    def not_a_struct(self):
+        if (self.members[0].is_array and\
+            self.members[0].size_unit in base_size) or\
+            self.members[0].size in base_size:
+            if len(self.members) == 1:
+                return True
+            else:
+                for member in self.members[1:]:
+                    if not member.is_padding:
+                        return False
+                return True
+                    
+        return False
     @staticmethod
     def recover_all_struct(blocks, structs):        
         for block in blocks:
@@ -292,10 +305,7 @@ class Struct:
         list_structs = list(structs)
         for struct in list_structs:
             struct.clean_struct()
-            if len(struct.members) == 1 and\
-               ((struct.members[0].is_array and\
-                 struct.members[0].size_unit in base_size) or\
-                struct.members[0].size in base_size):
+            if struct.not_a_struct():
                 struct.remove_all_block()
                 structs.remove(struct)
             

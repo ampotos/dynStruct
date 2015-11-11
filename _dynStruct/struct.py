@@ -28,8 +28,6 @@ class Struct:
         self.recover(block)
         self.add_block(block)
 
-    # todo : pad with tab of char when offset are not
-    # contiguous
     def __str__(self):
         # for string we don't anything
         # for other tab it's hard to say if it's an array are a struct
@@ -41,8 +39,16 @@ class Struct:
             return s
 
         s += "typedef struct {\n"
+        old_offset = 0
         for member in self.members:
+            if old_offset != member.offset:
+                s += "\tuint8_t pad_0x%x[%d];\n" %\
+                     (old_offset, member.offset - old_offset)
+                old_offset = member.offset
+
             s += "\t" + str(member)
+            old_offset += member.size
+
         s += "} %s;\n" % self.name
         return s
         

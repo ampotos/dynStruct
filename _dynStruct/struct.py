@@ -33,10 +33,10 @@ class Struct:
             s += str(self.members[0])
             return s
         
-        s += "typedef struct {\n"
+        s += "struct %s {\n" % self.name
         for member in self.members:
             s += "\t" + str(member)
-        s += "} %s;\n" % self.name
+        s += "};\n"
         return s
         
     def recover(self, block):

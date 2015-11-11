@@ -33,13 +33,14 @@ class Struct:
     def __str__(self):
         # for string we don't anything
         # for other tab it's hard to say if it's an array are a struct
+        s = "//total size : 0x%x\n" % self.size
         if self.looks_array and (self.size_array_unit == 1 or\
                                  len(self.members) >= size_array):
-            s = "uint%d_t %s[%d];\n" % (self.size_array_unit * 8,\
+            s += "uint%d_t %s[%d];\n" % (self.size_array_unit * 8,\
                                       self.name, len(self.members))
             return s
-            
-        s = "typedef struct {\n"
+
+        s += "typedef struct {\n"
         for member in self.members:
             s += "\t" + str(member)
         s += "} %s;\n" % self.name

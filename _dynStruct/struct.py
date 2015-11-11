@@ -269,7 +269,7 @@ class Struct:
            ((self.members[0].is_array and\
              self.members[0].size_unit in base_size) or\
             (not self.members[0].is_array and\
-             self.members[0].size in base_size):
+             self.members[0].size in base_size)):
             if len(self.members) == 1:
                 return True
             else:

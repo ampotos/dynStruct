@@ -14,7 +14,8 @@ class StructMember:
         self.size_unit = 0
 
         self.is_padding = False
-        
+
+        self.is_struct = False
         self.is_array_struct = False
         self.sub_struct = None
 

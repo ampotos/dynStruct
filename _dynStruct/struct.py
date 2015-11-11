@@ -266,6 +266,7 @@ class Struct:
     def not_a_struct(self):
 
         if not self.members[0].is_array_struct and\
+           not self.members[0].is_struct and\
            ((self.members[0].is_array and\
              self.members[0].size_unit in base_size) or\
             (not self.members[0].is_array and\

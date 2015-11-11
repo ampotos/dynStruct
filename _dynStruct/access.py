@@ -22,7 +22,7 @@ class Access:
         if self.is_offset(member.offset):
             return True
 
-        if self.offset > member.offset and\
+        if self.offset >= member.offset and\
            self.offset < member.offset + member.size:
             return True
 

@@ -1,5 +1,7 @@
 from .struct_member import StructMember
 
+# todo add detection of array of Struct
+
 # list of classical string manipulation function
 # use to detecte string
 str_func = ["strlen", "strcpy", "strncpy", "strcmp", "strncmp", "strdup"]
@@ -22,10 +24,10 @@ class Struct:
         self.looks_array = False;
         self.size_array_unit = 0
         self.members = []
-        
+
         self.recover(block)
         self.add_block(block)
-
+        
     def __str__(self):
         # for string we don't anything
         # for other tab it's hard to say if it's an array are a struct
@@ -44,7 +46,7 @@ class Struct:
     def recover(self, block):
         actual_offset = 0
 
-        while actual_offset != self.size:            
+        while actual_offset < self.size:
             accesses = block.get_access_by_offset(actual_offset)
             if not accesses:
                 actual_offset += 1
@@ -162,9 +164,8 @@ class Struct:
                 self.looks_array = False
 
     @staticmethod
-    def guess_all_struct(blocks, structs):
+    def recover_all_struct(blocks, structs):
         for block in blocks:
-            print(len(structs))
             for struct in structs:
                 if struct.block_is_struct(block):
                     struct.add_block(block)
@@ -173,10 +174,13 @@ class Struct:
             if not block.struct and (block.w_access or block.r_access):
                 structs.append(Struct(block))
 
-                if len(structs[-1].members) <= 1:
-                    structs.remove(structs[-1])
+            if len(structs) == 0:
+                continue
+
+            if len(structs[-1].members) <= 1:
+                structs.remove(structs[-1])
+            else:
+                if structs[-1].looks_array and len(structs[-1].members) >= size_array:
+                    structs[-1].name = "array%d" % len(structs)
                 else:
-                    if structs[-1].looks_array and len(structs[-1].members) >= size_array:
-                        structs[-1].name = "array%d" % len(structs)
-                    else:
-                        structs[-1].name = "struct%d" % len(structs)
+                    structs[-1].name = "struct%d" % len(structs)

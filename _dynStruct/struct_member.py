@@ -9,7 +9,7 @@ class StructMember:
         self.access = block.get_access_by_member(self)
 
     def __str__(self):
-        s = "%s\tuint%d_t;\n" % (self.name, self.size * 8)
+        s = "uint%d_t %s;\n" % (self.size * 8, self.name)
         return s
         
     def get_accesses(self):

@@ -9,7 +9,7 @@ str_func = ["strlen", "strcpy", "strncpy", "strcmp", "strncmp", "strdup"]
 ignore_func = ["memset", "memcpy", "memcmp"]
 
 # minimal size for a sub_array
-size_array = 5
+min_size_array = 5
 
 class Struct:
 
@@ -28,6 +28,11 @@ class Struct:
 
     def __str__(self):
         s = "//total size : 0x%x\n" % self.size
+
+        if len(self.members) == 1:
+            s += str(self.members[0])
+            return s
+        
         s += "typedef struct {\n"
         for member in self.members:
             s += "\t" + str(member)
@@ -52,17 +57,19 @@ class Struct:
                 actual_offset += 1
                 continue
             
-            size_member = self.get_better_size(block, actual_offset, accesses)
+            size_member = self.get_best_size(block, actual_offset, accesses)
             self.members.append(StructMember(actual_offset, size_member, block))
             actual_offset += size_member
-            
+
+    def set_default_name(self):
         self.name = "struct_%d" % self.id            
 
     def clean_struct(self):
         self.add_pad()
-        # todo do the following
-        # detection of array, if all struct is array => struct as only 1 member, the array and change the default name from struct_X en array_X 
-        # detection of tab of sub_struct
+        self.clean_array()
+        # todo detection of tab of sub_struct
+        self.clean_array_name()
+        return
         
     def add_pad(self):
         old_offset = 0
@@ -83,7 +90,50 @@ class Struct:
                                   'pad_offset_0x%x' % old_offset, old_offset,
                                   self.size - old_offset, 'uint8_t',
                                   self.size - old_offset, 1, None)
+
+    def clean_array(self):
+        (index, index_end, nb_unit, size) = self.find_sub_array()
+        while nb_unit:
+            tmp_members = list(self.members)
+            self.add_member_array(index,
+                                  "array_0x%x" % self.members[index].offset,
+                                  self.members[index].offset, size * nb_unit,
+                                  "uint%d_t" % (size * 8), nb_unit, size, None)
+            for member in tmp_members[index : index_end]:
+                self.members.remove(member)
+            (index, index_end, nb_unit, size) = self.find_sub_array()
+            
+
+    def clean_array_name(self):
+        if len(self.members) == 1:
+            self.members[0].name = "array_%d" % self.id
         
+    def find_sub_array(self):
+        for member in self.members:
+            size = member.size
+            ct = 0
+            for m in self.members[self.members.index(member) :]:
+                if (m.size == size and not m.is_array) or\
+                   (m.is_array and m.size_unit == size and\
+                    not m.name.startswith("pad_")):
+                    if m.is_array:
+                        ct += m.number_unit
+                    else:
+                        ct += 1
+                else:
+                    if ct >= min_size_array:
+                        return (self.members.index(member),
+                                self.members.index(m),
+                                ct, size)
+                    break
+                
+            if ct >= min_size_array:
+                return (self.members.index(member),
+                        len(self.members[self.members.index(member) :]),
+                        ct, size)
+                
+        return (None, 0, 0, 0)
+                        
     def add_member_array(self, index, name, offset, size, t,\
                          nb_unit, size_unit, block):
         new_member = StructMember(offset, size, block)
@@ -91,21 +141,26 @@ class Struct:
         new_member.set_array(nb_unit, size_unit, t)
         self.members.insert(index, new_member)
             
-    def get_better_size(self, block, offset, accesses):
+    def get_best_size(self, block, offset, accesses):
         sizes = {}
-
+        max_size = 0
+        
         for access in accesses:
+            if access.size > max_size:
+                max_size = access.size
+                
             if access.size in sizes:
                 sizes[access.size] += 1
             else:
                 sizes[access.size] = 1
 
+
         max_hit = 0
-        for size in range(len(sizes)):
+        for size in range(max_size + 1):
             if size in sizes and sizes[size] > max_hit:
                 max_hit = sizes[size]
 
-        return max(sizes)
+        return max([sz for sz in sizes if sizes[sz] == max_hit])
         
     def filter_access(self, accesses):
         for access in accesses:
@@ -115,7 +170,7 @@ class Struct:
 
     def has_str_access(self, accesses):
         for access in accesses:
-            for func in ignore_func:
+            for func in str_func:
                 if func.lower() in access.func_sym.lower():
                     return True
         return False
@@ -146,7 +201,7 @@ class Struct:
                 actual_offset += 1
                 continue
                 
-            size_member = self.get_better_size(block, actual_offset, accesses)
+            size_member = self.get_best_size(block, actual_offset, accesses)
             if not self.has_member(actual_offset, size_member):
                 return False
             
@@ -221,7 +276,8 @@ class Struct:
                 structs.remove(structs[-1])
             else:
                 structs[-1].id = len(structs)
-
+                structs[-1].set_default_name()
+                
     @staticmethod
     def clean_all_struct(structs):
         for struct in structs:

@@ -15,7 +15,7 @@ class StructMember:
 
         self.is_padding = False
         
-        self.is_struct = False
+        self.is_array_struct = False
         self.sub_struct = None
 
         self.add_accesses_from_block(block)
@@ -23,14 +23,14 @@ class StructMember:
     def __str__(self):
         if self.is_array:
             s = self.print_array()
-        elif self.is_struct:
-            s = self.print_struct()
+        elif self.is_array_struct:
+            s = self.print_array_struct()
         else:
             s = "%s %s;\n" % (self.type, self.name)
 
         return s
 
-    def print_struct(self):
+    def print_array_struct(self):
         return
 
     def print_array(self):
@@ -42,8 +42,8 @@ class StructMember:
         self.size_unit = size_unit
         self.type = t
 
-    def set_sub_struct(self, struct):
-        self.is_struct = True
+    def set_array_struct(self, struct):
+        self.is_arra_struct = True
         self.sub_struct = struct
         
     def add_accesses_from_block(self, block):

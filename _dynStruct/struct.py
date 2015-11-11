@@ -14,7 +14,7 @@ min_size_array = 5
 # size for basic type
 # use to remove struct with only 1 member of one of these sizes
 # (or array of unit size of one of these sizes)
-base_size = [1, 2, 4, 8]
+base_size = [1, 2, 4, 8, 16]
 
 class Struct:
 
@@ -264,9 +264,12 @@ class Struct:
             self.looks_array = False
 
     def not_a_struct(self):
-        if (self.members[0].is_array and\
-            self.members[0].size_unit in base_size) or\
-            self.members[0].size in base_size:
+
+        if not self.members[0].is_array_struct and\
+           ((self.members[0].is_array and\
+             self.members[0].size_unit in base_size) or\
+            (not self.members[0].is_array and\
+             self.members[0].size in base_size):
             if len(self.members) == 1:
                 return True
             else:

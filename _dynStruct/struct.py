@@ -1,7 +1,5 @@
 from .struct_member import StructMember
 
-# todo add detection of array of Struct
-
 # list of classical string manipulation function
 # use to detecte string
 str_func = ["strlen", "strcpy", "strncpy", "strcmp", "strncmp", "strdup"]
@@ -10,8 +8,7 @@ str_func = ["strlen", "strcpy", "strncpy", "strcmp", "strncmp", "strdup"]
 # because there access are non relative to the struct
 ignore_func = ["memset", "memcpy", "memcmp"]
 
-# size where we consider the struct is an array
-# if all members have the same size
+# minimal size for a sub_array
 size_array = 5
 
 class Struct:
@@ -19,6 +16,7 @@ class Struct:
 
     def __init__(self, block):
         self.name = ""
+        self.id = 0
         self.size = block.size
         self.blocks = []
         self.looks_array = False;
@@ -29,26 +27,10 @@ class Struct:
         self.add_block(block)
 
     def __str__(self):
-        # for string we don't anything
-        # for other tab it's hard to say if it's an array are a struct
         s = "//total size : 0x%x\n" % self.size
-        if self.looks_array and (self.size_array_unit == 1 or\
-                                 len(self.members) >= size_array):
-            s += "uint%d_t %s[%d];\n" % (self.size_array_unit * 8,\
-                                      self.name, len(self.members))
-            return s
-
         s += "typedef struct {\n"
-        old_offset = 0
         for member in self.members:
-            if old_offset != member.offset:
-                s += "\tuint8_t pad_0x%x[%d];\n" %\
-                     (old_offset, member.offset - old_offset)
-                old_offset = member.offset
-
             s += "\t" + str(member)
-            old_offset += member.size
-
         s += "} %s;\n" % self.name
         return s
         
@@ -74,11 +56,41 @@ class Struct:
             self.members.append(StructMember(actual_offset, size_member, block))
             actual_offset += size_member
             
-        if self.look_like_array():
-            self.looks_array = True
-            self.size_array_unit = self.members[0].size
+        self.name = "struct_%d" % self.id            
+
+    def clean_struct(self):
+        self.add_pad()
+        # todo do the following
+        # detection of array, if all struct is array => struct as only 1 member, the array and change the default name from struct_X en array_X 
+        # detection of tab of sub_struct
+        
+    def add_pad(self):
+        old_offset = 0
+        old_members = list(self.members)
+        for member in old_members:
+            if old_offset != member.offset:
+                self.add_member_array(self.members.index(member),
+                                      'pad_offset_0x%x' % old_offset,
+                                      old_offset, member.offset - old_offset,
+                                      'uint8_t', member.offset - old_offset, 1,
+                                      None)
+
+                old_offset = member.offset
+            old_offset += member.size
+
+        if old_offset != self.size:
+            self.add_member_array(len(self.members),
+                                  'pad_offset_0x%x' % old_offset, old_offset,
+                                  self.size - old_offset, 'uint8_t',
+                                  self.size - old_offset, 1, None)
+        
+    def add_member_array(self, index, name, offset, size, t,\
+                         nb_unit, size_unit, block):
+        new_member = StructMember(offset, size, block)
+        new_member.name = name
+        new_member.set_array(nb_unit, size_unit, t)
+        self.members.insert(index, new_member)
             
-    # maybe check only the write accesses if the actual result is too bad
     def get_better_size(self, block, offset, accesses):
         sizes = {}
 
@@ -110,15 +122,15 @@ class Struct:
                     
     def change_to_str(self, block):
         self.members.clear()
-        for offset in range(self.size):
-            self.members.append(StructMember(offset, 1, block))
-    
+        self.members = [StructMember(0, self.size, block)]
+        self.members[0].set_array(self.size, 1, 'uint8_t')
+        
     def block_is_struct(self, block):
         if block.size != self.size:
             return False
 
         actual_offset = 0
-        while actual_offset != self.size:
+        while actual_offset < self.size:
             accesses = block.get_access_by_offset(actual_offset)
             if not accesses:
                 actual_offset += 1
@@ -126,8 +138,13 @@ class Struct:
 
             self.filter_access(accesses)
             if self.has_str_access(accesses):
-                if self.looks_array and self.size_array_unit == 1:
+                if len(self.members) == 1 and self.members[0].is_array and\
+                   self.members[0].size_unit == 1:
                     return True
+
+            if len(accesses) == 0:
+                actual_offset += 1
+                continue
                 
             size_member = self.get_better_size(block, actual_offset, accesses)
             if not self.has_member(actual_offset, size_member):
@@ -146,14 +163,14 @@ class Struct:
     def add_block(self, block):
         self.blocks.append(block)
         block.struct = self
+        self.maj_all_accesses()
 
     def remove_block(self, block):
         self.blocks.remove(block)
         block.struct = None
-        return
+        self.maj_all_accesses()
 
     def look_like_array(self):
-
         if not len(self.members):
             return False
 
@@ -165,35 +182,47 @@ class Struct:
 
         return True
 
-    def maj_member():
-        for member in members:
-            member.access.clear()
-            member.get_accesses()
+    def maj_member_accesses(self, member):
+        member.access.clear()
+        for block in self.blocks:
+            member.add_accesses_from_block(block)
 
-            if self.look_like_array():
-                self.looks_array = True
-                self.size_array_unit = self.members[0].size
-            else:
-                self.looks_array = False
+    def maj_all_accesses(self):
+        for member in self.members:
+            self.maj_member_accesses(member)        
+            
+    def maj_member(self):
+        self.maj_all_accesses()
+        if self.look_like_array():
+            self.looks_array = True
+            self.size_array_unit = self.members[0].size
+        else:
+            self.looks_array = False
 
     @staticmethod
-    def recover_all_struct(blocks, structs):
+    def recover_all_struct(blocks, structs):        
         for block in blocks:
+            if not block.w_access and not block.r_access:
+                continue
+
             for struct in structs:
                 if struct.block_is_struct(block):
                     struct.add_block(block)
                     break;
 
-            if not block.struct and (block.w_access or block.r_access):
+            if not block.struct:
                 structs.append(Struct(block))
 
             if len(structs) == 0:
                 continue
 
-            if len(structs[-1].members) <= 1:
+            if len(structs[-1].members) == 0:
+                structs[-1].remove_block(block)
                 structs.remove(structs[-1])
             else:
-                if structs[-1].looks_array and len(structs[-1].members) >= size_array:
-                    structs[-1].name = "array%d" % len(structs)
-                else:
-                    structs[-1].name = "struct%d" % len(structs)
+                structs[-1].id = len(structs)
+
+    @staticmethod
+    def clean_all_struct(structs):
+        for struct in structs:
+            struct.clean_struct()

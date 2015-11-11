@@ -55,6 +55,7 @@ def main():
         f.close()
         load_json(json_data, l_block, l_access_w, l_access_r)
         _dynStruct.Struct.recover_all_struct(l_block, l_struct);
+        _dynStruct.Struct.clean_all_struct(l_struct)
     elif args.previous_file:
         with open(args.previous_file, "rb") as f:
             data = pickle.load(f)

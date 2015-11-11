@@ -103,7 +103,7 @@ int main(int argc, char *argv[], char *env[]) {
 
   fprintf(stdout, "---- Separator. ----\n");
   
-  calc = calloc(6, sizeof(struct test));
+  calc = calloc(6, sizeof(struct test *));
   for (i = 0; i < 5; ++i) {
     calc[i] = malloc(sizeof(struct test));
     calc[i]->a = i;

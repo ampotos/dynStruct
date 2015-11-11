@@ -11,6 +11,11 @@ ignore_func = ["memset", "memcpy", "memcmp"]
 # minimal size for a sub_array
 min_size_array = 5
 
+# size for basic type
+# use to remove struct with only 1 member of one of these sizes
+# (or array of unit size of one of these sizes)
+base_size = [1, 2, 4, 8]
+
 class Struct:
 
 
@@ -225,6 +230,10 @@ class Struct:
         block.struct = None
         self.maj_all_accesses()
 
+    def remove_all_block(self):
+        for block in self.blocks:
+            self.remove_block(block)
+
     def look_like_array(self):
         if not len(self.members):
             return False
@@ -272,7 +281,7 @@ class Struct:
                 continue
 
             if len(structs[-1].members) == 0:
-                structs[-1].remove_block(block)
+                structs[-1].remove_all_block()
                 structs.remove(structs[-1])
             else:
                 structs[-1].id = len(structs)
@@ -280,5 +289,13 @@ class Struct:
                 
     @staticmethod
     def clean_all_struct(structs):
-        for struct in structs:
+        list_structs = list(structs)
+        for struct in list_structs:
             struct.clean_struct()
+            if len(struct.members) == 1 and\
+               ((struct.members[0].is_array and\
+                 struct.members[0].size_unit in base_size) or\
+                struct.members[0].size in base_size):
+                struct.remove_all_block()
+                structs.remove(struct)
+            

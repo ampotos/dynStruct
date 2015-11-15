@@ -7,7 +7,7 @@ class StructMember:
         self.size = size
         self.name = "offset_0x%x" % offset
         self.access = []
-        self.type = "uint%d_t" % (self.size * 8)
+        self.t = "uint%d_t" % (self.size * 8)
 
         self.is_array = False
         self.number_unit = 0
@@ -27,7 +27,7 @@ class StructMember:
         elif self.is_array_struct:
             s = self.print_array_struct()
         else:
-            s = "%s %s;\n" % (self.type, self.name)
+            s = "%s %s;\n" % (self.t, self.name)
 
         return s
 

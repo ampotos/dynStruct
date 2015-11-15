@@ -72,7 +72,7 @@ class Struct:
     def clean_struct(self):
         self.add_pad()
         self.clean_array()
-        # todo detection of tab of sub_struct
+        # self.clean_array_struct()
         self.clean_array_name()
         return
         
@@ -107,12 +107,39 @@ class Struct:
             for member in tmp_members[index : index_end]:
                 self.members.remove(member)
             (index, index_end, nb_unit, size) = self.find_sub_array()
-            
 
+
+    def clean_array_struct(self):
+        (index_start, index_end) = self.get_struct_pattern(0)
+        while index_start != index_end:
+            nb_unit = self.get_nb_pattern(index_start, index_end)
+            # create member : array of struct
+            # set data ralative to array_of_struct in member
+            # delete all member self.members[index_start: index_start + (index_end - index_start) * nb_unit]
+            # add new_member
+            (index_start, index_end) = self.get_struct_pattern(index_start)
+        # if self.get_struct_pattern(0) => self.clean_array_struct()
+            
     def clean_array_name(self):
         if len(self.members) == 1:
             self.members[0].name = "array_%d" % self.id
-        
+
+    def get_struct_pattern(self, index):
+        for member in self.members[index:]:
+            tmp_size = int(len(self.members[index + 1:]) / 2)
+            for tmp_idx in range(tmp_size):
+                tmp_idx += 1
+                if self.members[index].t == self.members[index + tmp_idx].t:
+                    if False not in [True if m1.t == m2.t else False for (m1, m2) in zip(self.members[index : index + tmp_size], self.members[tmp_idx : tmp_idx + tmp_size])]:
+                        return (index, tmp_idx - 1)
+            index += 1
+            
+        return (0, 0)
+
+
+    def get_nb_pattern(self, index_start, index_end):
+        return 0
+            
     def find_sub_array(self):
         for member in self.members:
             size = member.size
@@ -133,7 +160,7 @@ class Struct:
                 
             if ct >= min_size_array:
                 return (self.members.index(member),
-                        len(self.members[self.members.index(member) :]),
+                        len(self.members[self.members.index(member):]),
                         ct, size)
                 
         return (None, 0, 0, 0)

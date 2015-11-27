@@ -18,11 +18,10 @@ def get_args():
                         help='export structures in C style on <file_name>')
     parser.add_argument('-c', action='store_true', dest='console',
                         help='print structures in C style on console')
-    parser.add_argument('-n', action='store_false', dest='web_view',
-                        help='print structures in C style on console')
+    parser.add_argument('-w', action='store_false', dest='web_view',
+                        help='start the web view')
     parser.add_argument('-l', dest='bind_addr', default='127.0.0.1', type=str,
-                        help='addr where the web view will listen,\
-                        default 127.0.0.1')
+                        help='bind addr for the web view default 127.0.0.1')
 
     return parser.parse_args()
 

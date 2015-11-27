@@ -160,7 +160,7 @@ class Struct:
                 
             if ct >= min_size_array:
                 return (self.members.index(member),
-                        len(self.members[self.members.index(member):]),
+                        self.members.index(self.members[-1]) + 1,
                         ct, size)
                 
         return (None, 0, 0, 0)

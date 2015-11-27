@@ -40,7 +40,7 @@ class StructMember:
         if self.size != other.size:
             return False
         
-        return not False in [True if m1 == m2 else False for (m1, m2) in
+        return not False in [True if m1.same_type(m2) else False for (m1, m2) in
                              zip(self.sub_struct.members,
                                  other.sub_struct.members)]
         

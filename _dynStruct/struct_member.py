@@ -1,4 +1,5 @@
 
+
 class StructMember:
 
 
@@ -31,8 +32,21 @@ class StructMember:
 
         return s
 
+    def same_type(self, other):
+
+        if not self.is_array_struct and not other.is_array_struct:
+            return self.t == other.t
+        
+        if self.size != other.size:
+            return False
+        
+        return not False in [True if m1 == m2 else False for (m1, m2) in
+                             zip(self.sub_struct.members,
+                                 other.sub_struct.members)]
+        
     def print_array_struct(self):
-        return
+        str_struct = "\n\t".join(str(self.sub_struct).split('\n')[:-1])[:-1]
+        return str_struct + "%s[%d];\n\n" % (self.name, self.number_unit)
 
     def print_array(self):
         return "%s %s[%d];\n" % (self.type, self.name, self.number_unit)
@@ -43,9 +57,15 @@ class StructMember:
         self.size_unit = size_unit
         self.type = t
 
-    def set_array_struct(self, struct):
-        self.is_arra_struct = True
-        self.sub_struct = struct
+    def set_array_struct(self, nb_unit, size_unit, members_list, new_struct):
+        self.is_array_struct = True
+        self.number_unit = nb_unit
+        self.size_unit = size_unit
+        new_struct.size = size_unit
+        new_struct.members = members_list
+        self.sub_struct = new_struct
+        self.t = ""
+
         
     def add_accesses_from_block(self, block):
         if block:

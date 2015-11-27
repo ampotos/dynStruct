@@ -22,14 +22,15 @@ class Struct:
     def __init__(self, block):
         self.name = ""
         self.id = 0
-        self.size = block.size
         self.blocks = []
         self.looks_array = False;
         self.size_array_unit = 0
         self.members = []
 
-        self.recover(block)
-        self.add_block(block)
+        if block:
+            self.size = block.size
+            self.recover(block)
+            self.add_block(block)
 
     def __str__(self):
         s = "//total size : 0x%x\n" % self.size
@@ -72,7 +73,7 @@ class Struct:
     def clean_struct(self):
         self.add_pad()
         self.clean_array()
-        # self.clean_array_struct()
+        self.clean_array_struct()
         self.clean_array_name()
         return
         
@@ -111,34 +112,52 @@ class Struct:
 
     def clean_array_struct(self):
         (index_start, index_end) = self.get_struct_pattern(0)
+
         while index_start != index_end:
+            tmp_members = list(self.members)
             nb_unit = self.get_nb_pattern(index_start, index_end)
-            # create member : array of struct
-            # set data ralative to array_of_struct in member
-            # delete all member self.members[index_start: index_start + (index_end - index_start) * nb_unit]
-            # add new_member
-            (index_start, index_end) = self.get_struct_pattern(index_start)
-        # if self.get_struct_pattern(0) => self.clean_array_struct()
+            self.add_member_array_struct(index_start, index_end,
+                                         "struct_array_0x%x" %
+                                         self.members[index_start].offset,
+                                         self.members[index_start].offset,
+                                         (index_end - index_start) * nb_unit,
+                                         nb_unit, index_end - index_start,
+                                         None)
+
+            for member in tmp_members[index_start :
+                                      (index_end - index_start) * nb_unit]:
+                self.members.remove(member)
+            (index_start, index_end) = self.get_struct_pattern(index_start + 1)
+            
+        (index_start, index_end) = self.get_struct_pattern(0)
+        if index_start != index_end:
+            self.clean_array_struct()
             
     def clean_array_name(self):
         if len(self.members) == 1:
             self.members[0].name = "array_%d" % self.id
 
     def get_struct_pattern(self, index):
-        for member in self.members[index:]:
-            tmp_size = int(len(self.members[index + 1:]) / 2)
-            for tmp_idx in range(tmp_size):
-                tmp_idx += 1
-                if self.members[index].t == self.members[index + tmp_idx].t:
-                    if False not in [True if m1.t == m2.t else False for (m1, m2) in zip(self.members[index : index + tmp_size], self.members[tmp_idx : tmp_idx + tmp_size])]:
-                        return (index, tmp_idx - 1)
-            index += 1
-            
+        half_size = int(len(self.members[index + 1:]) / 2)
+        for size in range(2, half_size):
+            tmp_idx = index + size
+            if False not in [True if m1.same_type(m2) else False for (m1, m2) in
+                             zip(self.members[index : index + size],
+                                 self.members[tmp_idx : tmp_idx + size])]:
+                return (index, index + size)
         return (0, 0)
-
-
+            
     def get_nb_pattern(self, index_start, index_end):
-        return 0
+        size = index_end - index_start
+        nb_unit = 1
+        while nb_unit * size <= len(self.members[index_start:]) and\
+              not False in [True if m1.same_type(m2) else False for (m1, m2) in
+                            zip(self.members[index_start : index_start + size],
+                                self.members[index_start + nb_unit * size :\
+                                             index_start + nb_unit * size + size])]:
+
+            nb_unit += 1
+        return nb_unit
             
     def find_sub_array(self):
         for member in self.members:
@@ -165,14 +184,24 @@ class Struct:
                 
         return (None, 0, 0, 0)
                         
-    def add_member_array(self, index, name, offset, size, t,\
+    def add_member_array(self, index, name, offset, size, t,
                          nb_unit, size_unit, block, padding):
         new_member = StructMember(offset, size, block)
         new_member.name = name
         new_member.set_array(nb_unit, size_unit, t)
         new_member.is_padding = padding
         self.members.insert(index, new_member)
-                    
+
+    def add_member_array_struct(self, index, index_end, name, offset, size,
+                                nb_unit, size_unit, block):
+
+        new_member = StructMember(offset, size, block)
+        new_member.name = name
+        new_member.set_array_struct(nb_unit, size_unit,
+                                    self.members[index : index_end],
+                                    Struct(None))
+        self.members.insert(index, new_member)
+
     def get_best_size(self, block, offset, accesses):
         sizes = {}
         max_size = 0
@@ -307,6 +336,7 @@ class Struct:
                 return True
                     
         return False
+
     @staticmethod
     def recover_all_struct(blocks, structs):        
         for block in blocks:

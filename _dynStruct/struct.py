@@ -138,13 +138,14 @@ class Struct:
             self.members[0].name = "array_%d" % self.id
 
     def get_struct_pattern(self, index):
-        half_size = int(len(self.members[index + 1:]) / 2)
-        for size in range(2, half_size):
-            tmp_idx = index + size
-            if False not in [True if m1.same_type(m2) else False for (m1, m2) in
-                             zip(self.members[index : index + size],
-                                 self.members[tmp_idx : tmp_idx + size])]:
-                return (index, index + size)
+        for start_idx in range(index, len(self.members)):
+            half_size = int(len(self.members[start_idx + 1:]) / 2)
+            for size in range(2, half_size):
+                tmp_idx = start_idx + size
+                if False not in [True if m1.same_type(m2) else False for (m1, m2) in
+                                 zip(self.members[start_idx : start_idx + size],
+                                     self.members[tmp_idx : tmp_idx + size])]:
+                    return (start_idx, start_idx + size)
         return (0, 0)
             
     def get_nb_pattern(self, index_start, index_end):

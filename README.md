@@ -142,11 +142,11 @@ Now all the read access done by the libc are listed.
 
 The python script dynStruct.py do the structure recovery and will start the web_ui when available.
 
-The idea behind the strcture recovery is to have a quick idea of the structure are used by the program.
+The idea behind the structure recovery is to have a quick idea of the structures are used by the program.
 
-It's impossible to recover exactaly the same structure than it was in the source code, so some choice were made.
-To recover the size of members dynStruct.py look at the size of the accesses for the offset, it keep the more used
-size, if 2 or more size are used the number of time it keep the bigger size.
+It's impossible to recover exactly the same structures than it was in the source code, so some choice were made.
+To recover the size of members dynStruct.py look at the size of the accesses for a particular offset, it keep the more used
+size, if 2 or more size are used the same number of time it keep the bigger size.
 
 All type are ```uint<size>_t```, all the name are ```offset_<offset_int_the_struct>```.
 Some offset in blocks have no access in the ouput of the dynStruct dynamoRIO client, so the empty offset are fill
@@ -208,7 +208,7 @@ struct struct_3 {
 	uint64_t offset_0x10;
 };
 ```
-
+The array of structure of 2 uint32_t is because dynStruct find only array with a size of 5 or more, so when arrays of structures or search a pattern is found here and every pattern is consider as a array of structures.
 The same output can be obtained with :
 ```
 python3 dynStruct.py -d out_test  -o serialize_test

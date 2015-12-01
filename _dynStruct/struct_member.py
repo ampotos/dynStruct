@@ -49,13 +49,13 @@ class StructMember:
         return str_struct + "%s[%d];\n\n" % (self.name, self.number_unit)
 
     def print_array(self):
-        return "%s %s[%d];\n" % (self.type, self.name, self.number_unit)
+        return "%s %s[%d];\n" % (self.t, self.name, self.number_unit)
     
     def set_array(self, nb_unit, size_unit, t):
         self.is_array = True
         self.number_unit = nb_unit
         self.size_unit = size_unit
-        self.type = t
+        self.t = t
 
     def set_array_struct(self, nb_unit, size_unit, members_list, new_struct):
         self.is_array_struct = True

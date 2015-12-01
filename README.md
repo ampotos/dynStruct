@@ -191,11 +191,10 @@ will display
 ```
 //total size : 0x20
 struct struct_2 {
-	struct  {
-		uint32_t offset_0x0;
-		uint32_t offset_0x4;
-	}struct_array_0x0[2];
-
+	uint32_t offset_0x0;
+	uint32_t offset_0x4;
+	uint32_t offset_0x8;
+	uint8_t pad_offset_0xc[4];
 	uint64_t offset_0x10;
 	uint8_t offset_0x18;
 	uint8_t pad_offset_0x19[7];
@@ -208,7 +207,6 @@ struct struct_3 {
 	uint64_t offset_0x10;
 };
 ```
-The array of structure of 2 uint32_t is because dynStruct find only array with a size of 5 or more, so when arrays of structures or search a pattern is found here and every pattern is consider as a array of structures.
 
 The same output can be obtained with :
 ```

@@ -85,7 +85,8 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
 #ifdef BUILD_64
   else if (instr_is_app(instr) && instr_is_call_indirect(instr))
 #else
-  else if (instr_is_app(instr) && instr_is_call_indirect(instr) && !indirect_call_ignore(instr))
+  else if (instr_is_app(instr) && instr_is_call_indirect(instr) &&
+	   !indirect_call_ignore(instr))
 #endif
     dr_insert_mbr_instrumentation(drcontext, bb, instr, &ind_call_monitor,
 				  SPILL_SLOT_1);

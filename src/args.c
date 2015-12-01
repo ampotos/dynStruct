@@ -281,7 +281,7 @@ void clean_list_args(module_name_t *list)
 {
   module_name_t *tmp;
 
-  for (; list; list = list->next)
+  while (list)
     {
       tmp = list;
       list = list->next;

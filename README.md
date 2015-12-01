@@ -209,6 +209,7 @@ struct struct_3 {
 };
 ```
 The array of structure of 2 uint32_t is because dynStruct find only array with a size of 5 or more, so when arrays of structures or search a pattern is found here and every pattern is consider as a array of structures.
+
 The same output can be obtained with :
 ```
 python3 dynStruct.py -d out_test  -o serialize_test

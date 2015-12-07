@@ -175,10 +175,9 @@ static void exit_event(void)
   drutil_exit();
 }
 
-DR_EXPORT void dr_init(client_id_t id)
+DR_EXPORT void dr_client_main(client_id_t __attribute__((unused))id,
+			      int argc, const char *argv[])
 {
-  char			**argv;
-  int			argc;
   drmgr_priority_t	p = {
     sizeof(p),
     "reccord heap access and recover datas structures",
@@ -193,9 +192,7 @@ DR_EXPORT void dr_init(client_id_t id)
   drmgr_init();
   drutil_init();
 
-  dr_get_option_array(id, &argc, (const char ***)&argv);
-
-  if(!parse_arg(argc, argv))
+  if(!parse_arg(argc, (char **)argv))
     dr_abort();
   dr_register_exit_event(&exit_event);
   if (!drmgr_register_module_load_event(&load_event) ||

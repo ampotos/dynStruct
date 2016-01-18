@@ -60,6 +60,8 @@ We are going to analyse this little program.
 void print(char *str)
 {
   puts(str);
+  str[1] = 'a';
+  puts(str);
 }
 
 int main()

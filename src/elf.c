@@ -172,7 +172,7 @@ void add_plt(const module_data_t *mod, void *got, void *drcontext)
 
   // if the path to the module is not present we can't get the file
   if (!(mod->full_path))
-    return NULL;
+    return;
   
   if (!(seg_plt = find_load_section(mod, &tmp_data_plt, PLT_NAME)))
     return;

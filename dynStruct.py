@@ -28,7 +28,6 @@ def get_args():
 
 
 def load_json(json_data, l_block, l_access_w, l_access_r):
-
     try:
         for block in filter(None, json_data):
             l_block.append(_dynStruct.Block(block, l_access_w, l_access_r))
@@ -37,16 +36,13 @@ def load_json(json_data, l_block, l_access_w, l_access_r):
         return False
     return True
 
-def load_pickle(pickle_file):
-    unpickler = pickle.Unpickler
-
 def main():
-    args = get_args()
-
     l_struct = []
     l_block = []
     l_access_w = []
     l_access_r = []
+    
+    args = get_args()
     
     if args.dynamo_file:
         f = open(args.dynamo_file, "r")
@@ -64,11 +60,13 @@ def main():
         l_access_r = data["r_access"]
             
     if args.out_pickle:
-        data = {"structs" : l_struct, "blocks" : l_block}
-        data["w_access"] = l_access_w
-        data["r_access"] = l_access_r
-        with open(args.out_pickle, "wb") as f:
-            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+        _dynStruct.save_pickle(args.out_pickle, l_struct, l_block,
+                               l_access_w, l_access_r)
+        # data = {"structs" : l_struct, "blocks" : l_block}
+        # data["w_access"] = l_access_w
+        # data["r_access"] = l_access_r
+        # with open(args.out_pickle, "wb") as f:
+        #     pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
     if args.out_file:
         _dynStruct.print_to_file(args.out_file, l_struct)

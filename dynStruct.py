@@ -18,19 +18,21 @@ def get_args():
                         help='export structures in C style on <file_name>')
     parser.add_argument('-c', action='store_true', dest='console',
                         help='print structures in C style on console')
-    parser.add_argument('-w', action='store_false', dest='web_view',
+    parser.add_argument('-w', action='store_true', dest='web_view',
                         help='start the web view')
-    parser.add_argument('-l', dest='bind_addr', default='127.0.0.1', type=str,
-                        help='bind addr for the web view default 127.0.0.1')
+    parser.add_argument('-l', dest='bind_addr', default='127.0.0.1:24242', type=str,
+                        help='bind addr for the web view default 127.0.0.1:24242')
 
     return parser.parse_args()
 
 
 
 def load_json(json_data, l_block, l_access_w, l_access_r):
+    id_block = 0
     try:
         for block in filter(None, json_data):
-            l_block.append(_dynStruct.Block(block, l_access_w, l_access_r))
+            l_block.append(_dynStruct.Block(block, l_access_w, l_access_r, id_block))
+            id_block += 1
     except KeyError as e:
         print("Json not from dynamoRIO client, missing : %s" % str(e))
         return False
@@ -75,7 +77,9 @@ def main():
         _dynStruct.print_to_console(l_struct)
         
     if args.web_view:
-       _dynstruct.start_webui(l_struct, l_block, l_access_w, l_access_r)
+       _dynStruct.start_webui(l_struct, l_block, l_access_w, l_access_r,
+                              args.bind_addr.split(":")[0],
+                              args.bind_addr.split(":")[1] if ":" in args.bind_addr else 24242)
     
     
 if __name__ == '__main__':

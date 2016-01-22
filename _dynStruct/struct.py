@@ -370,4 +370,3 @@ class Struct:
             if struct.not_a_struct():
                 struct.remove_all_block()
                 structs.remove(struct)
-            

@@ -65,7 +65,7 @@ def main():
         l_block = data["blocks"]
         l_access_w = data["w_access"]
         l_access_r = data["r_access"]
-            
+        
     if args.out_pickle:
         _dynStruct.save_pickle(args.out_pickle, l_struct, l_block,
                                l_access_w, l_access_r)

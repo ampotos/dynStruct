@@ -105,9 +105,10 @@ python class:
        access
 
 
-struct by struct_id
+struct by id_struct
 member by struct_id.offset (ex: 1.0x4 of member at offset 4 in struct with id 1)
 for inner struct:
     ex: 1.0x4.0x2 (for offset 2 in inner struct at offset 4 in struct with id 1)
-block by block_id
-access by access_id
+block by index in l_block 
+read access by index in l_access_r
+write access by index in l_access_w

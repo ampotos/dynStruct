@@ -25,3 +25,5 @@ check what is the behavior with forking program
 search other usage of the data extract
 check what is the behavior with cpp program (object are allocated via malloc ?, ...)
 check other language like rust, go, ... (I think most of them don't call malloc but have their own allocator system, mmap wrapping can help but it's not very precise)
+check the behavior of the plt part on diverse compiler (gcc work well, so test at least clang and tcc)
+check if write instruction handle signed number, float number, ptr, ... and store this in a flag in the orig struct. Use this to have more accurate type on structure recovering.

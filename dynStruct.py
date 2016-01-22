@@ -43,7 +43,12 @@ def main():
     l_access_r = []
     
     args = get_args()
-    
+
+    if not args.previous_file and not args.dynamo_file:
+        print("This tool is useless without data, use -d or -p option to give\
+ data extract by the gatherer or serialized data from a previous run")
+        exit(0)
+        
     if args.dynamo_file:
         f = open(args.dynamo_file, "r")
         json_data = json.load(f)
@@ -62,11 +67,6 @@ def main():
     if args.out_pickle:
         _dynStruct.save_pickle(args.out_pickle, l_struct, l_block,
                                l_access_w, l_access_r)
-        # data = {"structs" : l_struct, "blocks" : l_block}
-        # data["w_access"] = l_access_w
-        # data["r_access"] = l_access_r
-        # with open(args.out_pickle, "wb") as f:
-        #     pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
     if args.out_file:
         _dynStruct.print_to_file(args.out_file, l_struct)
@@ -74,8 +74,8 @@ def main():
     if args.console:
         _dynStruct.print_to_console(l_struct)
         
-#    if args.web_view:
-        # start web_view
+    if args.web_view:
+       _dynstruct.start_webui(l_struct, l_block, l_access_w, l_access_r)
     
     
 if __name__ == '__main__':

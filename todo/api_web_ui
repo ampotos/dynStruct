@@ -90,6 +90,11 @@ api : get blocks (some data do identify what block are needed)
       process_struct_from_block(block data) // for creating a new one associate with the block, return the new struct info
       delete_struct (data struct)
 
+topbar:
+	block search view
+	access search view
+	struct search view
+	download C header
 
 pages:
 	block view with iframe to access search (data info python generated)

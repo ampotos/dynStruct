@@ -39,11 +39,6 @@ def load_json(json_data, l_block, l_access_w, l_access_r):
     return True
 
 def main():
-    l_struct = []
-    l_block = []
-    l_access_w = []
-    l_access_r = []
-    
     args = get_args()
 
     if not args.previous_file and not args.dynamo_file:
@@ -55,30 +50,29 @@ def main():
         f = open(args.dynamo_file, "r")
         json_data = json.load(f)
         f.close()
-        load_json(json_data, l_block, l_access_w, l_access_r)
-        _dynStruct.Struct.recover_all_struct(l_block, l_struct);
-        _dynStruct.Struct.clean_all_struct(l_struct)
+        load_json(json_data, _dynStruct.l_block, _dynStruct.l_access_w, _dynStruct.l_access_r)
+        _dynStruct.Struct.recover_all_struct(_dynStruct.l_block, _dynStruct.l_struct);
+        _dynStruct.Struct.clean_all_struct(_dynStruct.l_struct)
     elif args.previous_file:
         with open(args.previous_file, "rb") as f:
             data = pickle.load(f)
-        l_struct = data["structs"]
-        l_block = data["blocks"]
-        l_access_w = data["w_access"]
-        l_access_r = data["r_access"]
+        _dynStruct.l_struct = data["structs"]
+        _dynStruct.l_block = data["blocks"]
+        _dynStruct.l_access_w = data["w_access"]
+        _dynStruct.l_access_r = data["r_access"]
         
     if args.out_pickle:
-        _dynStruct.save_pickle(args.out_pickle, l_struct, l_block,
-                               l_access_w, l_access_r)
+        _dynStruct.save_pickle(args.out_pickle, _dynStruct.l_struct, _dynStruct.l_block,
+                               _dynStruct.l_access_w, _dynStruct.l_access_r)
 
     if args.out_file:
-        _dynStruct.print_to_file(args.out_file, l_struct)
+        _dynStruct.print_to_file(args.out_file, _dynStruct.l_struct)
 
     if args.console:
-        _dynStruct.print_to_console(l_struct)
+        _dynStruct.print_to_console(_dynStruct.l_struct)
         
     if args.web_view:
-       _dynStruct.start_webui(l_struct, l_block, l_access_w, l_access_r,
-                              args.bind_addr.split(":")[0],
+        _dynStruct.start_webui(args.bind_addr.split(":")[0],
                               args.bind_addr.split(":")[1] if ":" in args.bind_addr else 24242)
     
     

@@ -74,6 +74,10 @@ class Struct:
         self.add_pad()
         self.clean_array()
         self.clean_array_struct()
+        # we recall add_pad because clean_array_struct can remove members
+        # this mean if a struct have a pad of 10 and 2 in this pad is in a
+        # struct array, all the pad is remove
+        self.add_pad()
         self.clean_array_name()
         return
         
@@ -120,15 +124,15 @@ class Struct:
                                          "struct_array_0x%x" %
                                          self.members[index_start].offset,
                                          self.members[index_start].offset,
-                                         (index_end - index_start) * nb_unit,
                                          nb_unit, index_end - index_start,
                                          None)
 
             for member in tmp_members[index_start :
-                                      (index_end - index_start) * nb_unit]:
+                                      index_start + (index_end - index_start) * nb_unit]:
                 self.members.remove(member)
             (index_start, index_end) = self.get_struct_pattern(index_start + 1)
             
+            print(self)
         (index_start, index_end) = self.get_struct_pattern(0)
         if index_start != index_end:
             self.clean_array_struct()
@@ -193,10 +197,10 @@ class Struct:
         new_member.is_padding = padding
         self.members.insert(index, new_member)
 
-    def add_member_array_struct(self, index, index_end, name, offset, size,
+    def add_member_array_struct(self, index, index_end, name, offset,
                                 nb_unit, size_unit, block):
 
-        new_member = StructMember(offset, size, block)
+        new_member = StructMember(offset, 0, block)
         new_member.name = name
         new_member.set_array_struct(nb_unit, size_unit,
                                     self.members[index : index_end],
@@ -370,3 +374,4 @@ class Struct:
             if struct.not_a_struct():
                 struct.remove_all_block()
                 structs.remove(struct)
+

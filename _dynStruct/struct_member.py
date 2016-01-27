@@ -66,6 +66,11 @@ class StructMember:
         self.sub_struct = new_struct
         self.t = ""
 
+        self.size = 0;
+        for m in members_list:
+            self.size += m.size
+        self.size *= self.number_unit
+        
         
     def add_accesses_from_block(self, block):
         if block:

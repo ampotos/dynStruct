@@ -5,3 +5,8 @@ from .save import print_to_file
 from .save import print_to_console
 from .save import save_pickle
 from .web_ui import start_webui
+
+l_struct = []
+l_block = []
+l_access_w = []
+l_access_r = []

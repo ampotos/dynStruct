@@ -18,13 +18,30 @@ def block_view():
         return bottle.template("error", msg="Bad block id")
 
 @bottle.route("/access_search")
-def block_view():
-    # Todo:  search for id_block or id_struct in param
-    # check there are correct and pass them to the template
-    if bottle.request.query.iframe:
-        return bottle.template("access_search_iframe")
-    return bottle.template("access_search_alone")
+def access_view():
+    id_block = bottle.request.query.id_block
+    id_struct = bottle.request.query.id_struct
 
+    id_block = int(id_block) if id_block else None
+    id_struct = int(id_struct) if id_struct else None
+
+    if id_block and (id_block < 0 or id_block >= len(_dynStruct.l_block)):
+            return bottle.template("error", msg="Bad block id")
+    elif id_struct and (id_struct < 0 or id_struct >= len(_dynStruct.l_struct)):
+            return bottle.template("error", msg="Bad struct id")
+    else:
+        return bottle.template("access_search", id_block = id_block, id_struct=id_struct)
+
+@bottle.route("/access_get")
+def access_get():
+    id_block = bottle.request.query.id_block
+    id_struct = bottle.request.query.id_struct
+
+    id_block = int(id_block) if id_block != "None" else None
+    id_struct = int(id_struct) if id_struct != "None" else None
+
+    return _dynStruct.access_json(id_block, id_struct)
+    
 @bottle.route("/static/<filename:path>")
 def serve_static(filename):
     return bottle.static_file(filename, root=os.path.join(os.path.dirname(__file__), "static"))

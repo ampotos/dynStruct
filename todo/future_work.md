@@ -15,6 +15,11 @@
 4. #check what is the behavior with forking program:
         
 	Same thing than for muti-threaded program.
+	
+   #check the behavior with program using signal handler:
+
+	Same thing than for muti-threaded program.
+	*especially the state of the internal stack of function*
 
 5. #check the behavior of the plt part on diverse compiler (gcc work well, so test at least clang and tcc):
         

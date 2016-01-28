@@ -132,7 +132,6 @@ class Struct:
                 self.members.remove(member)
             (index_start, index_end) = self.get_struct_pattern(index_start + 1)
             
-            print(self)
         (index_start, index_end) = self.get_struct_pattern(0)
         if index_start != index_end:
             self.clean_array_struct()

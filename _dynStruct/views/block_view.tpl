@@ -2,38 +2,37 @@
 
 <div class="container">
   <h1 class="text-center"> Block informations</h1>
-  <p class="text-center"> {{hex(block["start"])}} - {{hex(block["end"])}} </p>
-  <p class="text-center"> allocation done at {{hex(block["alloc_pc"])}} 
-  % if block["alloc_sym"]:
-  ({{block["free_sym"]}} + {{hex(block["alloc_pc"] - block["alloc_func"])}}) by {{"malloc" if not block["alloc_by_realloc"] else "realloc"}}</p>  
-  <p class="text-center">function "{{block["alloc_sym"]}}" starting at {{hex(block["alloc_func"])}} in module "{{block["alloc_module"]}}" </p>
-  % else:
-  by {{"malloc" if not block["alloc_by_realloc"] else "realloc"}} in function starting at {{hex(block["alloc_func"])}} in module "{{block["alloc_module"]}}" </p>
-  % end
+  <h3 class="text-center"> <span class="text-primary">{{hex(block["start"])}} - {{hex(block["end"])}}</span> ({{hex(block["end"] - block["start"])}} bytes) </h3>
 
-  % if block["free"]:
-  <p class="text-center"> free done at {{hex(block["free_pc"])}} 
-  % if block["free_sym"]:
-  ({{block["free_sym"]}} + {{hex(block["free_pc"] - block["free_func"])}}) by {{"free" if not block["free_by_realloc"] else "realloc"}}</p>
-  <p class="text-center">function "{{block["free_sym"]}}" starting at {{hex(block["free_func"])}} in module "{{block["free_module"]}}" </p>
-  % else:
-  by {{"free" if not block["free_by_realloc"] else "realloc"}} in function starting at {{hex(block["free_func"])}} in module "{{block["free_module"]}}" </p>
-  % end
-    
-  % else:
-  <p class="text-center"> not free </p>
-  % end
-    
-  % if block["struct"]:
-  <p class="text-center"> The block is associate with the structure named {{block["struct"].name}} (todo link to the struct and link to remove this block from the struct) </p>
-  % else:
-  <p class="text-center"> No structure associate with this block (todo create new struct link here) </p>
-  % end
-  
+  <table class="table table-bordered">
+    <tr>
+      <td> </td>
+      <td> through </td>
+      <td> called at</td>
+      <td> caller</td>
+    </tr>
+    <tr class="success">
+      <td class="text-center">alloc</td>
+      <td> {{"malloc" if not block["alloc_by_realloc"] else "realloc"}} </td>
+      <td> <span class="text-danger">{{hex(block["alloc_pc"])}}</span>:<span class="{{'text-success' if block["alloc_sym"] else 'text-danger'}}">{{block["alloc_sym"] if block["alloc_sym"] else hex(block["alloc_func"])}}</span>+{{hex(block["alloc_pc"] - block["alloc_func"])}} </td>
+      <td> <span class="text-danger">{{hex(block["alloc_func"])}}</span>@<span class="text-warning">{{block["alloc_module"]}}</span> </td>
+    </tr>
+% if block["free"]:
+    <tr class="danger">
+      <td class="text-center">free</td>
+      <td> {{"free" if not block["free_by_realloc"] else "realloc"}} </td>
+      <td> <span class="text-danger">{{hex(block["free_pc"])}}</span>:<span class="{{'text-success' if block["free_sym"] else 'text-danger'}}">{{block["free_sym"] if block["free_sym"] else hex(block["free_func"])}}</span>+{{hex(block["free_pc"] - block["free_func"])}} </td>
+      <td> <span class="text-danger">{{hex(block["free_func"])}}</span>@<span class="text-warning">{{block["free_module"]}}</span> </td>
+    </tr>
+% end
+  </table>
+
+  todo: link to struct view + link to remove from the struct or add to a struct
   <h1 class="text-center"> Block access</h1>
   <div class="embed-responsive embed-responsive-4by3">
-    <iframe width="100%" src="/access_search?id_block={{block["id_block"]}}&iframe=1"></iframe>
+    <iframe class="embed-responsive-item" id="search_frame" onload="javascript:hide_navbar()" width="100%" src="/access_search?id_block={{block["id_block"]}}" scrolling="no""></iframe>
   </div>
+
 </div>
 
 % include footer

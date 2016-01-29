@@ -4,7 +4,7 @@ import json
 def access_json_list(accesses, t):
     ret = []
     for access in accesses:
-        instr_pc = '<span class="text-danger">0x%x</span>' % \
+        instr_pc = '<span class="text-danger">0x%x</span><strong>' % \
                    (access.pc & 0xffffffffffffffff)
         if access.func_sym:
             instr_pc += ':<span class="text-success">%s</span>' % \
@@ -12,7 +12,7 @@ def access_json_list(accesses, t):
         else:
             instr_pc += ':<span class="text-danger">0x%x</span>' % \
                         (access.func_pc & 0xffffffffffffffff)
-        instr_pc += '+0x%x' %((access.pc - access.func_pc) & 0xffffffffffffffff)
+        instr_pc += '</strong>+0x%x' %((access.pc - access.func_pc) & 0xffffffffffffffff)
         instr_pc += '@<span class="text-warning">%s</span>' % \
                     (access.func_module)
 

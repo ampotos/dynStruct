@@ -14,7 +14,8 @@
       "createdRow": function( row, data, dataIndex ) {
         if ( data[0] == "<code>write</code>" ) {
 	$(row).css('font-weight', 'bold');
-        }
+  }
+  $('td:eq(3)', row).css('font-weight', 'normal');
 	},
   % if defined('in_block_view'):
   "columnDefs": [
@@ -35,19 +36,19 @@
   <table id="access" class="table table-bordered table-striped">
     <thead>
       <tr>
-	<th> type </th>
+	<th> access </th>
 	<th> offset </th>
 	<th> size </th>
-	<th> instruction pc </th>
+	<th> agent </th>
 	<th> block_id </th>
       </tr>
     </thead>
     <tfoot>
       <tr>
-	<th> type </th>
+	<th> access </th>
 	<th> offset </th>
 	<th> size </th>
-	<th> instruction pc </th>
+	<th> agent </th>
 	<th>  </th>
       </tr>
     </tfoot>

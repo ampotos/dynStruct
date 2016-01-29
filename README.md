@@ -142,7 +142,7 @@ Now all the read access done by the libc are listed.
 
 ### Known issue
 
-Dynamorio can't run a program which are linked with the pthread library, so the data gatherer can't neither.
+DynamoRIO can't run programs which are linked with the pthread.so library, so the data gatherer can't neither.
 
 ## Structure recovery
 

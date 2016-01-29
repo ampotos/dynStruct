@@ -140,6 +140,10 @@ alloc by 0x0000000000400617(main : 0x00000000004005f9 in example) and free by 0x
 ```
 Now all the read access done by the libc are listed.
 
+### Known issue
+
+Dynamorio can't run a program which are linked with the pthread library, so the data gatherer can't neither.
+
 ## Structure recovery
 
 The python script dynStruct.py do the structure recovery and will start the web_ui when available.

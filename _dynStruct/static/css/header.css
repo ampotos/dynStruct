@@ -10,3 +10,8 @@
 .navbar {
     background-color: #d0d0d0
 }
+
+code {
+    background-color: transparent;
+    color:black;
+} 

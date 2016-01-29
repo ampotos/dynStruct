@@ -13,25 +13,28 @@
       },
       "createdRow": function( row, data, dataIndex ) {
         if ( data[0] == "read" ) {
-          $(row).addClass( 'success' );
+          $(row).addClass( 'info' );
         }
         else {
-          $(row).addClass( 'danger' );
+          $(row).addClass( 'warning' );
         }
-      },
-      "scrollY": 400,
-      "scrollCollapse": true
+  },
+  % if defined('in_block_view'):
+  "columnDefs": [
+  { "visible": false, "targets": 4 }
+    ]
+  % end
   } ).columnFilter({
   aoColumns: [ { type: "select", values : ['read', 'write']},
   { type: "text" },
   { type: "text" },
   { type: "text" },
-  { type: "text" },
   null]});
-  } );
+  
+  });
 </script>
   
-<div class="container">
+<div class="container-fluid">
   <table id="access" class="table table-bordered table-striped">
     <thead>
       <tr>
@@ -39,8 +42,7 @@
 	<th> offset </th>
 	<th> size </th>
 	<th> instruction pc </th>
-	<th> in function </th>
-	<th> block link </th>
+	<th> block_id </th>
       </tr>
     </thead>
     <tfoot>
@@ -49,7 +51,6 @@
 	<th> offset </th>
 	<th> size </th>
 	<th> instruction pc </th>
-	<th> in function </th>
 	<th>  </th>
       </tr>
     </tfoot>

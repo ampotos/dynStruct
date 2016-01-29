@@ -1,3 +1,4 @@
+% if not defined('in_page'):
 <!DOCTYPE html>
 <html>
   <head>
@@ -6,12 +7,6 @@
     <title>dynStruct</title>
   </head>
   <body>
-    <script type="text/javascript">
-      function hide_navbar(){
-      frame = document.getElementById("search_frame");
-      frame.contentDocument.getElementById("navbar").style.display='none';
-      }
-    </script>
     <div id="navbar" class="navbar navbar-default navbar-static-top">
       <div class="collapse navbar-collapse">
 	<ul class="nav navbar-nav">
@@ -21,3 +16,4 @@
 	</ul>
       </div>
     </div>
+% end

@@ -4,21 +4,22 @@ import json
 def access_json_list(accesses, t):
     ret = []
     for access in accesses:
-        instr_pc = '<code><span class="text-danger">0x%x</span>' % \
+        instr_pc = '<span class="text-danger">0x%x</span>' % \
                    (access.pc & 0xffffffffffffffff)
-        instr_pc += '@<span class="text-warning">%s</span>' % \
-                    (access.func_module)
         if access.func_sym:
             instr_pc += ':<span class="text-success">%s</span>' % \
                         (access.func_sym)
         else:
             instr_pc += ':<span class="text-danger">0x%x</span>' % \
                         (access.func_pc & 0xffffffffffffffff)
-        instr_pc += '+0x%x</code>' %((access.pc - access.func_pc) & 0xffffffffffffffff)
-        
-        ret.append([t, hex(access.offset), access.size, instr_pc,
+        instr_pc += '+0x%x' %((access.pc - access.func_pc) & 0xffffffffffffffff)
+        instr_pc += '@<span class="text-warning">%s</span>' % \
+                    (access.func_module)
+
+        tmp = [t, hex(access.offset), access.size, instr_pc,
                     '<a href=/block?id=%d>block_%d</a>' % \
-                    (access.block.id_block, access.block.id_block)])
+                    (access.block.id_block, access.block.id_block)]
+        ret.append(["<code>%s</code>" % (s) for s in tmp]) 
     return ret
 
 def access_json_all():

@@ -12,13 +12,10 @@
         "url": "access_get?id_block={{id_block}}&id_struct={{id_struct}}"
       },
       "createdRow": function( row, data, dataIndex ) {
-        if ( data[0] == "read" ) {
-          $(row).addClass( 'info' );
+        if ( data[0] == "<code>write</code>" ) {
+	$(row).css('font-weight', 'bold');
         }
-        else {
-          $(row).addClass( 'warning' );
-        }
-  },
+	},
   % if defined('in_block_view'):
   "columnDefs": [
   { "visible": false, "targets": 4 }

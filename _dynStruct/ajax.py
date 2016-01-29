@@ -21,7 +21,8 @@ def access_json_list(accesses, t):
                                                        '</span>@<span class="text-warning">',
                                                        access.func_module)
                                                        
-        ret.append([t, hex(access.offset), hex(access.size), instr_pc, func])
+        ret.append([t, hex(access.offset), hex(access.size), instr_pc, func,
+                    '<a href=/block?id=%d>block</a>' % access.block.id_block])
     return ret
 
 def access_json_all():

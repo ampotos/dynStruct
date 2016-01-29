@@ -26,12 +26,13 @@
   { type: "text" },
   { type: "text" },
   { type: "text" },
-  { type: "text" }]});
+  { type: "text" },
+  null]});
   } );
 </script>
   
 <div class="container">
-  <table id="access" class="table table-bordered table-striped" width="100%">
+  <table id="access" class="table table-bordered table-striped">
     <thead>
       <tr>
 	<th> type </th>
@@ -39,6 +40,7 @@
 	<th> size </th>
 	<th> instruction pc </th>
 	<th> in function </th>
+	<th> block link </th>
       </tr>
     </thead>
     <tfoot>
@@ -48,6 +50,7 @@
 	<th> size </th>
 	<th> instruction pc </th>
 	<th> in function </th>
+	<th>  </th>
       </tr>
     </tfoot>
   </table>

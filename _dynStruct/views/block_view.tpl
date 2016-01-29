@@ -28,11 +28,10 @@
   </table>
 
   todo: link to struct view + link to remove from the struct or add to a struct
-  <h1 class="text-center"> Block access</h1>
-  <div class="embed-responsive embed-responsive-4by3">
-    <iframe class="embed-responsive-item" id="search_frame" onload="javascript:hide_navbar()" width="100%" src="/access_search?id_block={{block["id_block"]}}" scrolling="no""></iframe>
-  </div>
-
+</div>
+<h1 class="text-center"> Block access</h1>
+<div class="embed-responsive embed-responsive-4by3">
+  <iframe class="embed-responsive-item" id="search_frame" onload="javascript:hide_navbar()" width="100%" src="/access_search?id_block={{block["id_block"]}}" scrolling="no"></iframe>
 </div>
 
 % include footer

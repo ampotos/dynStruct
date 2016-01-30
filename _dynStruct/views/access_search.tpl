@@ -31,9 +31,11 @@
   
   });
 </script>
-  
+
+% if not defined('in_page'):
 <div class="container-fluid">
-  <table id="access" class="table table-bordered table-striped">
+% end
+  <table id="access" class="table table-bordered" style="width: 100%">
     <thead>
       <tr>
 	<th> access </th>
@@ -53,6 +55,7 @@
       </tr>
     </tfoot>
   </table>
+% if not defined('in_page'):
 </div>
-
+% end
 % include footer

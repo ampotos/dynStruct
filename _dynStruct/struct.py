@@ -374,3 +374,11 @@ class Struct:
                 struct.remove_all_block()
                 structs.remove(struct)
 
+    @staticmethod
+    def is_valide_struct_id(id_struct):
+        if id_struct == None:
+            return True
+        for struct in _dynStruct.l_struct:
+            if struct.id == id_struct:
+                return True
+        return False

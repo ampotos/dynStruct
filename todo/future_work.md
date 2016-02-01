@@ -39,12 +39,6 @@
 	*run struct recovery only on new block*  
 	*be careful of stuff like unique id from the dynamo data*  
 
-#add an option to produce radare2 script which do automatique typing in radare2 debugger:
-     	
-	I usually use radare2 as decompiler and debugger (It's a big open source project).  
-	Radare2 can be script to automate action during the debugging, this option will produce a script for radare2.  
-	This script will load the structure recovered (with user modification) in radare2 and used address of malloc from block in the struct to automatically associated the structure (pf* commands in radare2).
-
 #optimization of actual implem:
 	
 	Actually runing a simple ls with dynStruct took ~120ms instead of 2ms or 3ms without it.  
@@ -54,6 +48,12 @@
 	*inline instrumentaiton instead of clean call each time*  
 	*alloc for multiple access, orig, block each time to not have to call alloc every time*
 	*data reorganisation (remove ptr in tree_t struct and include a tree_t member in each struct which is tored in a tree)*
+
+#add an option to produce radare2 script which do automatique typing in radare2 debugger:
+     	
+	I usually use radare2 as decompiler and debugger (It's a big open source project).  
+	Radare2 can be script to automate action during the debugging, this option will produce a script for radare2.  
+	This script will load the structure recovered (with user modification) in radare2 and used address of malloc from block in the struct to automatically associated the structure (pf* commands in radare2).
 
 #pointeur detection:
 	

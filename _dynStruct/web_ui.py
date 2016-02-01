@@ -17,20 +17,40 @@ def block_view():
     else:
         return bottle.template("error", msg="Bad block id")
 
+@bottle.route("/block_search")
+def block_search():
+    id_struct = bottle.request.query.id_struct
+
+    id_struct = int(id_struct) if id_struct else None
+
+    if not _dynStruct.Struct.is_valide_struct_id(id_struct):
+            return bottle.template("error", msg="Bad struct id")
+    else:
+        return bottle.template("block_search", id_struct=id_struct)
+
+@bottle.route("/block_get")
+def block_get():
+    id_struct = bottle.request.query.id_struct
+
+    id_struct = int(id_struct) if id_struct != "None" else None
+
+    return _dynStruct.block_json(id_struct)
+
+#todo access from struct will need memeber offset
 @bottle.route("/access_search")
-def access_view():
+def access_search():
     id_block = bottle.request.query.id_block
     id_struct = bottle.request.query.id_struct
 
     id_block = int(id_block) if id_block else None
     id_struct = int(id_struct) if id_struct else None
 
-    if id_block and (id_block < 0 or id_block >= len(_dynStruct.l_block)):
+    if id_block != None and (id_block < 0 or id_block >= len(_dynStruct.l_block)):
             return bottle.template("error", msg="Bad block id")
-    elif id_struct and (id_struct < 0 or id_struct >= len(_dynStruct.l_struct)):
+    elif not _dynStruct.Struct.is_valide_struct_id(id_struct):
             return bottle.template("error", msg="Bad struct id")
     else:
-        return bottle.template("access_search", id_block = id_block, id_struct=id_struct)
+        return bottle.template("access_search", id_block=id_block, id_struct=id_struct)
 
 @bottle.route("/access_get")
 def access_get():

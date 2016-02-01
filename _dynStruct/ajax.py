@@ -45,7 +45,7 @@ def access_json_from_struct(id_struct):
 def access_json(id_block, id_struct):
     if id_block != None:
         ret = access_json_from_block(id_block)
-    elif id_struct:
+    elif id_struct != None:
         ret = access_json_from_struct(id_struct)
     else:
         ret = access_json_all()
@@ -53,3 +53,71 @@ def access_json(id_block, id_struct):
                       "recordsTotal" : len(ret),
                       "recordsFiltered": len(ret),
                       "data" : ret})
+
+def block_json_list(blocks):
+    ret = []
+    for block in blocks:
+        tmp = ["0x%s" % (block.start & 0xffffffffffffffff),
+               "0x%x" % (block.end & 0xffffffffffffffff),
+               "%d" % (block.end - block.start)]
+
+        alloc_pc = '<span class="text-danger">0x%x</span><strong>' % \
+                   (block.alloc_pc & 0xffffffffffffffff)
+        if block.alloc_sym:
+            alloc_pc += ':<span class="text-success">%s</span>' % \
+                        (block.alloc_sym)
+        else:
+            alloc_pc += ':<span class="text-danger">0x%x</span>' % \
+                        (block.alloc_func & 0xffffffffffffffff)
+        if block.alloc_pc - block.alloc_func > 0:
+            alloc_pc += '</strong>+0x%x' %(block.alloc_pc - block.alloc_func)
+        else:
+            alloc_pc += '</strong>%s' % (hex(block.alloc_pc - block.alloc_func))
+        alloc_pc += '@<span class="text-warning">%s</span>' % \
+                    (block.alloc_module)
+        tmp.append(alloc_pc)
+
+        if block.free:
+            free_pc = '<span class="text-danger">0x%x</span><strong>' % \
+                      (block.free_pc & 0xffffffffffffffff)
+            if block.free_sym:
+                free_pc += ':<span class="text-success">%s</span>' % \
+                           (block.free_sym)
+            else:
+                free_pc += ':<span class="text-danger">0x%x</span>' % \
+                           (block.free_func & 0xffffffffffffffff)
+            if block.free_pc - block.free_func > 0:
+                free_pc += '</strong>+0x%x' %(block.free_pc - block.free_func)
+            else:
+                free_pc += '</strong>%s' % (hex(block.free_pc - block.free_func))
+                free_pc += '@<span class="text-warning">%s</span>' % \
+                           (block.free_module)
+            tmp.append(free_pc)
+        else:
+            tmp.append("<code>never free</code>")
+            
+        tmp = ["<code>%s</code>" % (s) for s in tmp]
+        if block.struct:
+            tmp.append("<a href=/struct?id_struct=%d>%s</a>" % (block.struct.id, block.struct.name))
+        else:
+            tmp.append("None")
+        tmp.append("<a href=/block?id=%d>block_%d</a>" % (block.id_block, block.id_block))
+        ret.append(tmp)
+    return ret
+        
+def block_json_from_struct(id_struct):
+    for struct in _dynStruct.l_struct:
+        if id_struct == struct.id:
+            return block_json_list(struct.blocks)
+    return []
+
+def block_json(id_struct):
+    if id_struct != None:
+        ret = block_json_from_struct(id_struct)
+    else:
+        ret = block_json_list(_dynStruct.l_block)
+    return json.dumps({"draw" : 1,
+                       "recordsTotal" : len(ret),
+                       "recordsFiltered": len(ret),
+                       "data" : ret})
+

@@ -1,4 +1,4 @@
- #web_ui (i'm actually working on it):
+#web_ui (i'm actually working on it):
 	Actually the tool is not usable by anyone except me, and even I can't find a information quickly, the goal of the web_ui is to provide an easy to use interface which will provide the information quickly.  
 	Have an interface is mandatory for dynStruct because a want dynStruct to be usable for anybody.
 
@@ -11,6 +11,7 @@
         
 	Just verify if dynStruct work properly wth multi-thread program.  
       	If not fix the issues.
+	known issue : pthread can't run under DynamoRIO
 
 #check what is the behavior with forking program:
       
@@ -25,13 +26,10 @@
         
 	Until now all test are done using GCC, using an other compiler is not supposed to be a problem but this need the same check than multi-threaded program.       
 
-#check the behavior with emacs
+#store opcode for each acces and disass in python with capstone
 
-       emacs just don't start
-
-# store opcode for each acces and disass in python with capstone
-
-  	it could be very helpfull to have the instruction who did the access
+  	it could be very helpfull to have the instruction which did the access to understand certain behavior.
+	this will also help to have better type recovery.
 
 #add possibility to add an other dynamo file to a serialized file (by loading both of them): 
         
@@ -55,6 +53,7 @@
 
 	*inline instrumentaiton instead of clean call each time*  
 	*alloc for multiple access, orig, block each time to not have to call alloc every time*
+	*data reorganisation (remove ptr in tree_t struct and include a tree_t member in each struct which is tored in a tree)*
 
 #pointeur detection:
 	
@@ -84,10 +83,6 @@
 	These access pattern can be compiler dependent and depend of the optimization level.  
 	This can also add a non negligible overhead, so maybe this not a good idea but to know that I have to try.
 
-#look at pattern access of the memory to mark access from equal size one after the other in all the block (an access pattern like that may be done by func like memset):
-      	
-	This is to reduce the erreur of the recovering of structure.  
-	May not be usefull with the previous improvement of the structure recovering.
 
 #add a sort of time notion:
         

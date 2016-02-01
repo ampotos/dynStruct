@@ -12,7 +12,10 @@ def access_json_list(accesses, t):
         else:
             instr_pc += ':<span class="text-danger">0x%x</span>' % \
                         (access.func_pc & 0xffffffffffffffff)
-        instr_pc += '</strong>+0x%x' %((access.pc - access.func_pc) & 0xffffffffffffffff)
+        if access.pc - access.func_pc > 0:
+            instr_pc += '</strong>+0x%x' %(access.pc - access.func_pc)
+        else:
+            instr_pc += '</strong>%s' % (hex(access.pc - access.func_pc))
         instr_pc += '@<span class="text-warning">%s</span>' % \
                     (access.func_module)
 
@@ -24,7 +27,7 @@ def access_json_list(accesses, t):
 
 def access_json_all():
     ret = access_json_list(_dynStruct.l_access_r, "read")
-    ret += access_json_list(_dynStruct.l_access_w,"write")
+    ret += access_json_list(_dynStruct.l_access_w, "write")
     return ret
 
 def access_json_from_block(id_block):
@@ -40,7 +43,7 @@ def access_json_from_struct(id_struct):
     return ret
 
 def access_json(id_block, id_struct):
-    if id_block:
+    if id_block != None:
         ret = access_json_from_block(id_block)
     elif id_struct:
         ret = access_json_from_struct(id_struct)

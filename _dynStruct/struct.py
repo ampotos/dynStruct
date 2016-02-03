@@ -1,4 +1,5 @@
 from .struct_member import StructMember
+import _dynStruct
 
 # list of classical string manipulation function
 # use to detecte string
@@ -44,7 +45,14 @@ class Struct:
             s += "\t" + str(member)
         s += "};\n"
         return s
-        
+
+    def get_nb_members(self):
+        nb_members = 0
+        for member in self.members:
+            if not member.is_padding:
+                nb_members += 1
+        return nb_members
+    
     def recover(self, block):
         actual_offset = 0
 
@@ -194,6 +202,8 @@ class Struct:
         new_member.name = name
         new_member.set_array(nb_unit, size_unit, t)
         new_member.is_padding = padding
+        if padding:
+            new_member.web_t = "padding"
         self.members.insert(index, new_member)
 
     def add_member_array_struct(self, index, index_end, name, offset,
@@ -382,3 +392,28 @@ class Struct:
             if struct.id == id_struct:
                 return True
         return False
+
+    @staticmethod
+    def get_by_id(id_struct):
+        if id_struct == None:
+            return None
+        next_struct = None
+        if '.' not in id_struct:
+            next_struct = '.'.join(id_struct.split('.')[1:])
+            id_struct = id_struct.split('.')[0]
+        for struct in _dynStruct.l_struct:
+            if struct.id == int(id_struct):
+                if not next_struct:
+                    return struct
+                else:
+                    return Struct.get_by_id(next_struct)
+        return None
+
+    @staticmethod
+    def get_member(id_struct, id_member):
+        struct = Struct.get_by_id(id_struct)
+        for member in struct.members:
+            if member.offset == id_member:
+                return member
+        return None
+    

@@ -13,12 +13,12 @@
       },
   % if defined('in_struct_view'):
   "columnDefs": [
-  { "visible": false, "targets": 6 }
+  { "visible": false, "targets": 4 }
     ]
   % end
   })}).columnFilter({
-  aoColumns: [ { type: "text"},
-  { type: "text" },
+  %# todo: search on the start field have to match each block with start >= addr <= end
+  aoColumns: [ { type: "text"}, 
   { type: "text" },
   { type: "text" },
   { type: "text" },
@@ -28,12 +28,12 @@
 
 % if not defined('in_page'):
 <div class="container-fluid">
+  <h1 class="text-center"> Block search</h1>
 % end
   <table id="blocks" class="table table-bordered" style="width: 100%">
     <thead>
       <tr>
 	<th> start </th>
-	<th> end </th>
 	<th> size </th>
 	<th> malloc caller </th>
 	<th> free caller </th>
@@ -44,7 +44,6 @@
     <tfoot>
       <tr>
 	<th> start </th>
-	<th> end </th>
 	<th> size </th>
 	<th> malloc caller </th>
 	<th> free caller </th>

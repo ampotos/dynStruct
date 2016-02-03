@@ -34,6 +34,7 @@
 
 % if not defined('in_page'):
 <div class="container-fluid">
+  <h1 class="text-center"> Access search</h1>
 % end
   <table id="access" class="table table-bordered" style="width: 100%">
     <thead>

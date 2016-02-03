@@ -106,7 +106,7 @@
        If there is some specific detail, try to detect if the program is a c++ program or not and do the necessary stuff to handle cpp program correctly.
 
 #add a option to dynStruct.py to load struct from a C style header instead of runing recovering
-       this will add the possibility to change the structures without the graphical interface
+       this will add the possibility to change the structures without the graphical interface00
        *if use with serrialized data remove, replace existing struct who have the same name with the one on the header if size are equal.*
 
 #check other language like rust, go, ... (I think most of them don't call malloc but have their own allocator system, mmap wrapping can help but it's not very precise): need flexibility on allocator:

@@ -58,7 +58,6 @@ def block_json_list(blocks):
     ret = []
     for block in blocks:
         tmp = ["0x%s" % (block.start & 0xffffffffffffffff),
-               "0x%x" % (block.end & 0xffffffffffffffff),
                "%d" % (block.end - block.start)]
 
         alloc_pc = '<span class="text-danger">0x%x</span><strong>' % \
@@ -90,15 +89,15 @@ def block_json_list(blocks):
                 free_pc += '</strong>+0x%x' %(block.free_pc - block.free_func)
             else:
                 free_pc += '</strong>%s' % (hex(block.free_pc - block.free_func))
-                free_pc += '@<span class="text-warning">%s</span>' % \
+            free_pc += '@<span class="text-warning">%s</span>' % \
                            (block.free_module)
             tmp.append(free_pc)
         else:
-            tmp.append("<code>never free</code>")
+            tmp.append("never free")
             
         tmp = ["<code>%s</code>" % (s) for s in tmp]
         if block.struct:
-            tmp.append("<a href=/struct?id_struct=%d>%s</a>" % (block.struct.id, block.struct.name))
+            tmp.append("<a href=/struct?id=%d>%s</a>" % (block.struct.id, block.struct.name))
         else:
             tmp.append("None")
         tmp.append("<a href=/block?id=%d>block_%d</a>" % (block.id_block, block.id_block))
@@ -116,6 +115,36 @@ def block_json(id_struct):
         ret = block_json_from_struct(id_struct)
     else:
         ret = block_json_list(_dynStruct.l_block)
+    return json.dumps({"draw" : 1,
+                       "recordsTotal" : len(ret),
+                       "recordsFiltered": len(ret),
+                       "data" : ret})
+
+def member_json(struct, old_member):
+    ret = []
+    for member in struct.members:
+        tmp = ["0x%x" % (member.offset)]
+        if member.is_padding:
+            tmp.append("padding")
+        else:
+            tmp.append('<span class="text-primary"><a href="/member?id_struct=%d&id_member=%s">%s</a></span>' %\
+               (struct.id, member.offset, member.name))
+        tmp += ["%d" % (member.size),
+               '<span class="text-warning">%s</span>' % (member.web_t)]
+        ret.append(["<code>%s</code>" % (a) for a in tmp])
+    return json.dumps({"draw" : 1,
+                       "recordsTotal" : len(ret),
+                       "recordsFiltered": len(ret),
+                       "data" : ret})
+
+def struct_json():
+    ret = []
+    for struct in _dynStruct.l_struct:
+        tmp = ['<span class="text-primary"><a href="/struct?id=%d">%s</a></span>' % (struct.id, struct.name),
+               "%d" % (struct.size),
+               "%d" % (struct.get_nb_members()),
+               "%d" % (len(struct.blocks))]
+        ret.append(["<code>%s</code>" % (a) for a in tmp])        
     return json.dumps({"draw" : 1,
                        "recordsTotal" : len(ret),
                        "recordsFiltered": len(ret),

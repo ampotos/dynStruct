@@ -10,9 +10,11 @@
     <div id="navbar" class="navbar navbar-default navbar-static-top">
       <div class="collapse navbar-collapse">
 	<ul class="nav navbar-nav">
-	  <li> <a href="/">Structures</a></li>
+	  <li> <a href="/struct_search">Structures</a></li>
 	  <li> <a href="/block_search">Blocks</a></li>
 	  <li> <a href="/access_search">Access</a></li>
+	  <li> <a href="/">Create Structure</a></li>
+	  <li> <a href="/">Header file</a></li>
 	</ul>
       </div>
     </div>

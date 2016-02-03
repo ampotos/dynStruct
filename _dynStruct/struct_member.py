@@ -9,7 +9,8 @@ class StructMember:
         self.name = "offset_0x%x" % offset
         self.access = []
         self.t = "uint%d_t" % (self.size * 8)
-
+        self.web_t = self.t
+        
         self.is_array = False
         self.number_unit = 0
         self.size_unit = 0
@@ -56,6 +57,7 @@ class StructMember:
         self.number_unit = nb_unit
         self.size_unit = size_unit
         self.t = t
+        self.web_t = "array of %s" % (t)
 
     def set_array_struct(self, nb_unit, size_unit, members_list, new_struct):
         self.is_array_struct = True
@@ -65,6 +67,7 @@ class StructMember:
         new_struct.members = members_list
         self.sub_struct = new_struct
         self.t = ""
+        self.web_t = "array of %s" % (self.name)
 
         self.size = 0;
         for m in members_list:

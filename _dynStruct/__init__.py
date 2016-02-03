@@ -7,6 +7,8 @@ from .save import save_pickle
 from .web_ui import start_webui
 from .ajax import access_json
 from .ajax import block_json
+from .ajax import member_json
+from .ajax import struct_json
 
 l_struct = []
 l_block = []

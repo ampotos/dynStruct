@@ -1,7 +1,7 @@
 import _dynStruct
 import json
 
-def access_json_list(accesses, t):
+def access_json_list(accesses, t, start_offset=0):
     ret = []
     for access in accesses:
         instr_pc = '<span class="text-danger">0x%x</span><strong>' % \
@@ -19,7 +19,7 @@ def access_json_list(accesses, t):
         instr_pc += '@<span class="text-warning">%s</span>' % \
                     (access.func_module)
 
-        tmp = [t, hex(access.offset), access.size, instr_pc,
+        tmp = [t, hex(access.offset - start_offset), access.size, instr_pc,
                     '<a href=/block?id=%d>block_%d</a>' % \
                     (access.block.id_block, access.block.id_block)]
         ret.append(["<code>%s</code>" % (s) for s in tmp]) 
@@ -35,18 +35,17 @@ def access_json_from_block(id_block):
     ret += access_json_list(_dynStruct.l_block[id_block].w_access, "write")
     return ret
 
-def access_json_from_struct(id_struct):
-    ret = []
-    for block in _dynStruct.l_struct[id_struct]:
-        ret += access_json_from_block(block.id_block)
-
+def access_json_from_struct(id_member):
+    (r_access, w_access, start_offset) = _dynStruct.Struct.get_member_access(id_member)
+    ret = access_json_list(r_access, "read", start_offset)
+    ret += access_json_list(w_access, "write", start_offset)
     return ret
 
-def access_json(id_block, id_struct):
+def access_json(id_block, id_member):
     if id_block != None:
         ret = access_json_from_block(id_block)
-    elif id_struct != None:
-        ret = access_json_from_struct(id_struct)
+    elif id_member != None:
+        ret = access_json_from_struct(id_member)
     else:
         ret = access_json_all()
     return json.dumps({"draw" : 1,
@@ -120,15 +119,15 @@ def block_json(id_struct):
                        "recordsFiltered": len(ret),
                        "data" : ret})
 
-def member_json(struct, old_member):
+def member_json(struct, id_struct):
     ret = []
     for member in struct.members:
         tmp = ["0x%x" % (member.offset)]
         if member.is_padding:
             tmp.append("padding")
         else:
-            tmp.append('<span class="text-primary"><a href="/member?id_struct=%d&id_member=%s">%s</a></span>' %\
-               (struct.id, member.offset, member.name))
+            tmp.append('<span class="text-primary"><a href="/member?id_struct=%s&id_member=%s">%s</a></span>' %\
+               (id_struct, member.offset, member.name))
         tmp += ["%d" % (member.size),
                '<span class="text-warning">%s</span>' % (member.web_t)]
         ret.append(["<code>%s</code>" % (a) for a in tmp])

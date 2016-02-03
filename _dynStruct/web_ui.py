@@ -38,14 +38,14 @@ def block_get():
 @bottle.route("/access_search")
 def access_search():
     id_block = bottle.request.query.id_block
-    id_struct = bottle.request.query.id_struct
+    id_member = bottle.request.query.id_member
 
     id_block = int(id_block) if id_block else None
-    id_struct = int(id_struct) if id_struct else None
+    id_member = id_member if id_member else None
 
     if id_block != None and (id_block < 0 or id_block >= len(_dynStruct.l_block)):
             return bottle.template("error", msg="Bad block id")
-    elif not _dynStruct.Struct.is_valide_struct_id(id_struct):
+    elif not _dynStruct.Struct.is_valide_struct_id(id_member):
             return bottle.template("error", msg="Bad struct id")
     else:
         return bottle.template("access_search", id_block=id_block, id_struct=id_struct)
@@ -53,12 +53,12 @@ def access_search():
 @bottle.route("/access_get")
 def access_get():
     id_block = bottle.request.query.id_block
-    id_struct = bottle.request.query.id_struct
+    id_member = bottle.request.query.id_member
 
     id_block = int(id_block) if id_block != "None" else None
-    id_struct = int(id_struct) if id_struct != "None" else None
+    id_member = id_member if id_member != "None" else None
 
-    return _dynStruct.access_json(id_block, id_struct)
+    return _dynStruct.access_json(id_block, id_member)
 
 @bottle.route("/struct")
 def struct_view():
@@ -77,20 +77,10 @@ def struct_search():
 def struct_get():
     return _dynStruct.struct_json()
 
-@bottle.route("/member_search")
-def member_search():
-    id_struct = bottle.request.query.id_struct
-
-    id_struct = int(id_struct) if id_struct else None
-
-    if id_struct == None or not  _dynStruct.Struct.is_valide_struct_id:
-        return bottle.template("error", msg="Bad struct id")
-    else:
-        return bottle.template("access_search", struct=_dynStruct.Struct.get_by_id(id_struct))
-
 @bottle.route("/member_get")
 def member_get():
-    return _dynStruct.member_json(_dynStruct.Struct.get_by_id(bottle.request.query.id_struct), _dynStruct.l_struct)
+    id_struct = bottle.request.query.id_struct
+    return _dynStruct.member_json(_dynStruct.Struct.get_by_id(id_struct), id_struct)
 
 @bottle.route("/member")
 def member_view():
@@ -100,14 +90,17 @@ def member_view():
     if not id_member:
         return bottle.template("error", msg="member id missing")
 
-    member = _dynStruct.Struct.get_member(id_struct, int(id_member))
+    member = _dynStruct.Struct.get_member_by_id(id_struct, int(id_member))
     if not member:
         return bottle.template("error", msg="bad member id")
     
-    if id_struct == None or not  _dynStruct.Struct.is_valide_struct_id:
+    if id_struct == None or not  _dynStruct.Struct.get_by_id(id_struct):
         return bottle.template("error", msg="Bad struct id")
-    
-    return bottle.template("member_view", id_struct="%s,%d" % (id_struct, member.offset), member=member)
+
+    return bottle.template("member_view",
+                           id_member="%s.%d" % (id_struct, member.offset),
+                           member=member,
+                           name_member=_dynStruct.Struct.make_member_name(id_struct, member.offset))
 #in member_view : concatenate id_struct + '.' + ofset_member in the link to memeber for inner struct
 
 @bottle.route("/static/<filename:path>")

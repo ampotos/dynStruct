@@ -33,7 +33,7 @@
 % end
   
   <h1 class="text-center"> Block access</h1>
-% include('access_search.tpl', in_page=True, in_block_view=True, id_block=block.id_block, id_struct=None)
+% include('access_search.tpl', in_page=True, in_block_view=True, id_block=block.id_block, id_member=None)
 </div>
 
 % include footer

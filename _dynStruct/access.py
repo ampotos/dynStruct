@@ -18,7 +18,15 @@ class Access:
     def is_offset(self, offset):
         return self.offset == offset
 
+    def is_in_range(self, start, end):
+        if self.offset >= start and self.offset < end:
+            return True
 
+        if self.offset < start and self.offset + self.size >start:
+            return True
+
+        return False
+        
     def in_member(self, member):
         if self.is_offset(member.offset):
             return True

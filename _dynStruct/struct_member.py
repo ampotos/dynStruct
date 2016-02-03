@@ -7,7 +7,6 @@ class StructMember:
         self.offset = offset
         self.size = size
         self.name = "offset_0x%x" % offset
-        self.access = []
         self.t = "uint%d_t" % (self.size * 8)
         self.web_t = self.t
         
@@ -21,8 +20,6 @@ class StructMember:
         self.is_array_struct = False
         self.sub_struct = None
 
-        self.add_accesses_from_block(block)
-        
     def __str__(self):
         if self.is_array:
             s = self.print_array()
@@ -65,6 +62,7 @@ class StructMember:
         self.size_unit = size_unit
         new_struct.size = size_unit
         new_struct.members = members_list
+        new_struct.name = self.name
         self.sub_struct = new_struct
         self.t = ""
         self.web_t = "array of %s" % (self.name)
@@ -73,8 +71,3 @@ class StructMember:
         for m in members_list:
             self.size += m.size
         self.size *= self.number_unit
-        
-        
-    def add_accesses_from_block(self, block):
-        if block:
-            self.access += block.get_access_by_member(self)

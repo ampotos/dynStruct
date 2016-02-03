@@ -38,11 +38,16 @@ class Block:
                 ret.append(access)
 
         return ret
-                
-    def get_access_by_member(self, member):
-        ret = []
-        for access in self.r_access + self.w_access:
-            if access.in_member(member):
-                ret.append(access)
 
-        return ret            
+    def get_access_by_range(self, start, end):
+        r_access = []
+        w_access = []
+
+        for access in self.r_access:
+            if access.is_in_range(start, end):
+                r_access.append(access)
+        for access in self.w_access:
+            if access.is_in_range(start, end):
+                w_access.append(access)
+
+        return (r_access, w_access)

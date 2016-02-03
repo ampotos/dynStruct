@@ -53,6 +53,12 @@ class Struct:
                 nb_members += 1
         return nb_members
     
+    def get_member(self, offset):
+        for member in self.members:
+            if member.offset == offset:
+                return member
+        return None
+
     def recover(self, block):
         actual_offset = 0
 
@@ -228,8 +234,8 @@ class Struct:
                 sizes[access.size] += 1
             else:
                 sizes[access.size] = 1
-
-
+                
+        
         max_hit = 0
         for size in range(max_size + 1):
             if size in sizes and sizes[size] > max_hit:
@@ -293,12 +299,10 @@ class Struct:
     def add_block(self, block):
         self.blocks.append(block)
         block.struct = self
-        self.maj_all_accesses()
 
     def remove_block(self, block):
         self.blocks.remove(block)
         block.struct = None
-        self.maj_all_accesses()
 
     def remove_all_block(self):
         for block in self.blocks:
@@ -316,17 +320,7 @@ class Struct:
 
         return True
 
-    def maj_member_accesses(self, member):
-        member.access.clear()
-        for block in self.blocks:
-            member.add_accesses_from_block(block)
-
-    def maj_all_accesses(self):
-        for member in self.members:
-            self.maj_member_accesses(member)        
-            
     def maj_member(self):
-        self.maj_all_accesses()
         if self.look_like_array():
             self.looks_array = True
             self.size_array_unit = self.members[0].size
@@ -385,35 +379,59 @@ class Struct:
                 structs.remove(struct)
 
     @staticmethod
-    def is_valide_struct_id(id_struct):
-        if id_struct == None:
-            return True
-        for struct in _dynStruct.l_struct:
-            if struct.id == id_struct:
-                return True
-        return False
-
-    @staticmethod
-    def get_by_id(id_struct):
+    def get_by_id(id_struct, struct=None):
         if id_struct == None:
             return None
-        next_struct = None
-        if '.' not in id_struct:
-            next_struct = '.'.join(id_struct.split('.')[1:])
-            id_struct = id_struct.split('.')[0]
-        for struct in _dynStruct.l_struct:
-            if struct.id == int(id_struct):
-                if not next_struct:
+        if not '.' in id_struct and struct == None:
+            for struct in _dynStruct.l_struct:
+                if struct.id == int(id_struct):
                     return struct
-                else:
-                    return Struct.get_by_id(next_struct)
-        return None
+            return None
 
+        id_struct = id_struct.split('.')
+        next_struct = '.'.join(id_struct[1:]) if len(id_struct) > 1 else None
+        id_struct = id_struct[0]
+        if not struct:
+            struct = Struct.get_by_id(id_struct)
+            return Struct.get_by_id(next_struct, struct)
+        else:
+            struct = struct.get_member(int(id_struct)).sub_struct
+            if next_struct:
+                return Struct.get_by_id(next_struct, struct)
+            return struct
+
+        return None        
+                
     @staticmethod
-    def get_member(id_struct, id_member):
+    def get_member_by_id(id_struct, id_member):
         struct = Struct.get_by_id(id_struct)
         for member in struct.members:
             if member.offset == id_member:
                 return member
         return None
-    
+
+    @staticmethod
+    def make_member_name(id_struct, id_member):
+        name = []
+        id_struct_split = id_struct.split('.')
+        for n in range(len(id_struct_split)):
+            print('.'.join(id_struct_split[:n+1]))
+            name.append(Struct.get_by_id('.'.join(id_struct_split[:n+1])).name)
+            print(name)
+        name.append(Struct.get_member_by_id(id_struct, id_member).name)
+        return '.'.join(name)
+
+    @staticmethod
+    def get_member_access(id_struct):
+        id_struct = id_struct.split('.')
+        base_struct = _dynStruct.Struct.get_by_id(id_struct[0])
+
+        start_offset = sum([int(offset) for offset in id_struct[1:]])
+
+        struct_size = _dynStruct.Struct.get_member_by_id('.'.join(id_struct[:-1]),
+                                                         int(id_struct[-1])).size
+        
+        for block in base_struct.blocks:
+            (r_access, w_access) = block.get_access_by_range(start_offset, start_offset + struct_size)
+            
+        return (r_access, w_access, start_offset)

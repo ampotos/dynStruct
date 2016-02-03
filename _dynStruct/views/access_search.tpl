@@ -9,7 +9,7 @@
     $('#access').dataTable( {
       "processing": true,
       "ajax": {
-        "url": "access_get?id_block={{id_block}}&id_struct={{id_struct}}"
+        "url": "access_get?id_block={{id_block}}&id_member={{id_member}}"
       },
       "createdRow": function( row, data, dataIndex ) {
         if ( data[0] == "<code>write</code>" ) {
@@ -20,7 +20,7 @@
   % if defined('in_block_view'):
   "columnDefs": [
   { "visible": false, "targets": 4 }
-    ]
+    ]  
   % end
   } ).columnFilter({
   aoColumns: [ { type: "select", values : ['read', 'write']},

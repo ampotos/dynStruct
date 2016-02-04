@@ -45,10 +45,10 @@ def access_search():
 
     if id_block != None and (id_block < 0 or id_block >= len(_dynStruct.l_block)):
             return bottle.template("error", msg="Bad block id")
-    elif id_struct != None and not _dynStruct.Struct.get_by_id(id_member):
+    elif id_member != None and not _dynStruct.Struct.get_by_id(id_member):
             return bottle.template("error", msg="Bad struct id")
     else:
-        return bottle.template("access_search", id_block=id_block, id_struct=id_struct)
+        return bottle.template("access_search", id_block=id_block, id_member=id_member)
 
 @bottle.route("/access_get")
 def access_get():

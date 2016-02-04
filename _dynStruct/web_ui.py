@@ -21,7 +21,7 @@ def block_search():
 
     id_struct = int(id_struct) if id_struct else None
 
-    if not _dynStruct.Struct.is_valide_struct_id(id_struct):
+    if id_struct != None and not _dynStruct.Struct.get_by_id(id_struct):
             return bottle.template("error", msg="Bad struct id")
     else:
         return bottle.template("block_search", id_struct=id_struct)
@@ -45,7 +45,7 @@ def access_search():
 
     if id_block != None and (id_block < 0 or id_block >= len(_dynStruct.l_block)):
             return bottle.template("error", msg="Bad block id")
-    elif not _dynStruct.Struct.is_valide_struct_id(id_member):
+    elif id_struct != None and not _dynStruct.Struct.get_by_id(id_member):
             return bottle.template("error", msg="Bad struct id")
     else:
         return bottle.template("access_search", id_block=id_block, id_struct=id_struct)
@@ -101,7 +101,6 @@ def member_view():
                            id_member="%s.%d" % (id_struct, member.offset),
                            member=member,
                            name_member=_dynStruct.Struct.make_member_name(id_struct, member.offset))
-#in member_view : concatenate id_struct + '.' + ofset_member in the link to memeber for inner struct
 
 @bottle.route("/static/<filename:path>")
 def serve_static(filename):

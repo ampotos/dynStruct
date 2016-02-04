@@ -59,15 +59,13 @@ class StructMember:
     def set_array_struct(self, nb_unit, size_unit, members_list, new_struct):
         self.is_array_struct = True
         self.number_unit = nb_unit
-        self.size_unit = size_unit
-        new_struct.size = size_unit
-        new_struct.members = members_list
-        new_struct.name = self.name
         self.sub_struct = new_struct
         self.t = ""
         self.web_t = "array of %s" % (self.name)
-
-        self.size = 0;
+        self.size_unit = 0;
         for m in members_list:
-            self.size += m.size
-        self.size *= self.number_unit
+            self.size_unit += m.size
+        self.size = self.size_unit * self.number_unit
+        new_struct.size = self.size_unit
+        new_struct.members = members_list
+        new_struct.name = self.name

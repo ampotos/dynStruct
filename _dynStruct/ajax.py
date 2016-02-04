@@ -124,7 +124,7 @@ def member_json(struct, id_struct):
     for member in struct.members:
         tmp = ["0x%x" % (member.offset)]
         if member.is_padding:
-            tmp.append("padding")
+            tmp.append("")
         else:
             tmp.append('<span class="text-primary"><a href="/member?id_struct=%s&id_member=%s">%s</a></span>' %\
                (id_struct, member.offset, member.name))

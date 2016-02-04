@@ -41,7 +41,7 @@
       <tr>
 	<th> access </th>
 	<th> offset </th>
-	<th> size </th>
+	<th> size (in bytes)</th>
 	<th> agent </th>
 	<th> block_id </th>
       </tr>

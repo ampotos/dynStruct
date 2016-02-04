@@ -415,9 +415,7 @@ class Struct:
         name = []
         id_struct_split = id_struct.split('.')
         for n in range(len(id_struct_split)):
-            print('.'.join(id_struct_split[:n+1]))
             name.append(Struct.get_by_id('.'.join(id_struct_split[:n+1])).name)
-            print(name)
         name.append(Struct.get_member_by_id(id_struct, id_member).name)
         return '.'.join(name)
 

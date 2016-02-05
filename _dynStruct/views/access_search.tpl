@@ -2,12 +2,12 @@
 <script type="text/javascript" src="/static/js/jquery-1.12.0.min.js"></script>
 <script type="text/javascript" src="/static/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src="/static/js/dataTables.bootstrap.min.js"></script>
-<script type="text/javascript" src="/static/js/jquery.dataTables.columnFilter.js"></script>
 <link rel="stylesheet" href="/static/css/dataTables.bootstrap.min.css"/>
 <script type="text/javascript">
   $(document).ready(function() {
-    $('#access').dataTable( {
+    table = $('#access').DataTable( {
       "processing": true,
+      "serverSide": true,
       "ajax": {
         "url": "access_get?id_block={{id_block}}&id_member={{id_member}}"
       },
@@ -22,13 +22,21 @@
   { "visible": false, "targets": 4 }
     ]  
   % end
-  } ).columnFilter({
-  aoColumns: [ { type: "select", values : ['read', 'write']},
-  { type: "text" },
-  { type: "text" },
-  { type: "text" },
-  null]});
-  
+  }
+  )
+
+  table.columns().every( function () {
+    var that = this;
+    $( 'input', this.footer() ).on( 'keyup change', function () {
+      if ( that.search() !== this.value ) {
+        that
+            .search( this.value )
+            .draw();}})
+    $( 'select', this.footer() ).on( 'keyup change', function () {
+      if ( that.search() !== this.value ) {
+        that
+            .search( this.value )
+            .draw();}})})
   });
 </script>
 
@@ -48,10 +56,10 @@
     </thead>
     <tfoot>
       <tr>
-	<th> access </th>
-	<th> offset </th>
-	<th> size </th>
-	<th> agent </th>
+	<th> <select class="form-control"><option value=""></option><option value="write">write</option><option value="read">read</option></select></th>
+	<th> <input class="form-control" type="text" placeholder="Search offset" /> </th>
+	<th> <input class="form-control" type="text" placeholder="Search size" /> </th>
+	<th> <input class="form-control" type="text" placeholder="Search agent" /> </th>
 	<th>  </th>
       </tr>
     </tfoot>

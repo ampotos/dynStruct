@@ -34,7 +34,6 @@ def block_get():
 
     return _dynStruct.block_json(id_struct)
 
-#todo access from struct will need member offset
 @bottle.route("/access_search")
 def access_search():
     id_block = bottle.request.query.id_block
@@ -49,7 +48,7 @@ def access_search():
             return bottle.template("error", msg="Bad struct id")
     else:
         return bottle.template("access_search", id_block=id_block, id_member=id_member)
-
+import urllib
 @bottle.route("/access_get")
 def access_get():
     id_block = bottle.request.query.id_block
@@ -58,6 +57,7 @@ def access_get():
     id_block = int(id_block) if id_block != "None" else None
     id_member = id_member if id_member != "None" else None
 
+    print(urllib.parse.unquote(bottle.request.query_string).split('&'))
     return _dynStruct.access_json(id_block, id_member)
 
 @bottle.route("/struct")

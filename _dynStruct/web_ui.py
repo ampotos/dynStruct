@@ -14,7 +14,6 @@ def block_view():
     else:
         return bottle.template("error", msg="Bad block id")
 
-# /block_search only used from /struct
 @bottle.route("/block_search")
 def block_search():
     id_struct = bottle.request.query.id_struct
@@ -32,7 +31,7 @@ def block_get():
 
     id_struct = int(id_struct) if id_struct != "None" else None
 
-    return _dynStruct.block_json(id_struct)
+    return _dynStruct.block_json(id_struct, bottle.request.query)
 
 @bottle.route("/access_search")
 def access_search():
@@ -48,7 +47,7 @@ def access_search():
             return bottle.template("error", msg="Bad struct id")
     else:
         return bottle.template("access_search", id_block=id_block, id_member=id_member)
-import urllib
+
 @bottle.route("/access_get")
 def access_get():
     id_block = bottle.request.query.id_block
@@ -57,8 +56,7 @@ def access_get():
     id_block = int(id_block) if id_block != "None" else None
     id_member = id_member if id_member != "None" else None
 
-    print(urllib.parse.unquote(bottle.request.query_string).split('&'))
-    return _dynStruct.access_json(id_block, id_member)
+    return _dynStruct.access_json(id_block, id_member, bottle.request.query)
 
 @bottle.route("/struct")
 def struct_view():

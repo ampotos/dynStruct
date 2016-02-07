@@ -41,17 +41,21 @@ def access_json_from_struct(id_member):
     ret += access_json_list(w_access, "write", start_offset)
     return ret
 
-def access_json(id_block, id_member):
+def access_json(id_block, id_member, query):
     if id_block != None:
         ret = access_json_from_block(id_block)
     elif id_member != None:
         ret = access_json_from_struct(id_member)
     else:
         ret = access_json_all()
-    return json.dumps({"draw" : 1,
-                      "recordsTotal" : len(ret),
-                      "recordsFiltered": len(ret),
-                      "data" : ret})
+
+    total = len(ret)
+    total_filtered = len(ret)
+    ret = _dynStruct.paging(int(query["start"]), int(query["length"]), ret)
+    return json.dumps({"draw" : query["draw"],
+                       "recordsTotal" : total,
+                       "recordsFiltered": total_filtered,
+                       "data" : ret})
 
 def block_json_list(blocks):
     ret = []
@@ -109,14 +113,18 @@ def block_json_from_struct(id_struct):
             return block_json_list(struct.blocks)
     return []
 
-def block_json(id_struct):
+def block_json(id_struct, query):
     if id_struct != None:
         ret = block_json_from_struct(id_struct)
     else:
         ret = block_json_list(_dynStruct.l_block)
-    return json.dumps({"draw" : 1,
-                       "recordsTotal" : len(ret),
-                       "recordsFiltered": len(ret),
+
+    total = len(ret)
+    total_filtered = len(ret)
+    ret = _dynStruct.paging(int(query["start"]), int(query["length"]), ret)
+    return json.dumps({"draw" : query["draw"],
+                       "recordsTotal" : total,
+                       "recordsFiltered": total_filtered,
                        "data" : ret})
 
 def member_json(struct, id_struct):

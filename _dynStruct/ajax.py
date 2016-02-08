@@ -1,9 +1,11 @@
 import _dynStruct
 import json
 
-def access_json_list(accesses, t, start_offset=0):
+def access_json_list(accesses, t, query, start_offset=0):
     ret = []
     for access in accesses:
+        if not _dynStruct.filter_access(access, query, t):
+            continue
         instr_pc = '<span class="text-danger">0x%x</span><strong>' % \
                    (access.pc & 0xffffffffffffffff)
         if access.func_sym:
@@ -23,44 +25,49 @@ def access_json_list(accesses, t, start_offset=0):
                     '<a href=/block?id=%d>block_%d</a>' % \
                     (access.block.id_block, access.block.id_block)]
         ret.append(["<code>%s</code>" % (s) for s in tmp]) 
-    return ret
+    return (len(accesses), ret)
 
-def access_json_all():
-    ret = access_json_list(_dynStruct.l_access_r, "read")
-    ret += access_json_list(_dynStruct.l_access_w, "write")
-    return ret
+def access_json_all(query):
+    (total, ret) = access_json_list(_dynStruct.l_access_r, "read", query)
+    (tmp_total, tmp_ret) = access_json_list(_dynStruct.l_access_w, "write", query)
+    return (total + tmp_total, ret + tmp_ret)
 
-def access_json_from_block(id_block):
-    ret = access_json_list(_dynStruct.l_block[id_block].r_access, "read")
-    ret += access_json_list(_dynStruct.l_block[id_block].w_access, "write")
-    return ret
+def access_json_from_block(id_block, query):
+    (total, ret) = access_json_list(_dynStruct.l_block[id_block].r_access, "read", query)
+    (tmp_total, tmp_ret) = access_json_list(_dynStruct.l_block[id_block].w_access, "write", query)
+    return (total + tmp_total, ret, tmp_ret)
 
-def access_json_from_struct(id_member):
+def access_json_from_struct(id_member, query):
     (r_access, w_access, start_offset) = _dynStruct.Struct.get_member_access(id_member)
-    ret = access_json_list(r_access, "read", start_offset)
-    ret += access_json_list(w_access, "write", start_offset)
-    return ret
+    (total, ret) = access_json_list(r_access, "read", start_offset, query)
+    (tmp_total, tmp_ret) = access_json_list(w_access, "write", start_offset, query)
+    return (total + tmp_total, ret + tmp_ret)
 
 def access_json(id_block, id_member, query):
     if id_block != None:
-        ret = access_json_from_block(id_block)
+        (total, ret) = access_json_from_block(id_block, query)
     elif id_member != None:
-        ret = access_json_from_struct(id_member)
+        (total, ret) = access_json_from_struct(id_member, query)
     else:
-        ret = access_json_all()
+        (total, ret) = access_json_all(query)
 
-    total = len(ret)
     total_filtered = len(ret)
+    ret = _dynStruct.sorting_access(ret, query['order[0][column]'], query['order[0][dir]'])
     ret = _dynStruct.paging(int(query["start"]), int(query["length"]), ret)
     return json.dumps({"draw" : query["draw"],
                        "recordsTotal" : total,
                        "recordsFiltered": total_filtered,
                        "data" : ret})
 
-def block_json_list(blocks):
+# TODO : build json at load time for block and access
+# for member and struct at each modif and just after recovery
+# for block rebuild json when set or unset struct
+def block_json_list(blocks, query):
     ret = []
     for block in blocks:
-        tmp = ["0x%s" % (block.start & 0xffffffffffffffff),
+        if not _dynStruct.filter_block(block, query):
+            continue
+        tmp = ["0x%x" % (block.start & 0xffffffffffffffff),
                "%d" % (block.end - block.start)]
 
         alloc_pc = '<span class="text-danger">0x%x</span><strong>' % \
@@ -105,22 +112,22 @@ def block_json_list(blocks):
             tmp.append("None")
         tmp.append("<a href=/block?id=%d>block_%d</a>" % (block.id_block, block.id_block))
         ret.append(tmp)
-    return ret
+    return (len(blocks), ret)
         
-def block_json_from_struct(id_struct):
+def block_json_from_struct(id_struct, query):
     for struct in _dynStruct.l_struct:
         if id_struct == struct.id:
-            return block_json_list(struct.blocks)
-    return []
+            return block_json_list(struct.blocks, query)
+    return (0, [])
 
 def block_json(id_struct, query):
     if id_struct != None:
-        ret = block_json_from_struct(id_struct)
+        (total, ret) = block_json_from_struct(id_struct, query)
     else:
-        ret = block_json_list(_dynStruct.l_block)
+        (total, ret) = block_json_list(_dynStruct.l_block, query)
 
-    total = len(ret)
     total_filtered = len(ret)
+    ret = _dynStruct.sorting_block(ret, query['order[0][column]'], query['order[0][dir]'])
     ret = _dynStruct.paging(int(query["start"]), int(query["length"]), ret)
     return json.dumps({"draw" : query["draw"],
                        "recordsTotal" : total,

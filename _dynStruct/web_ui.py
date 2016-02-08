@@ -2,6 +2,8 @@ import os
 import bottle
 import _dynStruct
 
+access_json_l = []
+
 @bottle.route("/")
 def index():
     return bottle.template("index")
@@ -100,8 +102,10 @@ def member_view():
                            member=member,
                            name_member=_dynStruct.Struct.make_member_name(id_struct, member.offset))
 
+
 @bottle.route("/static/<filename:path>")
 def serve_static(filename):
+    global access_json_l
     return bottle.static_file(filename, root=os.path.join(os.path.dirname(__file__), "static"))
 
 def start_webui(addr, port):

@@ -7,6 +7,17 @@
 	When dynStruct will be usable I will ask a few friend to try it and give me their feelback (and I will use it as well).  
 	It's important to do this just after the interface because is a big changement has to be done, it will be easier to do it now thant in a few month.  
 
+# correct segf and deadlock found, and search for other issue in the data gatherer:
+  	  after some test i found multiple deadlock and 1 segf (see log book) in the data gatherer.
+	  I have to fix them before adding any other feature
+	  test the data gatherer on other prog to find other issue
+
+#store opcode for each acces and disass in python with capstone
+
+       	this can be usefull for the dissertation
+  	it could be very helpfull to have the instruction which did the access to understand certain behavior.
+	this will also help to have better type recovery.
+
 #check if it work correctly with multi-thread program:
         
 	Just verify if dynStruct work properly wth multi-thread program.  
@@ -25,11 +36,6 @@
 #check the behavior of the plt part on diverse compiler (gcc work well, so test at least clang and tcc):
         
 	Until now all test are done using GCC, using an other compiler is not supposed to be a problem but this need the same check than multi-threaded program.       
-
-#store opcode for each acces and disass in python with capstone
-
-  	it could be very helpfull to have the instruction which did the access to understand certain behavior.
-	this will also help to have better type recovery.
 
 #add possibility to add an other dynamo file to a serialized file (by loading both of them): 
         

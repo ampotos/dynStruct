@@ -35,7 +35,7 @@ def access_json_all(query):
 def access_json_from_block(id_block, query):
     (total, ret) = access_json_list(_dynStruct.l_block[id_block].r_access, "read", query)
     (tmp_total, tmp_ret) = access_json_list(_dynStruct.l_block[id_block].w_access, "write", query)
-    return (total + tmp_total, ret, tmp_ret)
+    return (total + tmp_total, ret + tmp_ret)
 
 def access_json_from_struct(id_member, query):
     (r_access, w_access, start_offset) = _dynStruct.Struct.get_member_access(id_member)

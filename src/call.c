@@ -15,7 +15,7 @@ void *get_real_func_addr(void *pc, void *got)
   int		offset;
   
   pc = dr_app_pc_for_decoding(pc);
-
+  
   instr_init(drcontext, instr);
   if (!decode(drcontext, pc, instr))
     {

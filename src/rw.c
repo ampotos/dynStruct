@@ -28,7 +28,7 @@ orig_t *new_orig(size_t size, void *pc, void *drcontext)
 
 void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 {
-  orig_t	*orig_tree = search_on_tree(access->origs, pc);
+  orig_t	*orig_tree = search_same_addr_on_tree(access->origs, pc);
   orig_t	*orig_list = orig_tree;
   tree_t	*new_node;
 

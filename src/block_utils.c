@@ -11,7 +11,7 @@ access_t *get_access(size_t offset, tree_t **t_access)
   access_t	*access;
   tree_t	*new_node;
   
-  if ((access = search_on_tree(*t_access, (void *)offset)))
+  if ((access = search_same_addr_on_tree(*t_access, (void *)offset)))
     return access;
 
   // if no access with this offset is found we create a new one

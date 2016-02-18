@@ -4,6 +4,7 @@ import argparse
 import pickle
 import json
 import _dynStruct
+import pyprind
 
 def get_args():
     parser = argparse.ArgumentParser(description='Dynstruct analize tool')
@@ -13,6 +14,8 @@ def get_args():
                         help='file to load serialized data')
     parser.add_argument('-o', type=str, dest='out_pickle',
                         help='file to store serialized data.')
+    parser.add_argument('-n', dest='run_recovering', action='store_false',
+                        help='just load json without recovering structures')
     parser.add_argument('-e', type=str, default=None, dest='out_file',
                         metavar='<file_name>',
                         help='export structures in C style on <file_name>')
@@ -30,9 +33,13 @@ def get_args():
 def load_json(json_data, l_block, l_access_w, l_access_r):
     id_block = 0
     try:
+        print("Loading Json data")
+        prbar = pyprind.ProgBar(len(json_data), track_time=False)
         for block in filter(None, json_data):
             l_block.append(_dynStruct.Block(block, l_access_w, l_access_r, id_block))
             id_block += 1
+            prbar.update()
+        print("\nDone")
     except KeyError as e:
         print("Json not from dynamoRIO client, missing : %s" % str(e))
         return False
@@ -51,8 +58,9 @@ def main():
         json_data = json.load(f)
         f.close()
         load_json(json_data, _dynStruct.l_block, _dynStruct.l_access_w, _dynStruct.l_access_r)
-        _dynStruct.Struct.recover_all_struct(_dynStruct.l_block, _dynStruct.l_struct);
-        _dynStruct.Struct.clean_all_struct(_dynStruct.l_struct)
+        if args.run_recovering:
+            _dynStruct.Struct.recover_all_struct(_dynStruct.l_block, _dynStruct.l_struct);
+            _dynStruct.Struct.clean_all_struct(_dynStruct.l_struct)
     elif args.previous_file:
         with open(args.previous_file, "rb") as f:
             data = pickle.load(f)

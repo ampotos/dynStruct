@@ -40,12 +40,12 @@ class StructMember:
         
     def same_type(self, other):
 
-        if not self.is_array_struct and not other.is_array_struct:
+        if not self.is_array_struct or not other.is_array_struct:
             return self.t == other.t
         
         if self.size != other.size:
             return False
-        
+
         return not False in [True if m1.same_type(m2) else False for (m1, m2) in
                              zip(self.sub_struct.members,
                                  other.sub_struct.members)]

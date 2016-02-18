@@ -1,5 +1,6 @@
 from .struct_member import StructMember
 import _dynStruct
+import pyprind
 
 # list of classical string manipulation function
 # use to detecte string
@@ -348,6 +349,8 @@ class Struct:
 
     @staticmethod
     def recover_all_struct(blocks, structs):        
+        print("Recovering structures")
+        prbar = pyprind.ProgBar(len(blocks), track_time=False)
         for block in blocks:
             if not block.w_access and not block.r_access:
                 continue
@@ -369,6 +372,8 @@ class Struct:
             else:
                 structs[-1].id = len(structs)
                 structs[-1].set_default_name()
+            prbar.update()
+        print("\nDone")
                 
     @staticmethod
     def clean_all_struct(structs):

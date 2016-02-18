@@ -6,9 +6,9 @@ class StructMember:
     def __init__(self, offset, size, block):
         self.offset = offset
         self.size = size
-        self.name = "offset_0x%x" % offset
         self.t = "uint%d_t" % (self.size * 8)
         self.web_t = self.t
+        self.set_default_name()
         
         self.is_array = False
         self.number_unit = 0
@@ -30,6 +30,14 @@ class StructMember:
 
         return s
 
+
+    def set_default_name(self):
+        self.name = "offset_0x%x" % self.offset
+
+    def to_sub_struct(self, offset):
+        self.offset -= offset
+        self.set_default_name()
+        
     def same_type(self, other):
 
         if not self.is_array_struct and not other.is_array_struct:

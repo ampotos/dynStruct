@@ -143,6 +143,7 @@ class Struct:
 
             for member in tmp_members[index_start :
                                       index_start + (index_end - index_start) * nb_unit]:
+                member.to_sub_struct(self.members[index_start].offset)
                 self.members.remove(member)
             (index_start, index_end) = self.get_struct_pattern(index_start + 1)
             
@@ -406,7 +407,7 @@ class Struct:
     def get_member_by_id(id_struct, id_member):
         struct = Struct.get_by_id(id_struct)
         for member in struct.members:
-            if member.offset == id_member:
+            if member.offset == int(id_member):
                 return member
         return None
 
@@ -424,12 +425,30 @@ class Struct:
         id_struct = id_struct.split('.')
         base_struct = _dynStruct.Struct.get_by_id(id_struct[0])
 
+        tmp_id = id_struct[0]
+        offsets = [0]
+        for id_member in id_struct[1:]:
+            member = _dynStruct.Struct.get_member_by_id(tmp_id, id_member)
+            tmp_id += '.' + id_member
+
+            offsets = [off + member.offset for off in offsets]
+            if not member.is_array_struct:
+                continue
+            tmp_offsets = []
+            for unit in range(member.number_unit):
+                tmp_offsets += [off + unit * member.size_unit for off in offsets]
+            offsets = tmp_offsets
+            
         start_offset = sum([int(offset) for offset in id_struct[1:]])
 
-        struct_size = _dynStruct.Struct.get_member_by_id('.'.join(id_struct[:-1]),
+        member_size = _dynStruct.Struct.get_member_by_id('.'.join(id_struct[:-1]),
                                                          int(id_struct[-1])).size
-        
-        for block in base_struct.blocks:
-            (r_access, w_access) = block.get_access_by_range(start_offset, start_offset + struct_size)
-            
-        return (r_access, w_access, start_offset)
+        r_access = []
+        w_access = []
+        for offset in offsets:
+            for block in base_struct.blocks:
+                (tmp_r_access, tmp_w_access) = block.get_access_by_range(offset, offset + member_size)
+            r_access.append({"start" : offset, "access" : tmp_r_access})
+            w_access.append({"start" : offset, "access" : tmp_w_access})
+
+        return (r_access, w_access)

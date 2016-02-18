@@ -38,10 +38,17 @@ def access_json_from_block(id_block, query):
     return (total + tmp_total, ret + tmp_ret)
 
 def access_json_from_struct(id_member, query):
-    (r_access, w_access, start_offset) = _dynStruct.Struct.get_member_access(id_member)
-    (total, ret) = access_json_list(r_access, "read", start_offset, query)
-    (tmp_total, tmp_ret) = access_json_list(w_access, "write", start_offset, query)
-    return (total + tmp_total, ret + tmp_ret)
+    (r_access, w_access) = _dynStruct.Struct.get_member_access(id_member)
+    total = 0
+    ret = []
+    for (tmp_r_access, tmp_w_access) in zip(r_access, w_access):
+        (tmp_total, tmp_ret) = access_json_list(tmp_r_access["access"], "read", query, tmp_r_access["start"])
+        total += tmp_total
+        ret += tmp_ret
+        (tmp_total, tmp_ret) = access_json_list(tmp_w_access["access"], "write", query, tmp_w_access["start"])
+        total += tmp_total
+        ret += tmp_ret
+    return (total, ret)
 
 def access_json(id_block, id_member, query):
     if id_block != None:

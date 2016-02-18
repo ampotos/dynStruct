@@ -2,7 +2,6 @@
 <div class="container-fluid">
   <h1 class="text-center"> {{name_member}} informations</h1>
 
-% simple_member=False
 % if member.is_array:
   <table class="table table-bordered">
     <tr>
@@ -57,11 +56,10 @@ todo edit struct
     </tr>
   </table>
 
-% simple_member=True
 % end
 
   <h1 class="text-center"> Member access</h1>
-% include('access_search.tpl', in_page=True, id_block=None, id_member=id_member, hide_offset=simple_member)
+% include('access_search.tpl', in_page=True, id_block=None, id_member=id_member)
 
 </div>
 

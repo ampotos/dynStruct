@@ -21,10 +21,6 @@
   "columnDefs": [
   { "visible": false, "targets": 4 }
     ]  
-  % elif defined('hide_offset') and hide_offset:
-  "columnDefs": [
-  { "visible": false, "targets": 1 }
-    ]  
   % end
   }
   )

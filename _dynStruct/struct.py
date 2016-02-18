@@ -242,7 +242,7 @@ class Struct:
             if size in sizes and sizes[size] > max_hit:
                 max_hit = sizes[size]
 
-        return max([sz for sz in sizes if sizes[sz] == max_hit])
+        return min([sz for sz in sizes if sizes[sz] == max_hit])
         
     def filter_access(self, accesses):
         for access in accesses:

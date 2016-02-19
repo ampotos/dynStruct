@@ -99,7 +99,7 @@ class Struct:
         # this mean if a struct have a pad of 10 and 2 in this pad is in a
         # struct array, all the pad is remove
         self.add_pad()
-        self.clean_array_name()
+        self.set_array_name()
         return
         
     def add_pad(self):
@@ -158,7 +158,7 @@ class Struct:
         if index_start != index_end:
             self.clean_array_struct()
             
-    def clean_array_name(self):
+    def set_array_name(self):
         if len(self.members) == 1:
             self.members[0].name = "array_%d" % self.id
 

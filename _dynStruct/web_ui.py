@@ -103,6 +103,11 @@ def member_view():
                            name_member=_dynStruct.Struct.make_member_name(id_struct, member.offset))
 
 
+@bottle.route("/header.h")
+def dl_header():
+    bottle.response.content_type = 'text/x-c'
+    return _dynStruct.get_header(_dynStruct.l_struct)
+
 @bottle.route("/static/<filename:path>")
 def serve_static(filename):
     global access_json_l

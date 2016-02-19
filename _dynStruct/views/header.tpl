@@ -14,7 +14,7 @@
 	  <li> <a href="/block_search">Blocks</a></li>
 	  <li> <a href="/access_search">Access</a></li>
 	  <li> <a href="/">Create Structure</a></li>
-	  <li> <a href="/">Header file</a></li>
+	  <li> <a href="/header.h">Download Header</a></li>
 	</ul>
       </div>
     </div>

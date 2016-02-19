@@ -33,13 +33,11 @@ def get_args():
 def load_json(json_data, l_block, l_access_w, l_access_r):
     id_block = 0
     try:
-        print("Loading Json data")
-        prbar = pyprind.ProgBar(len(json_data), track_time=False)
+        prbar = pyprind.ProgBar(len(json_data), track_time=False, title="Loading Json data")
         for block in filter(None, json_data):
             l_block.append(_dynStruct.Block(block, l_access_w, l_access_r, id_block))
             id_block += 1
             prbar.update()
-        print("\nDone")
     except KeyError as e:
         print("Json not from dynamoRIO client, missing : %s" % str(e))
         return False

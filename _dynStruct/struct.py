@@ -21,27 +21,33 @@ base_size = [1, 2, 4, 8, 16]
 class Struct:
 
 
-    def __init__(self, block):
+    def __init__(self, block, is_sub=False):
         self.name = ""
         self.id = 0
         self.blocks = []
         self.looks_array = False;
         self.size_array_unit = 0
         self.members = []
-
+        self.is_sub_struct = is_sub
+        
         if block:
             self.size = block.size
             self.recover(block)
             self.add_block(block)
 
     def __str__(self):
-        s = "//total size : 0x%x\n" % self.size
+        s = ""
+        if not self.is_sub_struct:
+            s += "//total size : 0x%x\n" % self.size
 
         if len(self.members) == 1:
             s += str(self.members[0])
             return s
-        
-        s += "struct %s {\n" % self.name
+
+        if not self.is_sub_struct:
+            s += "struct %s \n{" % self.name
+        else:
+            s += "struct {\n"
         for member in self.members:
             s += "\t" + str(member)
         s += "};\n"
@@ -100,7 +106,7 @@ class Struct:
         old_offset = 0
         old_members = list(self.members)
         for member in old_members:
-            if old_offset != member.offset:
+            if old_offset < member.offset:
                 self.add_member_array(self.members.index(member),
                                       'pad_offset_0x%x' % old_offset,
                                       old_offset, member.offset - old_offset,
@@ -221,7 +227,7 @@ class Struct:
         new_member.name = name
         new_member.set_array_struct(nb_unit, size_unit,
                                     self.members[index : index_end],
-                                    Struct(None))
+                                    Struct(None, is_sub=True))
         self.members.insert(index, new_member)
 
     def get_best_size(self, block, offset, accesses):
@@ -349,8 +355,7 @@ class Struct:
 
     @staticmethod
     def recover_all_struct(blocks, structs):        
-        print("Recovering structures")
-        prbar = pyprind.ProgBar(len(blocks), track_time=False)
+        prbar = pyprind.ProgBar(len(blocks), track_time=False, title="\nRecovering structures")
         for block in blocks:
             if not block.w_access and not block.r_access:
                 continue
@@ -373,7 +378,6 @@ class Struct:
                 structs[-1].id = len(structs)
                 structs[-1].set_default_name()
             prbar.update()
-        print("\nDone")
                 
     @staticmethod
     def clean_all_struct(structs):

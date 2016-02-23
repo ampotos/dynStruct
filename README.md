@@ -146,7 +146,7 @@ The python script dynStruct.py do the structure recovery and will start the web_
 
 The idea behind the structure recovery is to have a quick idea of the structures are used by the program.
 
-It's impossible to recover exactly the same structures than it was in the source code, so some choice were made.
+It's impossible to recover exactly the same structures than it was in the source code, so some choices were made.
 To recover the size of members dynStruct.py look at the size of the accesses for a particular offset, it keep the more used
 size, if 2 or more size are used the same number of time it keep the bigger size.
 
@@ -168,7 +168,7 @@ struct struct_14{
 	}struct_array_0x14[2];
 } 
 ```
-
+The recovery process can take several minutes if there are large block.
 ### Usage
 ```
 usage: dynStruct.py [-h] [-d DYNAMO_FILE] [-p PREVIOUS_FILE] [-o OUT_PICKLE]

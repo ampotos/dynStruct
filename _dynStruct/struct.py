@@ -405,10 +405,12 @@ class Struct:
             struct = Struct.get_by_id(id_struct)
             return Struct.get_by_id(next_struct, struct)
         else:
-            struct = struct.get_member(int(id_struct)).sub_struct
+            member = struct.get_member(int(id_struct))
             if next_struct:
-                return Struct.get_by_id(next_struct, struct)
-            return struct
+                return Struct.get_by_id(next_struct, member.sub_struct)
+            if member.is_sub_struct:
+                member = member.sub_struct
+            return member
 
         return None        
                 

@@ -123,7 +123,7 @@ def block_json_list(blocks, query):
         
 def block_json_from_struct(id_struct, query):
     for struct in _dynStruct.l_struct:
-        if id_struct == struct.id:
+        if int(id_struct) == struct.id:
             return block_json_list(struct.blocks, query)
     return (0, [])
 

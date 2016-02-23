@@ -1,4 +1,5 @@
 import pickle
+import _dynStruct
 
 def get_header(l_struct):
     if len(l_struct) == 0:
@@ -26,3 +27,9 @@ def save_pickle(filename, l_struct, l_block, l_access_w, l_access_r):
     data["r_access"] = l_access_r
     with open(filename, "wb") as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+
+def save_modif():
+    if _dynStruct.serialized_file:
+        save_pickle(_dynStruct.serialized_file, _dynStruct.l_struct,
+                    _dynStruct.l_block, _dynStruct.l_access_w,
+                    _dynStruct.l_access_r)

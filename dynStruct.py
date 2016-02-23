@@ -46,6 +46,11 @@ def load_json(json_data, l_block, l_access_w, l_access_r):
 def main():
     args = get_args()
 
+    if args.out_pickle:
+        _dynStruct.serialized_file = args.out_pickle
+    elif args.previous_file:
+        _dynStruct.serialized_file = args.previous_file
+        
     if not args.previous_file and not args.dynamo_file:
         print("This tool is useless without data, use -d or -p option to give\
  data extract by the gatherer or serialized data from a previous run")

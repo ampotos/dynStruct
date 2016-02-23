@@ -5,6 +5,7 @@ from .save import print_to_file
 from .save import print_to_console
 from .save import save_pickle
 from .save import get_header
+from .save import save_modif
 from .web_ui import start_webui
 from .ajax import access_json
 from .ajax import block_json
@@ -20,3 +21,4 @@ l_struct = []
 l_block = []
 l_access_w = []
 l_access_r = []
+serialized_file = ""

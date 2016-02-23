@@ -26,10 +26,10 @@
 
 % if block.struct:
   <h3 class="text-center">This block is an instance of the structure <a href="/struct?id={{block.struct.id}}">{{block.struct.name}}</a></h3>
-  <p class="text-center"><a href="/on_todo">Unlinked this block</a></p>
+  <p class="text-center"><a href="/remove_struct?id_block={{block.id_block}}">Unlinked this block</a></p>
 % else:
   <h3 class="text-center">This block is not actually a structure instance</h3>
-  <p class="text-center"><a href="/on_todo">Linked this block with a structure</a></p>
+  <p class="text-center"><a href="/add_to_struct?id_block={{block.id_block}}">Linked this block with a structure</a></p>
 % end
   
   <h1 class="text-center"> Block access</h1>

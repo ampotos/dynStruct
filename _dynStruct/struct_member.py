@@ -19,7 +19,8 @@ class StructMember:
         self.is_struct = False
         self.is_array_struct = False
         self.is_sub_struct = None
-
+        self.sub_struct = None
+        
     def __str__(self):
         if self.is_array:
             s = self.print_array()
@@ -68,6 +69,7 @@ class StructMember:
         self.is_array_struct = True
         self.number_unit = nb_unit
         self.sub_struct = new_struct
+        self.is_sub_struct = True
         self.t = ""
         self.web_t = "array of %s" % (self.name)
         self.size_unit = 0;

@@ -427,7 +427,13 @@ class Struct:
         name = []
         id_struct_split = id_struct.split('.')
         for n in range(len(id_struct_split)):
-            name.append(Struct.get_by_id('.'.join(id_struct_split[:n+1])).name)
+            if n == 0:
+                tmp_name = '<a href="/struct?id=%s">' % (id_struct_split[0])
+            else:
+                tmp_name = '<a href="/member?id_struct=%s&id_member=%s">' % ('.'.join(id_struct_split[:n]), id_struct_split[n])
+            tmp_name += Struct.get_by_id('.'.join(id_struct_split[:n+1])).name
+            tmp_name += "</a>"
+            name.append(tmp_name)
         name.append(Struct.get_member_by_id(id_struct, id_member).name)
         return '.'.join(name)
 

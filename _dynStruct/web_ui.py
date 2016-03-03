@@ -61,9 +61,9 @@ def access_search():
     id_block = check_block_id(bottle.request.query.id_block)
     id_member = check_id_member_from_access(bottle.request.query.id_member)
 
-    if id_block == False:
+    if id_block != 0 and id_block == False:
             return bottle.template("error", msg="Bad block id")
-    elif id_member == False:
+    elif id_member != 0 and id_member == False:
             return bottle.template("error", msg="Bad struct id")
     else:
         return bottle.template("access_search", id_block=id_block, id_member=id_member)
@@ -102,10 +102,10 @@ def member_view():
     id_struct = check_struct_id(bottle.request.query.id_struct)
     id_member = bottle.request.query.id_member
 
-    if not id_member:
+    if id_member != 0 and not id_member:
         return bottle.template("error", msg="member id missing")
 
-    if not id_struct:
+    if id_struct != 0 and not id_struct:
         return bottle.template("error", msg="Bad struct id")
     id_struct = str(id_struct)
 
@@ -133,7 +133,7 @@ def serve_static(filename):
 def remove_struct_from_block():
     id_block = check_block_id(bottle.request.query.id_block)
 
-    if id_block == False or id_block == None:
+    if id_block!= 0 and id_block == False or id_block == None:
         return bottle.template("error", msg="Bad block id")
 
     _dynStruct.l_block[id_block].struct.remove_block(_dynStruct.l_block[id_block])
@@ -144,7 +144,7 @@ def remove_struct_from_block():
 def add_to_struct_struct_from_block():
     id_block = check_block_id(bottle.request.query.id_block)
 
-    if not block_id:
+    if block_id != 0 and not block_id:
         return bottle.template("error", msg="Bad block id")
    
 def start_webui(addr, port):

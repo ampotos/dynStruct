@@ -1,6 +1,6 @@
 % include header
 <div class="container-fluid">
-  <h1 class="text-center"> {{name_member}} informations</h1>
+  <h1 class="text-center"> {{! name_member}} informations</h1>
 
 % if member.is_array:
   <table class="table table-bordered">
@@ -11,7 +11,7 @@
       <td> total size (in bytes) </td>
     </tr>
     <tr>
-      <td> {{member.number_unit}} </th>
+      <td> {{member.number_unit}} </td>
       <td> {{member.size_unit}} </td>
       <td> <span class="text-warning">{{member.t}}</span></td>
       <td> {{member.size}} </td>
@@ -33,7 +33,7 @@ todo edit struct
       <td> total size (in bytes) </td>
     </tr>
     <tr>
-      <td> {{member.number_unit}} </th>
+      <td> {{member.number_unit}} </td>
       <td> {{member.size_unit}} </td>
       <td> <span class="text-warning">{{member.sub_struct.name}}</span></td>
       <td> {{member.size}} </td>

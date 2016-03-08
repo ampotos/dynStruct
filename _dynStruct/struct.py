@@ -115,7 +115,6 @@ class Struct:
 
                 old_offset = member.offset
             old_offset += member.size
-
         if old_offset < self.size:
             self.add_member_array(len(self.members),
                                   'pad_offset_0x%x' % old_offset, old_offset,
@@ -313,7 +312,8 @@ class Struct:
         block.struct = None
 
     def remove_all_block(self):
-        for block in self.blocks:
+        blocks_tmp = list(self.blocks)
+        for block in blocks_tmp:
             self.remove_block(block)
 
     def look_like_array(self):

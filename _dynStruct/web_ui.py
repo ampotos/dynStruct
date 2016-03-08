@@ -78,7 +78,7 @@ def access_get():
 @bottle.route("/struct")
 def struct_view():
     struct = _dynStruct.Struct.get_by_id(bottle.request.query.id)
-    
+
     if not struct:
         return bottle.template("error", msg="Bad struct id")    
 

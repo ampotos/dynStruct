@@ -133,20 +133,40 @@ def serve_static(filename):
 def remove_struct_from_block():
     id_block = check_block_id(bottle.request.query.id_block)
 
-    if id_block!= 0 and id_block == False or id_block == None:
+    if id_block != 0 and not id_block:
         return bottle.template("error", msg="Bad block id")
 
     _dynStruct.l_block[id_block].struct.remove_block(_dynStruct.l_block[id_block])
     _dynStruct.save_modif()
     bottle.redirect("/block?id=%d" % (id_block))
 
-@bottle.route("/add_to__struct")
+@bottle.route("/add_to_struct")
 def add_to_struct_struct_from_block():
     id_block = check_block_id(bottle.request.query.id_block)
 
-    if block_id != 0 and not block_id:
+    if id_block != 0 and not id_block:
         return bottle.template("error", msg="Bad block id")
-   
+    return bottle.template("struct_select", id_block=id_block)
+
+@bottle.route("/struct_select_get")
+def get_list_compat_struct():
+    id_block = check_block_id(bottle.request.query.id_block)
+    return _dynStruct.struct_select_json(id_block)    
+
+@bottle.route("/do_add_to_struct")
+def link_block():
+    id_block = check_block_id(bottle.request.query.id_block)
+    id_struct = check_struct_id(bottle.request.query.id_struct)
+    if id_block != 0 and not id_block:
+        return bottle.template("error", msg="Bad block id")
+    if id_struct != 0 and not id_struct:
+        return bottle.template("error", msg="Bad struct id")
+
+    _dynStruct.Struct.get_by_id(id_struct).add_block(_dynStruct.l_block[id_block])
+    _dynStruct.save_modif()
+    
+    bottle.redirect("/block?id=%d" % (id_block))
+
 def start_webui(addr, port):
     bottle.TEMPLATE_PATH.insert(0, os.path.dirname(__file__) + "/views")
     bottle.run(host=addr, port=port)

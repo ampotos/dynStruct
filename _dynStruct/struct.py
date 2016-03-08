@@ -465,7 +465,7 @@ class Struct:
         for offset in offsets:
             for block in base_struct.blocks:
                 (tmp_r_access, tmp_w_access) = block.get_access_by_range(offset, offset + member_size)
-            r_access.append({"start" : offset, "access" : tmp_r_access})
-            w_access.append({"start" : offset, "access" : tmp_w_access})
+                r_access.append({"start" : offset, "access" : tmp_r_access})
+                w_access.append({"start" : offset, "access" : tmp_w_access})
 
         return (r_access, w_access)

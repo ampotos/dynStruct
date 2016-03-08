@@ -66,9 +66,7 @@ def access_json(id_block, id_member, query):
                        "recordsFiltered": total_filtered,
                        "data" : ret})
 
-# TODO : build json at load time for block and access
-# for member and struct at each modif and just after recovery
-# for block rebuild json when set or unset struct
+
 def block_json_list(blocks, query):
     ret = []
     for block in blocks:
@@ -171,3 +169,18 @@ def struct_json():
                        "recordsFiltered": len(ret),
                        "data" : ret})
 
+def struct_select_json(id_block):
+    ret = []
+    if id_block or id_block == 0:
+        size = _dynStruct.l_block[id_block].size
+        for struct in filter(lambda x: x.size == size,  _dynStruct.l_struct):
+            tmp = ['<span class="text-primary"><a href="/struct?id=%d">%s</a></span>' % (struct.id, struct.name),
+                   "%d" % (struct.get_nb_members()),
+                   "%d" % (len(struct.blocks)),
+                   '<a href="/do_add_to_struct?id_block=%d&id_struct=%d">link with this structure</a>' % (id_block, struct.id)]
+            ret.append(["<code>%s</code>" % a for a in tmp])
+        
+    return json.dumps({"draw" : 1,
+                       "recordsTotal" : len(ret),
+                       "recordsFiltered": len(ret),
+                       "data" : ret})

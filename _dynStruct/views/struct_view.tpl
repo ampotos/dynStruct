@@ -2,7 +2,7 @@
 
 <div class="container-fluid">
   <h1 class="text-center"> {{struct.name}} informations</h1>
-
+  <h3 class="text-center"> Size : {{struct.size}} bytes</h3>
   todo: change block association (add, remove) structure editing.
   <h1 class="text-center"> Structure members</h1>
 % include('member_search.tpl', in_page=True, id_struct=struct.id)

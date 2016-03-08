@@ -11,6 +11,7 @@ from .ajax import access_json
 from .ajax import block_json
 from .ajax import member_json
 from .ajax import struct_json
+from .ajax import struct_select_json
 from .processing import paging
 from .processing import filter_block
 from .processing import filter_access

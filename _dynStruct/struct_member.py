@@ -76,6 +76,7 @@ class StructMember:
         for m in members_list:
             self.size_unit += m.size
         self.size = self.size_unit * self.number_unit
+
         new_struct.size = self.size_unit
         new_struct.members = members_list
         new_struct.name = self.name

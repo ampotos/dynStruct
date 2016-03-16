@@ -127,6 +127,60 @@ def member_view():
 def member_edit():
     return(member_template(bottle.request.query, True))
 
+def edit_simple_member(forms, member, next_member):
+    try:
+        size = int(forms.size)  
+    except ValueError:
+        return bottle.template("error", msg="Size is not an integer")
+
+    if size <= 0:
+        return bottle.template("error", msg="Size cannot be negative or Null")
+        
+    if size > member.size and \
+       (not next_member.is_padding or next_member.size + member.size < size):
+        return bottle.template("error", msg="Size is too big (not enough padding between this member and the next one)")
+
+    member.name = forms.name
+    member.size = size
+    member.t = forms.type
+    member.web_t = member.t
+    
+    return None
+
+def edit_array_struct(forms, member, next_member):
+    try:
+        size_unit = int(forms.size_unit)
+        nb_unit = int(forms.nb_unit)
+    except ValueError:
+        return bottle.template("error", msg="size_unit or nb_unit is not an integer")
+
+    if size_unit <= 0 or nb_unit <= 0:
+        return bottle.template("error", msg="size_unit and nb_unit cannot be negative or Null")
+        
+    if size_unit * nb_unit > member.size and \
+       (not next_member.is_padding or next_member.size + member.size < size_unit * nb_unit):
+        return bottle.template("error", msg="Size is too big (not enough padding between this member and the next one)")
+
+    member.name = forms.name
+    member.number_unit = nb_unit
+    member.size_unit = size_unit
+    member.size = size_unit * nb_unit
+    member.sub_struct.name = forms.type
+
+    member.web_t = "array of %s" % (member.sub_struct.name)
+    
+    if size_unit != member.sub_struct.size:
+        if size_unit < member.sub_struct.size:
+            old_sub_struct_members = list(member.sub_struct.members)
+            for m in old_sub_struct_members:
+                if m.offset + m.size > size_unit:
+                    member.sub_struct.members.remove(m)
+        member.sub_struct.size = size_unit
+        # to have correct padding after the change of size
+        member.sub_struct.add_pad()
+    
+    return None
+
 @bottle.route("/member_do_edit", method='POST')
 def member_do_edit():
     id_struct = check_struct_id(bottle.request.query.id_struct)
@@ -146,27 +200,26 @@ def member_do_edit():
     member = struct.get_member(int(id_member))
     print(id_member)
     next_member = struct.get_member(int(id_member) + member.size)
-    
-    try:
-        size = int(bottle.request.forms.size)  
-    except ValueError:
-        return bottle.template("error", msg="Size is not an integer")
 
-    if size <= 0:
-        return bottle.template("error", msg="Size cannot be negative or Null")
-        
-    if size > member.size and \
-       (not next_member.is_padding or next_member.size + member.size < size):
-        return bottle.template("error", msg="Size is too big (not enough padding between this member and the next one)")
+    if member.is_array:
+        # do array stuff
+        return bottle.template("error", msg="Not yet implem")
+    elif member.is_struct:
+        # do array struct
+        return bottle.template("error", msg="Not yet implem")
+    elif member.is_array_struct:
+        ret = edit_array_struct(bottle.request.forms, member, next_member)
+    else:
+        ret = edit_simple_member(bottle.request.forms, member, next_member)
+
+    if ret:
+        return ret
 
     # if next member is padding remove it, add_pad will set a new padding with
     # correct size + offset if needed
     if next_member.is_padding:
         struct.members.remove(next_member)
 
-    member.name = bottle.request.forms.name
-    member.size = int(size)
-    member.t = bottle.request.forms.type
     struct.add_pad()
     _dynStruct.save_modif()
     bottle.redirect("/member?id_struct=%s&id_member=%s" % (id_struct, id_member))

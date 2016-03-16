@@ -147,6 +147,18 @@ def edit_simple_member(forms, member, next_member):
     
     return None
 
+def edit_struct_size(struct, new_size):
+    if new_size != struct.size:
+        if new_size < struct.size:
+            old_struct_members = list(struct.members)
+            for m in old_struct_members:
+                if m.offset + m.size > new_size:
+                    struct.members.remove(m)
+        struct.size = new_size
+        # to have correct padding after the change of size
+        struct.add_pad()
+
+
 def edit_array_struct(forms, member, next_member):
     try:
         size_unit = int(forms.size_unit)
@@ -169,15 +181,30 @@ def edit_array_struct(forms, member, next_member):
 
     member.web_t = "array of %s" % (member.sub_struct.name)
     
-    if size_unit != member.sub_struct.size:
-        if size_unit < member.sub_struct.size:
-            old_sub_struct_members = list(member.sub_struct.members)
-            for m in old_sub_struct_members:
-                if m.offset + m.size > size_unit:
-                    member.sub_struct.members.remove(m)
-        member.sub_struct.size = size_unit
-        # to have correct padding after the change of size
-        member.sub_struct.add_pad()
+    edit_struct_size(member.sub_struct, size_unit)
+    
+    return None
+
+def edit_struct(forms, member, next_member):
+    try:
+        size = int(forms.size)  
+    except ValueError:
+        return bottle.template("error", msg="Size is not an integer")
+
+    if size <= 0:
+        return bottle.template("error", msg="Size cannot be negative or Null")
+        
+    if size > member.size and \
+       (not next_member.is_padding or next_member.size + member.size < size):
+        return bottle.template("error", msg="Size is too big (not enough padding between this member and the next one)")
+
+    edit_struct_size(member.sub_struct, new_size)
+    
+    member.name = forms.name
+    member.sub_struct.name = member.name
+    member.size = size
+    member.t = member.name
+    member.web_t = member.t
     
     return None
 

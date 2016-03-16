@@ -97,10 +97,9 @@ def member_get():
     id_struct = bottle.request.query.id_struct
     return _dynStruct.member_json(_dynStruct.Struct.get_by_id(id_struct), id_struct)
 
-@bottle.route("/member")
-def member_view():
-    id_struct = check_struct_id(bottle.request.query.id_struct)
-    id_member = bottle.request.query.id_member
+def member_template(query, edit):
+    id_struct = check_struct_id(query.id_struct)
+    id_member = query.id_member
 
     if id_member != 0 and not id_member:
         return bottle.template("error", msg="member id missing")
@@ -117,9 +116,61 @@ def member_view():
     return bottle.template("member_view",
                            id_member="%s.%d" % (id_struct, member.offset),
                            member=member,
-                           name_member=_dynStruct.Struct.make_member_name(id_struct, member.offset))
+                           name_member=_dynStruct.Struct.make_member_name(id_struct, member.offset),
+                           edit=edit)
+    
+@bottle.route("/member")
+def member_view():
+    return(member_template(bottle.request.query, False))
 
+@bottle.route("/member_edit")
+def member_edit():
+    return(member_template(bottle.request.query, True))
 
+@bottle.route("/member_do_edit", method='POST')
+def member_do_edit():
+    id_struct = check_struct_id(bottle.request.query.id_struct)
+    id_member = bottle.request.query.id_member
+
+    if id_member != 0 and not id_member:
+        return bottle.template("error", msg="member id missing")
+
+    if id_struct != 0 and not id_struct:
+        return bottle.template("error", msg="Bad struct id")
+    id_struct = str(id_struct)
+
+    struct = _dynStruct.Struct.get_by_id(id_struct)    
+    if not struct:
+        return bottle.template("error", msg="bad struct id")
+
+    member = struct.get_member(int(id_member))
+    print(id_member)
+    next_member = struct.get_member(int(id_member) + member.size)
+    
+    try:
+        size = int(bottle.request.forms.size)  
+    except ValueError:
+        return bottle.template("error", msg="Size is not an integer")
+
+    if size <= 0:
+        return bottle.template("error", msg="Size cannot be negative or Null")
+        
+    if size > member.size and \
+       (not next_member.is_padding or next_member.size + member.size < size):
+        return bottle.template("error", msg="Size is too big (not enough padding between this member and the next one)")
+
+    # if next member is padding remove it, add_pad will set a new padding with
+    # correct size + offset if needed
+    if next_member.is_padding:
+        struct.members.remove(next_member)
+
+    member.name = bottle.request.forms.name
+    member.size = int(size)
+    member.t = bottle.request.forms.type
+    struct.add_pad()
+    _dynStruct.save_modif()
+    bottle.redirect("/member?id_struct=%s&id_member=%s" % (id_struct, id_member))
+    
 @bottle.route("/header.h")
 def dl_header():
     bottle.response.content_type = 'text/x-c'

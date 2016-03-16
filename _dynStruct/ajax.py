@@ -150,6 +150,10 @@ def member_json(struct, id_struct):
                (id_struct, member.offset, member.name))
         tmp += ["%d" % (member.size),
                '<span class="text-warning">%s</span>' % (member.web_t)]
+        if member.is_padding:
+            tmp.append("<a href=/member_create?id_struct=%s&offset=%d>Add member</a>" % (id_struct, member.offset))
+        else:
+            tmp.append("<a href=/member_edit?id_struct=%s&id_member=%s>Edit member</a>" % (id_struct, member.offset))
         ret.append(["<code>%s</code>" % (a) for a in tmp])
     return json.dumps({"draw" : 1,
                        "recordsTotal" : len(ret),

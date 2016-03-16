@@ -1,7 +1,10 @@
 % include header
 <div class="container-fluid">
   <h1 class="text-center"> {{! name_member}} informations</h1>
-
+% if not edit:
+  <h3 class="text-center"> <a href="/member_edit?id_struct={{id_member[:id_member.rfind('.')]}}&id_member={{member.offset}}"> Edit member </a> </h3>
+% end
+  
 % if member.is_array:
   <table class="table table-bordered">
     <tr>
@@ -19,12 +22,10 @@
   </table>
   
 % elif member.is_struct:
-todo edit struct  
   <h1 class="text-center"> Structure members</h1>
 % include('member_search.tpl', in_page=True, id_struct=id_member)
 
 % elif member.is_array_struct:
-  todo edit struct
   <table class="table table-bordered">
     <tr>
       <td> number of units </td>
@@ -44,7 +45,8 @@ todo edit struct
 % include('member_search.tpl', in_page=True, id_struct=id_member)
   
 % else:
-  
+
+% if not edit:
   <table class="table table-bordered">
     <tr>
       <td> size (in bytes)</td>
@@ -55,7 +57,24 @@ todo edit struct
       <td> <span class="text-warning">{{member.t}}</span></td>
     </tr>
   </table>
-
+% else:
+  <form action="/member_do_edit?id_struct={{id_member[:id_member.rfind('.')]}}&id_member={{member.offset}}" method="post" class="form-inline">
+    <table class="table table-bordered">
+      <tr>
+	<td> name </td>
+	<td> size (in bytes)</td>
+	<td> type </td>
+	<td> </td>
+      </tr>
+      <tr>
+	<td> <input type="text" name="name" value="{{member.name}}" class="form-control"> </td>
+	<td> <input type="text" name="size" value="{{member.size}}" class="form-control"> </td>
+	<td> <input type="test" name="type" value="{{member.t}}" class="form-control"> </td>
+	<td> <input type="submit" value="Edit" class="btn btn-primary"> </td>
+      </tr>
+    </table>
+  </form>
+% end
 % end
 
   <h1 class="text-center"> Member access</h1>

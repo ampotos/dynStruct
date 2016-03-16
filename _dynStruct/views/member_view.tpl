@@ -23,7 +23,24 @@
     </tr>
   </table>
 % else:
-
+  <form action="/member_do_edit?id_struct={{id_member[:id_member.rfind('.')]}}&id_member={{member.offset}}" method="post" class="form-inline">
+    <table class="table table-bordered">
+      <tr>
+	<td> name </td>
+	<td> number of units </td>
+	<td> size of unit (in bytes)</td>
+	<td> unit type </td>
+	<td> </td>
+      </tr>
+      <tr>
+	<td> <input type="text" name="name" value="{{member.name}}" class="form-control"> </td>
+	<td> <input type="number" name="nb_unit" value="{{member.number_unit}}" class="form-control"> </td>
+	<td> <input type="number" name="size_unit" value="{{member.size_unit}}" class="form-control"> </td>
+	<td> <input type="text" name="type" value="{{member.t}}" class="form-control"> </td>
+	<td> <input type="submit" value="Edit" class="btn btn-primary"> </td>
+      </tr>
+    </table>
+  </form>
 % end
   
 % elif member.is_struct:
@@ -37,8 +54,8 @@
       </tr>
       <tr>
 	<td> <input type="text" name="name" value="{{member.name}}" class="form-control"> </td>
-	<td> <input type="text" name="nb_unit" value="{{member.number_unit}}" class="form-control"> </td>
-	<td> <input type="text" name="size_unit" value="{{member.size_unit}}" class="form-control"> </td>
+	<td> <input type="number" name="nb_unit" value="{{member.number_unit}}" class="form-control"> </td>
+	<td> <input type="number" name="size_unit" value="{{member.size_unit}}" class="form-control"> </td>
 	<td> <input type="text" name="type" value="{{member.sub_struct.name}}" class="form-control"> </td>
 	<td> <input type="submit" value="Edit" class="btn btn-primary"> </td>
       </tr>
@@ -77,8 +94,8 @@
       </tr>
       <tr>
 	<td> <input type="text" name="name" value="{{member.name}}" class="form-control"> </td>
-	<td> <input type="text" name="nb_unit" value="{{member.number_unit}}" class="form-control"> </td>
-	<td> <input type="text" name="size_unit" value="{{member.size_unit}}" class="form-control"> </td>
+	<td> <input type="number" name="nb_unit" value="{{member.number_unit}}" class="form-control"> </td>
+	<td> <input type="number" name="size_unit" value="{{member.size_unit}}" class="form-control"> </td>
 	<td> <input type="text" name="type" value="{{member.sub_struct.name}}" class="form-control"> </td>
 	<td> <input type="submit" value="Edit" class="btn btn-primary"> </td>
       </tr>
@@ -112,7 +129,7 @@
       </tr>
       <tr>
 	<td> <input type="text" name="name" value="{{member.name}}" class="form-control"> </td>
-	<td> <input type="text" name="size" value="{{member.size}}" class="form-control"> </td>
+	<td> <input type="number" name="size" value="{{member.size}}" class="form-control"> </td>
 	<td> <input type="test" name="type" value="{{member.t}}" class="form-control"> </td>
 	<td> <input type="submit" value="Edit" class="btn btn-primary"> </td>
       </tr>

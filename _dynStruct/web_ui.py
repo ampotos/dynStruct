@@ -208,6 +208,30 @@ def edit_struct(forms, member, next_member):
     
     return None
 
+def edit_array(forms, member, next_member):
+    try:
+        size_unit = int(forms.size_unit)
+        nb_unit = int(forms.nb_unit)
+    except ValueError:
+        return bottle.template("error", msg="size_unit or nb_unit is not an integer")
+
+    if size_unit <= 0 or nb_unit <= 0:
+        return bottle.template("error", msg="size_unit and nb_unit cannot be negative or Null")
+        
+    if size_unit * nb_unit > member.size and \
+       (not next_member.is_padding or next_member.size + member.size < size_unit * nb_unit):
+        return bottle.template("error", msg="Size is too big (not enough padding between this member and the next one)")
+
+    member.name = forms.name
+    member.number_unit = nb_unit
+    member.size_unit = size_unit
+    member.size = size_unit * nb_unit
+    member.t = forms.type
+
+    member.web_t = "array of %s" % (member.t)
+    
+    return None
+
 @bottle.route("/member_do_edit", method='POST')
 def member_do_edit():
     id_struct = check_struct_id(bottle.request.query.id_struct)
@@ -229,11 +253,9 @@ def member_do_edit():
     next_member = struct.get_member(int(id_member) + member.size)
 
     if member.is_array:
-        # do array stuff
-        return bottle.template("error", msg="Not yet implem")
+        ret = edit_array(bottle.request.forms, member, next_member)
     elif member.is_struct:
-        # do array struct
-        return bottle.template("error", msg="Not yet implem")
+        ret = edit_struct(bottle.request.forms, member, next_member)
     elif member.is_array_struct:
         ret = edit_array_struct(bottle.request.forms, member, next_member)
     else:

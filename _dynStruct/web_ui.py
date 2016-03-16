@@ -249,7 +249,6 @@ def member_do_edit():
         return bottle.template("error", msg="bad struct id")
 
     member = struct.get_member(int(id_member))
-    print(id_member)
     next_member = struct.get_member(int(id_member) + member.size)
 
     if member.is_array:
@@ -272,6 +271,44 @@ def member_do_edit():
     struct.add_pad()
     _dynStruct.save_modif()
     bottle.redirect("/member?id_struct=%s&id_member=%s" % (id_struct, id_member))
+
+@bottle.route("/member_remove")
+def member_remove():
+    id_struct = check_struct_id(bottle.request.query.id_struct)
+    id_member = bottle.request.query.id_member
+
+    if id_member != 0 and not id_member:
+        return bottle.template("error", msg="member id missing")
+
+    if id_struct != 0 and not id_struct:
+        return bottle.template("error", msg="Bad struct id")
+    id_struct = str(id_struct)
+
+    struct = _dynStruct.Struct.get_by_id(id_struct)    
+    if not struct:
+        return bottle.template("error", msg="bad struct id")
+
+    member = struct.get_member(int(id_member))
+    next_member = struct.get_member(int(id_member) + member.size)
+    prev_member = struct.members[struct.members.index(member) - 1]
+
+    struct.members.remove(member)
+
+    if member.is_array_struct or member.is_struct:
+        member.sub_struct.members.clear()
+
+    # by removing the next or previous padding a new padding with the size
+    # of the old padding + the size of removed member will be created
+    if next_member.is_padding:
+        struct.members.remove(next_member)
+    if prev_member.is_padding:
+        struct.members.remove(prev_member)
+    
+    struct.add_pad()
+    
+    _dynStruct.save_modif()
+    bottle.redirect("/struct?id=%s" % (id_struct))
+    
     
 @bottle.route("/header.h")
 def dl_header():

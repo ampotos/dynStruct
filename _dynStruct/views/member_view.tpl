@@ -3,6 +3,8 @@
   <h1 class="text-center"> {{! name_member}} informations</h1>
 % if not edit:
   <h3 class="text-center"> <a href="/member_edit?id_struct={{id_member[:id_member.rfind('.')]}}&id_member={{member.offset}}"> Edit member </a> </h3>
+% else:
+  <h3 class="text-center"> <a href="/member_remove?id_struct={{id_member[:id_member.rfind('.')]}}&id_member={{member.offset}}"> Remove member </a> </h3>
 % end
   
 % if member.is_array:

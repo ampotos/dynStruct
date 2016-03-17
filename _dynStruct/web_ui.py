@@ -106,7 +106,6 @@ def member_template(query, edit):
 
     if id_struct != 0 and not id_struct:
         return bottle.template("error", msg="Bad struct id")
-    id_struct = str(id_struct)
 
     member = _dynStruct.Struct.get_member_by_id(id_struct, int(id_member))
 
@@ -250,9 +249,8 @@ def member_do_edit():
     if id_member != 0 and not id_member:
         return bottle.template("error", msg="member id missing")
 
-    if id_struct != 0 and not id_struct:
+    if not id_struct:
         return bottle.template("error", msg="Bad struct id")
-    id_struct = str(id_struct)
 
     struct = _dynStruct.Struct.get_by_id(id_struct)    
     if not struct:
@@ -304,9 +302,6 @@ def member_remove():
 
     struct.members.remove(member)
 
-    if member.is_array_struct or member.is_struct:
-        member.sub_struct.members.clear()
-
     # by removing the next or previous padding a new padding with the size
     # of the old padding + the size of removed member will be created
     if next_member.is_padding:
@@ -318,8 +313,65 @@ def member_remove():
     
     _dynStruct.save_modif()
     bottle.redirect("/struct?id=%s" % (id_struct))
+
+@bottle.route("/member_create")
+def member_create():
+    id_struct = check_struct_id(bottle.request.query.id_struct)
+    id_member = bottle.request.query.id_member
+
+    if not id_member:
+        return bottle.template("error", msg="member id missing")
+
+    if not id_struct:
+        return bottle.template("error", msg="Bad struct id")
+
+    member = _dynStruct.Struct.get_by_id("%s.%s" % (id_struct, id_member))
+
+    if not member:
+        return bottle.template("error", msg="Bad member id")        
+
+    if not member.is_padding:
+        return bottle.template("error", msg="To add a member, member_id have to point to a padding member")
     
-    
+    return bottle.template("member_create", id_struct=id_struct, member=member)
+
+@bottle.route("/member_do_create", method='POST')
+def member_do_create():
+    id_struct = check_struct_id(bottle.request.query.id_struct)
+    id_member = bottle.request.query.id_member
+
+    if not id_member:
+        return bottle.template("error", msg="member id missing")
+
+    if not id_struct:
+        return bottle.template("error", msg="Bad struct id")
+
+    struct = _dynStruct.Struct.get_by_id(id_struct)    
+    if not struct:
+        return bottle.template("error", msg="bad struct id")
+
+    member = struct.get_member(int(id_member))
+
+    if not member:
+        return bottle.template("error", msg="Bad member id")        
+
+    if not member.is_padding:
+        return bottle.template("error", msg="To add a member, member_id have to point to a padding member")
+
+    try:
+        struct.add_member_from_web_ui(member, bottle.request.forms)
+    except ValueError as err:
+        struct.add_pad()
+        return bottle.template("error", msg=str(err))
+        
+    struct.members.remove(member)
+    struct.add_pad()
+    _dynStruct.save_modif()
+    if '.' in id_struct:
+        bottle.redirect("/member?id_struct=%s&id_member=%s" % (id_struct[:id_struct.rfind('.')], id_struct[id_struct.rfind('.') + 1:]))
+    else:
+        bottle.redirect("/struct?id=%s" % (id_struct))
+
 @bottle.route("/header.h")
 def dl_header():
     bottle.response.content_type = 'text/x-c'
@@ -366,7 +418,7 @@ def link_block():
     _dynStruct.save_modif()
     
     bottle.redirect("/block?id=%d" % (id_block))
-
+    
 def start_webui(addr, port):
     bottle.TEMPLATE_PATH.insert(0, os.path.dirname(__file__) + "/views")
     bottle.run(host=addr, port=port)

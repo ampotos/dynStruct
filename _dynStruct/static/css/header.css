@@ -19,3 +19,9 @@ code {
 .dataTables_filter {
     display: none;
 }
+
+ul.centered-pills {
+    display: inline-block;
+    margin-bottom: 30px;
+    margin-top: 20px;
+}

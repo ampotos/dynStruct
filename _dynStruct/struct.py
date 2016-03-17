@@ -85,7 +85,7 @@ class Struct:
                 continue
             
             size_member = self.get_best_size(block, actual_offset, accesses)
-            self.members.append(StructMember(actual_offset, size_member, block))
+            self.members.append(StructMember(actual_offset, size_member))
             actual_offset += size_member
 
     def set_default_name(self):
@@ -211,7 +211,7 @@ class Struct:
                         
     def add_member_array(self, index, name, offset, size, t,
                          nb_unit, size_unit, block, padding):
-        new_member = StructMember(offset, size, block)
+        new_member = StructMember(offset, size)
         new_member.name = name
         new_member.set_array(nb_unit, size_unit, t)
         new_member.is_padding = padding
@@ -222,13 +222,76 @@ class Struct:
     def add_member_array_struct(self, index, index_end, name, offset,
                                 nb_unit, size_unit, block):
 
-        new_member = StructMember(offset, 0, block)
+        new_member = StructMember(offset, 0)
         new_member.name = name
         new_member.set_array_struct(nb_unit, size_unit,
                                     self.members[index : index_end],
                                     Struct(None, is_sub=True))
         self.members.insert(index, new_member)
 
+    def create_simple(self, forms, offset, end_pad):
+        size = forms.size
+        print(size)
+        try:
+            size = int(size)
+        except ValueError:
+            raise ValueError("Size is not an integer")
+
+        if size <= 0:
+            raise ValueError("Size have to be positive")
+
+        if offset + size > end_pad:
+            raise ValueError("The new member does not entirely in the padding (offset + size > end_padding")
+        new_member = StructMember(offset, size)
+        new_member.name = forms.name
+        new_member.t = forms.type
+        new_member.web_t = new_member.t
+
+        return new_member
+
+    def create_array(self, forms, offset, end_pad):
+        return True
+
+    def create_struct(self, forms, offset, end_pad):
+        return True
+
+    def create_array_struct(self, forms, offset, end_pad):
+        return True
+
+    def add_member_from_web_ui(self, pad_member, forms):
+        member_type = forms.member_type
+        offset = forms.offset
+        try:
+            offset = int(offset)
+        except ValueError:
+            raise ValueError("Offset is not a integer")
+        
+        if offset < pad_member.offset or offset >= pad_member.offset + pad_member.size:
+            raise ValueError("Offset has to be between padding_offset and padding_offset + padding_size")
+
+        pad_idx = self.members.index(pad_member)
+        
+        if member_type == "simple":
+            new_member = self.create_simple(forms, offset,
+                                            pad_member.offset + pad_member.size)
+            print("simple")
+        elif member_type == "array":
+            new_member = self.create_array(forms, offset,
+                                           pad_member.offset + pad_member.size)
+            print("array")
+        elif member_type == "struct":
+            new_member = self.create_struct(forms, offset,
+                                            pad_member.offset + pad_member.size)
+            print("struct")
+        elif member_type == "array_struct":
+            new_member = self.create_array_struct(forms, offset,
+                                                  pad_member.offset + pad_member.size)
+            print("array_struct")
+        else:
+            raise ValueError("Bad member_type")
+
+        self.members.insert(pad_idx, new_member)
+        
     def get_best_size(self, block, offset, accesses):
         sizes = {}
         max_size = 0
@@ -265,7 +328,7 @@ class Struct:
                     
     def change_to_str(self, block):
         self.members.clear()
-        self.members = [StructMember(0, self.size, block)]
+        self.members = [StructMember(0, self.size)]
         self.members[0].set_array(self.size, 1, 'uint8_t')
         
     def block_is_struct(self, block):

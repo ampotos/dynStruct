@@ -3,7 +3,7 @@
 class StructMember:
 
 
-    def __init__(self, offset, size, block):
+    def __init__(self, offset, size):
         self.offset = offset
         self.size = size
         self.t = "uint%d_t" % (self.size * 8)

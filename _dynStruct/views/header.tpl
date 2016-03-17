@@ -4,6 +4,8 @@
   <head>
     <link rel="stylesheet" href="static/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"/>
     <link rel="stylesheet" href="/static/css/header.css"/>
+    <script type="text/javascript" src="/static/js/jquery-1.12.0.min.js"></script>
+    <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
     <title>dynStruct</title>
   </head>
   <body>

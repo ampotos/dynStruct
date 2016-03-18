@@ -101,3 +101,121 @@ class StructMember:
         new_struct.size = self.size_unit
         new_struct.members = members_list
         new_struct.name = self.name
+
+    def edit_struct_size(self, struct, new_size):
+        if new_size != struct.size:
+            if new_size < struct.size:
+                old_struct_members = list(struct.members)
+                for m in old_struct_members:
+                    if m.offset + m.size > new_size:
+                        struct.members.remove(m)
+            struct.size = new_size
+            # to have correct padding after the change of size
+            struct.add_pad()
+        
+    def edit_array(self, forms, next_member, size_struct):
+        try:
+            size_unit = int(forms.size_unit)
+            nb_unit = int(forms.nb_unit)
+        except ValueError:
+            raise ValueError("size_unit or nb_unit is not an integer")
+        
+        if size_unit <= 0 or nb_unit <= 0:
+            raise ValueError("size_unit and nb_unit cannot be negative or Null")
+    
+        if size_unit * nb_unit + self.offset > size_struct:
+            raise ValueError("Size is too big (there is not enough byte left in the struct)")
+        
+        if size_unit * nb_unit > self.size and \
+           (not next_member or not next_member.is_padding or next_member.size + self.size < size_unit * nb_unit):
+            raise ValueError("Size is too big (not enough padding between this member and the next one)")
+        
+        self.name = forms.name
+        self.number_unit = nb_unit
+        self.size_unit = size_unit
+        self.size = size_unit * nb_unit
+        self.t = forms.type
+        self.web_t = "array of %s" % (self.t)
+
+    def edit_struct(self, forms, next_member, size_struct):
+        try:
+            size = int(forms.size)
+        except ValueError:
+            return bottle.template("error", msg="Size is not an integer")
+                
+        if size <= 0:
+            raise ValueError("Size cannot be negative or Null")
+        
+        if size + self.offset > size_struct:
+            raise ValueError("Size is too big (there is not enough byte left in the struct)")
+        
+        if size > self.size and \
+           (not next_member or not next_member.is_padding or next_member.size + self.size < size):
+            raise ValueError("Size is too big (not enough padding between this member and the next one)")
+        
+        self.edit_struct_size(self.sub_struct, size)
+        
+        self.name = forms.name
+        self.sub_struct.name = self.name
+        self.size = size
+        self.t = self.name
+        self.web_t = "struct %s" % (self.t)
+    
+    def edit_array_struct(self, forms, next_member, size_struct):
+         try:
+             size_unit = int(forms.size_unit)
+             nb_unit = int(forms.nb_unit)
+         except ValueError:
+             raise ValueError("size_unit or nb_unit is not an integer")
+         
+         if size_unit <= 0 or nb_unit <= 0:
+             raise ValueError("size_unit and nb_unit cannot be negative or Null")
+         
+         if size_unit * nb_unit + self.offset > size_struct:
+             raise ValueError("Size is too big (there is not enough byte left in the struct)")
+         
+         if size_unit * nb_unit > self.size and \
+            (not next_member or not next_member.is_padding or next_member.size + self.size < size_unit * nb_unit):
+             raise ValueError("Size is too big (not enough padding between this member and the next one)")
+         
+         self.name = forms.name
+         self.number_unit = nb_unit
+         self.size_unit = size_unit
+         self.size = size_unit * nb_unit
+         self.sub_struct.name = forms.type
+         self.web_t = "array of %s" % (self.sub_struct.name)
+         
+         self.edit_struct_size(self.sub_struct, size_unit)
+
+    def edit_simple(self, forms, next_member, size_struct):
+        try:
+                    size = int(forms.size)
+        except ValueError:
+            raise ValueError("Size is not an integer")
+        
+        if size <= 0:
+            raise ValueError("Size cannot be negative or Null")
+        
+        if size + self.offset > size_struct:
+            raise ValueError("Size is too big (there is not enough byte left in the struct)")
+        
+        if size > self.size and \
+           (not next_member or not next_member.is_padding or next_member.size + self.size < size):
+            raise ValueError("Size is too big (not enough padding between this member and the next one)")
+        
+        self.name = forms.name
+        self.size = size
+        self.t = forms.type
+        self.web_t = self.t
+
+
+    def edit(self, forms, next_member, size_struct):
+
+        if self.is_array:
+            self.edit_array(forms, next_member, size_struct)
+        elif self.is_struct:
+            self.edit_struct(forms, next_member, size_struct)
+        elif self.is_array_struct:
+            self.edit_array_struct(forms, next_member, size_struct)
+        else:
+            self.edit_simple(forms, next_member, size_struct)

@@ -82,8 +82,43 @@ def struct_view():
     if not struct:
         return bottle.template("error", msg="Bad struct id")    
 
-    return bottle.template("struct_view", struct=struct)
+    return bottle.template("struct_view", struct=struct, edit=False)
 
+@bottle.route("/struct_edit")
+def struct_edit():
+    struct = _dynStruct.Struct.get_by_id(bottle.request.query.id)
+
+    if not struct:
+        return bottle.template("error", msg="Bad struct id")
+    
+    return bottle.template("struct_view", struct=struct, edit=True)
+
+@bottle.route("/struct_do_edit", method='POST')
+def struct_do_edit():
+    struct = _dynStruct.Struct.get_by_id(bottle.request.query.id)
+
+    if not struct:
+        return bottle.template("error", msg="Bad struct id")
+
+    struct.name = bottle.request.forms.name
+    _dynStruct.save_modif()
+    
+    bottle.redirect("/struct?id=%d" % (struct.id))
+
+@bottle.route("/struct_remove")
+def struct_remove():
+    struct = _dynStruct.Struct.get_by_id(bottle.request.query.id)
+
+    if not struct:
+        return bottle.template("error", msg="Bad struct id")
+
+    struct.remove_all_block()
+    _dynStruct.l_struct.remove(struct)
+    _dynStruct.save_modif()
+    
+    bottle.redirect("/struct_search")
+    
+    
 @bottle.route("/struct_search")
 def struct_search():
     return bottle.template("struct_search")

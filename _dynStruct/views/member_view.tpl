@@ -35,11 +35,11 @@
 	<td> </td>
       </tr>
       <tr>
-	<td> <input type="text" name="name" value="{{member.name}}" class="form-control"> </td>
-	<td> <input type="number" name="nb_unit" value="{{member.number_unit}}" class="form-control"> </td>
-	<td> <input type="number" name="size_unit" value="{{member.size_unit}}" class="form-control"> </td>
-	<td> <input type="text" name="type" value="{{member.t}}" class="form-control"> </td>
-	<td> <input type="submit" value="Edit" class="btn btn-primary"> </td>
+	<td> <input type="text" name="name" value="{{member.name}}" class="form-control" /> </td>
+	<td> <input type="number" name="nb_unit" value="{{member.number_unit}}" class="form-control" /> </td>
+	<td> <input type="number" name="size_unit" value="{{member.size_unit}}" class="form-control" /> </td>
+	<td> <input type="text" name="type" value="{{member.t}}" class="form-control" /> </td>
+	<td> <input type="submit" value="Edit" class="btn btn-primary" /> </td>
       </tr>
     </table>
   </form>
@@ -55,9 +55,9 @@
 	<td> </td>
       </tr>
       <tr>
-	<td> <input type="text" name="name" value="{{member.name}}" class="form-control"> </td>
-	<td> <input type="number" name="size" value="{{member.size}}" class="form-control"> </td>
-	<td> <input type="submit" value="Edit" class="btn btn-primary"> </td>
+	<td> <input type="text" name="name" value="{{member.name}}" class="form-control" /> </td>
+	<td> <input type="number" name="size" value="{{member.size}}" class="form-control" /> </td>
+	<td> <input type="submit" value="Edit" class="btn btn-primary" /> </td>
       </tr>
     </table>
     </form>
@@ -93,11 +93,11 @@
 	<td> </td>
       </tr>
       <tr>
-	<td> <input type="text" name="name" value="{{member.name}}" class="form-control"> </td>
-	<td> <input type="number" name="nb_unit" value="{{member.number_unit}}" class="form-control"> </td>
-	<td> <input type="number" name="size_unit" value="{{member.size_unit}}" class="form-control"> </td>
-	<td> <input type="text" name="type" value="{{member.sub_struct.name}}" class="form-control"> </td>
-	<td> <input type="submit" value="Edit" class="btn btn-primary"> </td>
+	<td> <input type="text" name="name" value="{{member.name}}" class="form-control" /> </td>
+	<td> <input type="number" name="nb_unit" value="{{member.number_unit}}" class="form-control" /> </td>
+	<td> <input type="number" name="size_unit" value="{{member.size_unit}}" class="form-control" /> </td>
+	<td> <input type="text" name="type" value="{{member.sub_struct.name}}" class="form-control" /> </td>
+	<td> <input type="submit" value="Edit" class="btn btn-primary" /> </td>
       </tr>
     </table>
     </form>
@@ -128,10 +128,10 @@
 	<td> </td>
       </tr>
       <tr>
-	<td> <input type="text" name="name" value="{{member.name}}" class="form-control"> </td>
-	<td> <input type="number" name="size" value="{{member.size}}" class="form-control"> </td>
-	<td> <input type="test" name="type" value="{{member.t}}" class="form-control"> </td>
-	<td> <input type="submit" value="Edit" class="btn btn-primary"> </td>
+	<td> <input type="text" name="name" value="{{member.name}}" class="form-control" /> </td>
+	<td> <input type="number" name="size" value="{{member.size}}" class="form-control" /> </td>
+	<td> <input type="test" name="type" value="{{member.t}}" class="form-control" /> </td>
+	<td> <input type="submit" value="Edit" class="btn btn-primary" /> </td>
       </tr>
     </table>
   </form>

@@ -18,12 +18,14 @@ class StructMember:
 
         self.is_struct = False
         self.is_array_struct = False
-        self.is_sub_struct = None
+        self.is_sub_struct = False
         self.sub_struct = None
         
     def __str__(self):
         if self.is_array:
             s = self.print_array()
+        elif self.is_struct:
+            s = self.print_struct()
         elif self.is_array_struct:
             s = self.print_array_struct()
         else:
@@ -51,9 +53,13 @@ class StructMember:
                              zip(self.sub_struct.members,
                                  other.sub_struct.members)]
         
+    def print_struct(self):
+        str_struct = "\n\t".join(str(self.sub_struct).split('\n')[:-1])[:-1]
+        return str_struct + "%s;\n" % (self.name)
+
     def print_array_struct(self):
         str_struct = "\n\t".join(str(self.sub_struct).split('\n')[:-1])[:-1]
-        return str_struct + "%s[%d];\n\n" % (self.name, self.number_unit)
+        return str_struct + "%s[%d];\n" % (self.name, self.number_unit)
 
     def print_array(self):
         return "%s %s[%d];\n" % (self.t, self.name, self.number_unit)

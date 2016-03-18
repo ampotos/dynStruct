@@ -40,7 +40,7 @@ class Struct:
         if not self.is_sub_struct:
             s += "//total size : 0x%x\n" % self.size
 
-        if len(self.members) == 1:
+        if len(self.members) == 1 and not self.is_sub_struct:
             s += str(self.members[0])
             return s
 

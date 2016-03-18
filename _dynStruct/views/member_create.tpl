@@ -42,7 +42,7 @@
 	    <td> <input type="number" name="size" value="1" class="form-control" /> </td>
 	    <td> <input type="text" name="type" value="type" class="form-control" /> </td>
 	    <input type="hidden" name="member_type" value="simple" />
-	    <td> <input type="submit" value="Edit" class="btn btn-primary" /> </td>
+	    <td> <input type="submit" value="Create" class="btn btn-primary" /> </td>
 	  </tr>
 	</table>
       </form>
@@ -68,7 +68,7 @@
 	    <td> <input type="number" name="size_unit" value="1" class="form-control" /> </td>
 	    <td> <input type="text" name="type" value="unit_type" class="form-control" /> </td>
 	    <input type="hidden" name="member_type" value="array" />
-	    <td> <input type="submit" value="Edit" class="btn btn-primary" /> </td>
+	    <td> <input type="submit" value="Create" class="btn btn-primary" /> </td>
 	  </tr>
 	</table>
       </form>
@@ -90,7 +90,7 @@
 	    <td> <input type="number" name="offset" value="{{member.offset}}" class="form-control" /> </td>
 	    <td> <input type="number" name="size" value="1" class="form-control" /> </td>
 	    <input type="hidden" name="member_type" value="struct" />
-	    <td> <input type="submit" value="Edit" class="btn btn-primary" /> </td>
+	    <td> <input type="submit" value="Create" class="btn btn-primary" /> </td>
 	  </tr>
 	</table>
       </form>
@@ -116,7 +116,7 @@
 	    <td> <input type="number" name="size_unit" value="1" class="form-control" /> </td>
 	    <td> <input type="text" name="type" value="unit_type" class="form-control" /> </td>
 	    <input type="hidden" name="member_type" value="array_struct" />
-	    <td> <input type="submit" value="Edit" class="btn btn-primary" /> </td>
+	    <td> <input type="submit" value="Create" class="btn btn-primary" /> </td>
 	  </tr>
 	</table>
       </form>

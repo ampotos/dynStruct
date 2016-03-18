@@ -29,6 +29,7 @@ class Struct:
         self.size_array_unit = 0
         self.members = []
         self.is_sub_struct = is_sub
+        self.size = 0
         
         if block:
             self.size = block.size

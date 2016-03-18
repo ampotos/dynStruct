@@ -117,7 +117,31 @@ def struct_remove():
     _dynStruct.save_modif()
     
     bottle.redirect("/struct_search")
+
+@bottle.route("/struct_create")
+def struct_create():
+    return bottle.template("struct_create")
+
+@bottle.route("/struct_do_create", method='POST')
+def struct_do_create():
+    size = bottle.request.forms.size
+    try:
+        size = int(size)
+    except ValueError:
+        return bottle.template("error", msg="Size is not in integer")
+
+    if size <= 0:
+        return bottle.template("error", msg="Size have to be positive")
+
+    new_struct = _dynStruct.Struct(None)
+    new_struct.id = _dynStruct.l_struct[-1].id + 1
+    new_struct.name = bottle.request.forms.name
+    new_struct.size = size
+    new_struct.add_pad()
+
+    _dynStruct.l_struct.append(new_struct)
     
+    bottle.redirect("/struct?id=%d" % (new_struct.id))
     
 @bottle.route("/struct_search")
 def struct_search():

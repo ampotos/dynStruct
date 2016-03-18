@@ -231,7 +231,6 @@ class Struct:
 
     def create_simple(self, forms, offset, end_pad):
         size = forms.size
-        print(size)
         try:
             size = int(size)
         except ValueError:
@@ -250,13 +249,72 @@ class Struct:
         return new_member
 
     def create_array(self, forms, offset, end_pad):
-        return True
+        size_unit = forms.size_unit
+        nb_unit = forms.nb_unit
+        try:
+            size_unit = int(size_unit)
+            nb_unit = int(nb_unit)
+        except ValueError:
+            raise ValueError("Size_unit or nb_unit is not an integer")
+
+        if size_unit <= 0 or nb_unit <= 0:
+            raise ValueError("Size_unit and nb_unit have to be positive")
+
+        if offset + size_unit * nb_unit > end_pad:
+            raise ValueError("The new member does not entirely in the padding (offset + size_unit * nb_unit > end_padding")
+
+        new_member = StructMember(offset, nb_unit * size_unit)
+        new_member.name = forms.name
+        new_member.set_array(nb_unit, size_unit, forms.type)
+
+        return new_member
 
     def create_struct(self, forms, offset, end_pad):
-        return True
+        size = forms.size
+        try:
+            size = int(size)
+        except ValueError:
+            raise ValueError("Size is not an integer")
+
+        if size <= 0:
+            raise ValueError("Size have to be positive")
+
+        if offset + size > end_pad:
+            raise ValueError("The new member does not entirely in the padding (offset + size > end_padding")
+
+        new_member = StructMember(offset, size)
+        sub_struct = Struct(None, is_sub=True)
+        new_member.set_struct(size, sub_struct, forms.name)
+        sub_struct.add_pad()
+        
+        return new_member
+
 
     def create_array_struct(self, forms, offset, end_pad):
-        return True
+        size_unit = forms.size_unit
+        nb_unit = forms.nb_unit
+        try:
+            size_unit = int(size_unit)
+            nb_unit = int(nb_unit)
+        except ValueError:
+            raise ValueError("Size_unit or nb_unit is not an integer")
+
+        if size_unit <= 0 or nb_unit <= 0:
+            raise ValueError("Size_unit and nb_unit have to be positive")
+
+        if offset + size_unit * nb_unit > end_pad:
+            raise ValueError("The new member does not entirely in the padding (offset + size_unit * nb_unit > end_padding")
+
+        new_member = StructMember(offset, nb_unit * size_unit)
+        new_member.name = forms.name
+        sub_struct = Struct(None, is_sub=True)
+        new_member.set_array_struct(nb_unit, size_unit, [], sub_struct)
+        sub_struct.add_pad()
+        sub_struct.name = forms.type
+        new_member.web_t = "array of %s" % (sub_struct.name)
+        
+        return new_member
+
 
     def add_member_from_web_ui(self, pad_member, forms):
         member_type = forms.member_type
@@ -274,19 +332,15 @@ class Struct:
         if member_type == "simple":
             new_member = self.create_simple(forms, offset,
                                             pad_member.offset + pad_member.size)
-            print("simple")
         elif member_type == "array":
             new_member = self.create_array(forms, offset,
                                            pad_member.offset + pad_member.size)
-            print("array")
         elif member_type == "struct":
             new_member = self.create_struct(forms, offset,
                                             pad_member.offset + pad_member.size)
-            print("struct")
         elif member_type == "array_struct":
             new_member = self.create_array_struct(forms, offset,
                                                   pad_member.offset + pad_member.size)
-            print("array_struct")
         else:
             raise ValueError("Bad member_type")
 

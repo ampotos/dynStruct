@@ -206,13 +206,13 @@ def edit_struct(forms, member, next_member, size_struct):
        (not next_member or not next_member.is_padding or next_member.size + member.size < size):
         raise ValueError("Size is too big (not enough padding between this member and the next one)")
 
-    edit_struct_size(member.sub_struct, new_size)
+    edit_struct_size(member.sub_struct, size)
     
     member.name = forms.name
     member.sub_struct.name = member.name
     member.size = size
     member.t = member.name
-    member.web_t = member.t
+    member.web_t = "struct %s" % (member.t)
     
     return None
 

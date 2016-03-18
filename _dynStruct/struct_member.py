@@ -65,6 +65,18 @@ class StructMember:
         self.t = t
         self.web_t = "array of %s" % (t)
 
+    def set_struct(self, size, new_struct, name):
+        self.is_struct = True
+        self.is_sub_struct = True
+        self.sub_struct = new_struct
+        self.size = size
+        self.name = name
+        self.t = name
+        self.web_t = "struct %s" % (name)
+        
+        new_struct.size = size
+        new_struct.name = name
+        
     def set_array_struct(self, nb_unit, size_unit, members_list, new_struct):
         self.is_array_struct = True
         self.number_unit = nb_unit
@@ -72,9 +84,12 @@ class StructMember:
         self.is_sub_struct = True
         self.t = ""
         self.web_t = "array of %s" % (self.name)
-        self.size_unit = 0;
-        for m in members_list:
-            self.size_unit += m.size
+        if len(members_list):
+            self.size_unit = 0;
+            for m in members_list:
+                self.size_unit += m.size
+        else:
+            self.size_unit = size_unit
         self.size = self.size_unit * self.number_unit
 
         new_struct.size = self.size_unit

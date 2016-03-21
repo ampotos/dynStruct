@@ -23,7 +23,7 @@ to compile dynStruct for a 32bits target on a 64bits os execute `build.sh 32`
 ###Usage
 
 ```
-drrun -c <dynStruct_path> <dynStruct_args> -- <prog_path> <prog_args>
+drrun -opt_cleancall 3 -c <dynStruct_path> <dynStruct_args> -- <prog_path> <prog_args>
 
   -h print this help
   -o <file_name>	set output file name for json (default: <prog_name>.ds_out)

@@ -1,7 +1,0 @@
-% include header
-
-
-
-% include footer
-
-

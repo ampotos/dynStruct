@@ -27,11 +27,6 @@ def check_id_member_from_access(id_member):
         return False
     return id_member
 
-
-@bottle.route("/")
-def index():
-    return bottle.template("index")
-
 @bottle.route("/block")
 def block_view():
     block_id = check_block_id(bottle.request.query.id)
@@ -140,6 +135,7 @@ def struct_do_create():
     new_struct.add_pad()
 
     _dynStruct.l_struct.append(new_struct)
+    _dynStruct.save_modif()
     
     bottle.redirect("/struct?id=%d" % (new_struct.id))
     
@@ -150,6 +146,16 @@ def struct_search():
 @bottle.route("/struct_get")
 def struct_get():
     return _dynStruct.struct_json()
+
+@bottle.route("/struct_edit_instance")
+def struct_edit_instance():
+    struct = _dynStruct.Struct.get_by_id(bottle.request.query.id_struct)
+
+    if not struct:
+        return bottle.template("error", msg="Bad struct id")
+
+    return bottle.template("edit_block_list", id_struct=struct.id, struct_name=struct.name)
+
 
 @bottle.route("/member_get")
 def member_get():
@@ -235,15 +241,18 @@ def member_remove():
 
     member = struct.get_member(int(id_member))
     next_member = struct.get_member(int(id_member) + member.size)
-    prev_member = struct.members[struct.members.index(member) - 1]
+
+    prev_member = None
+    if struct.members.index(member) > 0:
+        prev_member = struct.members[struct.members.index(member) - 1]
 
     struct.members.remove(member)
 
     # by removing the next or previous padding a new padding with the size
     # of the old padding + the size of removed member will be created
-    if next_member.is_padding:
+    if next_member and next_member.is_padding:
         struct.members.remove(next_member)
-    if prev_member.is_padding:
+    if prev_member and prev_member.is_padding:
         struct.members.remove(prev_member)
     
     struct.add_pad()
@@ -342,20 +351,34 @@ def get_list_compat_struct():
     id_block = check_block_id(bottle.request.query.id_block)
     return _dynStruct.struct_select_json(id_block)    
 
-@bottle.route("/do_add_to_struct")
-def link_block():
-    id_block = check_block_id(bottle.request.query.id_block)
+@bottle.route("/struct_instance_get")
+def struct_instance_get():
     id_struct = check_struct_id(bottle.request.query.id_struct)
-    if id_block != 0 and not id_block:
-        return bottle.template("error", msg="Bad block id")
-    if id_struct != 0 and not id_struct:
+
+    if not id_struct:
         return bottle.template("error", msg="Bad struct id")
 
-    _dynStruct.Struct.get_by_id(id_struct).add_block(_dynStruct.l_block[id_block])
-    _dynStruct.save_modif()
+    struct = _dynStruct.Struct.get_by_id(id_struct)    
+    if not struct:
+        return bottle.template("error", msg="bad struct id")
+
+    instance = True if bottle.request.query.instance == "true" else False
+
+    return(_dynStruct.struct_instances_json(struct, instance))
     
-    bottle.redirect("/block?id=%d" % (id_block))
-    
+@bottle.route("/quit")
+def quit():
+    return bottle.template("quit")
+
+@bottle.route("/do_quit")
+def do_quit():
+    os._exit(0)
+
+@bottle.route("/")
+def index():
+    bottle.redirect("/block_search")
+
+
 def start_webui(addr, port):
     bottle.TEMPLATE_PATH.insert(0, os.path.dirname(__file__) + "/views")
-    bottle.run(host=addr, port=port)
+    bottle.run(host=addr, port=port, quiet=True)

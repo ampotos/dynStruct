@@ -12,6 +12,7 @@ from .ajax import block_json
 from .ajax import member_json
 from .ajax import struct_json
 from .ajax import struct_select_json
+from .ajax import struct_instances_json
 from .processing import paging
 from .processing import filter_block
 from .processing import filter_access

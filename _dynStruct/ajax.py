@@ -70,7 +70,7 @@ def access_json(id_block, id_member, query):
 def block_json_list(blocks, query):
     ret = []
     for block in blocks:
-        if not _dynStruct.filter_block(block, query):
+        if query and not _dynStruct.filter_block(block, query):
             continue
         tmp = ["0x%x" % (block.start & 0xffffffffffffffff),
                "%d" % (block.end - block.start)]
@@ -184,6 +184,29 @@ def struct_select_json(id_block):
                    '<a href="/do_add_to_struct?id_block=%d&id_struct=%d">link with this structure</a>' % (id_block, struct.id)]
             ret.append(["<code>%s</code>" % a for a in tmp])
         
+    return json.dumps({"draw" : 1,
+                       "recordsTotal" : len(ret),
+                       "recordsFiltered": len(ret),
+                       "data" : ret})
+
+def struct_instances_json(struct, instance):
+    ret = []
+    if instance:
+        (useless, ret) = block_json_list(struct.blocks, None)
+        for block in ret:
+            block.pop(4)
+            block.append(struct.blocks[ret.index(block)].id_block)
+    else:
+        potential_blocks = []
+        for block in _dynStruct.l_block:
+            if not block.struct and block.size == struct.size:
+                potential_blocks.append(block)
+
+        (useless, ret) = block_json_list(potential_blocks, None)
+        for block in ret:
+            block.pop(4)
+            block.append(potential_blocks[ret.index(block)].id_block)
+            
     return json.dumps({"draw" : 1,
                        "recordsTotal" : len(ret),
                        "recordsFiltered": len(ret),

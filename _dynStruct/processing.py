@@ -92,7 +92,7 @@ def sorting_block(l, column, order):
               "1": lambda item: int(item[1].split('>')[1].split('<')[0]),
               "2": lambda item: int(item[2].split('>')[2].split('<')[0], 16),
               "3": lambda item: int(item[3].split('>')[2].split('<')[0], 16) if "never free" not in item[3] else 0,
-              "4": lambda item: int(item[4].split('_')[1].split('<')[0])  if "None" not in item[4] else 0,
+              "4": lambda item: int(item[4].split('=')[2].split('>')[0])  if "None" not in item[4] else 0,
               "5": lambda item: int(item[5].split('_')[1].split('<')[0])
               }
     l.sort(key=getter[column] ,reverse=order)

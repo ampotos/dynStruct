@@ -206,7 +206,7 @@ def struct_instances_json(struct, instance):
         for block in ret:
             block.pop(4)
             block.append(potential_blocks[ret.index(block)].id_block)
-            
+
     return json.dumps({"draw" : 1,
                        "recordsTotal" : len(ret),
                        "recordsFiltered": len(ret),

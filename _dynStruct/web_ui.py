@@ -365,7 +365,26 @@ def struct_instance_get():
     instance = True if bottle.request.query.instance == "true" else False
 
     return(_dynStruct.struct_instances_json(struct, instance))
-    
+
+@bottle.route("/struct_instance_do_edit", method='POST')
+def struct_instance_do_edit():
+    id_struct = check_struct_id(bottle.request.query.id)
+
+    if not id_struct:
+        return bottle.template("error", msg="Bad struct id")
+
+    struct = _dynStruct.Struct.get_by_id(id_struct)
+    if not struct:
+        return bottle.template("error", msg="bad struct id")
+
+    for add in bottle.request.forms.add.split(','):
+        struct.add_block(_dynStruct.l_block[int(add)])
+
+    for remove in bottle.request.forms.remove.split(','):
+        struct.remove_block(_dynStruct.l_block[int(remove)])
+
+    _dynStruct.save_modif()
+
 @bottle.route("/quit")
 def quit():
     return bottle.template("quit")

@@ -52,7 +52,7 @@ def main():
         _dynStruct.serialized_file = args.previous_file
         
     if not args.previous_file and not args.dynamo_file:
-        print("This tool is useless without data, use -d or -p option to give\
+        print("Use -d or -p option to give\
  data extract by the gatherer or serialized data from a previous run")
         exit(0)
         

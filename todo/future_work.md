@@ -51,6 +51,7 @@
 	Such an overhead is not a surprise but it can be reduced.  
 	All instrumentation are done via a clean call, maybe some of them can be done inline, this will reduce the overhead.  
 
+	*look at the new sample in DynamoRIO doc with replacement of clean call at each intruction by inline instrumentation*
 	*inline instrumentaiton instead of clean call each time*  
 	*alloc for multiple access, orig, block each time to not have to call alloc every time*
 	*data reorganisation (remove ptr in tree_t struct and include a tree_t member in each struct which is tored in a tree)*
@@ -83,7 +84,7 @@
 
 	*used padding to determine inner struct ven it's not a array_struct*
 
-#detect array at runtime by pattern of who the data are accessed:
+#detect array at runtime by pattern of how the data are accessed:
 	
 	The goal here is to try to avoid the confusion between array and structure whith all member having the same size.  
 	These access pattern can be compiler dependent and depend of the optimization level.  
@@ -112,7 +113,7 @@
        If there is some specific detail, try to detect if the program is a c++ program or not and do the necessary stuff to handle cpp program correctly.
 
 #add a option to dynStruct.py to load struct from a C style header instead of runing recovering
-       this will add the possibility to change the structures without the graphical interface00
+       this will add the possibility to change the structures without the graphical interface
        *if use with serrialized data remove, replace existing struct who have the same name with the one on the header if size are equal.*
 
 #check other language like rust, go, ... (I think most of them don't call malloc but have their own allocator system, mmap wrapping can help but it's not very precise): need flexibility on allocator:
@@ -125,7 +126,7 @@
 
 #wrap mmap syscall and use new memory as a big block (not for structure recovering), mark block as mmap and don't try to recover struct. but if mmap by allocator don't save it:
 
-       For program who deal direct with mmap.
+       For program who deal directly with mmap.
 
 #wrap brk syscall to handle old fashion allocator:
 

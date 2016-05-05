@@ -2,25 +2,32 @@ import _dynStruct
 import json
 import html
 
+def make_pc_display(pc, sym, func_pc, func_module):
+    display = '<span class="text-danger">0x%x</span><strong>' % \
+              (pc & 0xffffffffffffffff)
+    if sym:
+        display += ':<span class="text-success">%s</span>' % \
+                   (html.escape(sym))
+    else:
+        display += ':<span class="text-danger">0x%x</span>' % \
+                   (func_pc & 0xffffffffffffffff)
+    if pc - func_pc > 0:
+        display += '</strong>+0x%x' % (pc - func_pc)
+    else:
+        display += '</strong>%s' % (hex(pc - func_pc))
+    display += '@<span class="text-warning">%s</span>' % \
+               (html.escape(func_module))
+
+    return display
+
 def access_json_list(accesses, t, query, start_offset=0):
     ret = []
     for access in accesses:
         if not _dynStruct.filter_access(access, query, t):
             continue
-        instr_pc = '<span class="text-danger">0x%x</span><strong>' % \
-                   (access.pc & 0xffffffffffffffff)
-        if access.func_sym:
-            instr_pc += ':<span class="text-success">%s</span>' % \
-                        (html.escape(access.func_sym))
-        else:
-            instr_pc += ':<span class="text-danger">0x%x</span>' % \
-                        (access.func_pc & 0xffffffffffffffff)
-        if access.pc - access.func_pc > 0:
-            instr_pc += '</strong>+0x%x' %(access.pc - access.func_pc)
-        else:
-            instr_pc += '</strong>%s' % (hex(access.pc - access.func_pc))
-        instr_pc += '@<span class="text-warning">%s</span>' % \
-                    (html.escape(access.func_module))
+
+        instr_pc = make_pc_display(access.pc, access.func_sym, access.func_pc,
+                                   access.func_module)
 
         tmp = [t, hex(access.offset - start_offset), access.size, instr_pc,
                     '<a href=/block?id=%d>block_%d</a>' % \
@@ -76,37 +83,13 @@ def block_json_list(blocks, query):
         tmp = ["0x%x" % (block.start & 0xffffffffffffffff),
                "%d" % (block.end - block.start)]
 
-        alloc_pc = '<span class="text-danger">0x%x</span><strong>' % \
-                   (block.alloc_pc & 0xffffffffffffffff)
-        if block.alloc_sym:
-            alloc_pc += ':<span class="text-success">%s</span>' % \
-                        (html.escape(block.alloc_sym))
-        else:
-            alloc_pc += ':<span class="text-danger">0x%x</span>' % \
-                        (block.alloc_func & 0xffffffffffffffff)
-        if block.alloc_pc - block.alloc_func > 0:
-            alloc_pc += '</strong>+0x%x' %(block.alloc_pc - block.alloc_func)
-        else:
-            alloc_pc += '</strong>%s' % (hex(block.alloc_pc - block.alloc_func))
-        alloc_pc += '@<span class="text-warning">%s</span>' % \
-                    (html.escape(block.alloc_module))
+        alloc_pc = make_pc_display(block.alloc_pc, block.alloc_sym,
+                                   block.alloc_func, block.alloc_module)
         tmp.append(alloc_pc)
 
         if block.free:
-            free_pc = '<span class="text-danger">0x%x</span><strong>' % \
-                      (block.free_pc & 0xffffffffffffffff)
-            if block.free_sym:
-                free_pc += ':<span class="text-success">%s</span>' % \
-                           (html.escape(block.free_sym))
-            else:
-                free_pc += ':<span class="text-danger">0x%x</span>' % \
-                           (block.free_func & 0xffffffffffffffff)
-            if block.free_pc - block.free_func > 0:
-                free_pc += '</strong>+0x%x' %(block.free_pc - block.free_func)
-            else:
-                free_pc += '</strong>%s' % (hex(block.free_pc - block.free_func))
-            free_pc += '@<span class="text-warning">%s</span>' % \
-                           (html.escape(block.free_module))
+            free_pc = make_pc_display(block.free_pc, block.free_sym,
+                                       block.free_func, block.free_module)
             tmp.append(free_pc)
         else:
             tmp.append("never free")

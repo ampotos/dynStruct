@@ -40,7 +40,7 @@ def agent_filter(agent_str, addr, module, func_sym, func, offset):
     
 def filter_block(block, query):
     if query["columns[0][search][value]"]:
-        if not addr_filter(query["columns[0][search][value]"], block):
+        if not block_contain(query["columns[0][search][value]"], block):
             return False
         
     if query["columns[1][search][value]"]:

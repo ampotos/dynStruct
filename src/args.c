@@ -7,7 +7,7 @@ args_t *args;
 
 static char *usage[] = {
   "\nUsage : "
-  "drrun -c <dynStruct_path> <dynStruct_args> -- <prog_path> <prog_args>\n\n",
+  "drrun -opt_cleancall 3 -c <dynStruct_path> <dynStruct_args> -- <prog_path> <prog_args>\n\n",
   "  -h \t\t\tprint this help\n",
 
   "  -o <file_name>\tset output file name for json\n",
@@ -39,7 +39,7 @@ static char *usage[] = {
   "Tha libc allocs functions are always used ",
   "(regardless the use of the -a option)\n",
 
-  "\nExample : drrun -c dynStruct -m libc.so - -- ls -l\n\n",
+  "\nExample : drrun -opt_cleancall 3 -c dynStruct -m libc.so - -- ls -l\n\n",
   "This command run \"ls -l\" and will only look at block ",
   "allocated by the program\n",
   "but will monitor and record memory access from ",

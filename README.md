@@ -221,6 +221,9 @@ The same output can be obtained with :
 python3 dynStruct.py -d out_test  -o serialize_test
 python3 dynStruct.py -p serialize_test -c
 ```
+### Recovery accuracy
+The recovering of structure is actually not very accurate but it can still give you a good idea of the internal structure of a programme. Improving this will be the main objectif in the following month. 
+
 ## Web interface
 DynStruct have a web interface whiche display raw data from the gatherer and the structures recovered by dynStruct.py
 
@@ -232,3 +235,32 @@ python3 dynStruct.py -p serialize_test -w
 ```
 When you go to the web interface you will see something like:
 ![Block search view](http://i.imgur.com/YdJqAQx.png)
+
+### Navigation
+The navbar on top allow you to switch between the different data of dynStruct.  
+Blocks and access are raw data from data gatherer (but more readable and with searching field).
+Structures contain structures recovered by dynStruct.py and the structure created by the user if any.  
+Download header allow you to downaload a C style header with the actuals structure (similar to ./dynStruct.py -e or ./dynStruct.py -c).
+
+### Blocks and Access
+The detailed view of blocks display blocks informations, all access made in this block and a link to the corresponding structure if any.
+![Block detailed view] (http://i.imgur.com/sNhQBMQ.png)
+
+### Structures
+You can access structures detailed view by clicking on the name of the structure in the structures search page.
+![structure detailed view] (http://i.imgur.com/qXaESky.png)
+
+On this view you have the information about the structure, the memebers of the structure and the list of blocks which are instances of this structure. You can edit the members of the structure and the list of blocks associated with this structure.    
+There is also a detailed view for each member with the list of accesses made to this member on each block associated with the structure.
+![member detailed view] (http://i.imgur.com/G5Y2DgQ.png)
+
+A member can be an inner structure, an array, an array of structure or a simple member (everything which don't match with the precedent categories).
+
+When you edit a structure you can remove it, remove a member (on the edit member view), or edit a member (it's name, type, size and number of unit in the case of an array). You can also create new member in the place of any padding member.
+![edit member view](http://i.imgur.com/jgZBMzm.png)
+
+On the Edit instance view you can select multiple blocks (by clicking on them) of the first list to remove them and multiple blocks on the second list to add them. When you click on Edit instances both selected suppression and addition will be executed. On the second list only blocks with the same size than the structure and not already associated with the structure will be displayed.
+![edit instance view] (http://i.imgur.com/an97OHp.png)
+
+### Edition saving
+All edition is saved in the serialized file if any (work with files give with args -o and -p).

@@ -262,5 +262,5 @@ When you edit a structure you can remove it, remove a member (on the edit member
 On the Edit instance view you can select multiple blocks (by clicking on them) of the first list to remove them and multiple blocks on the second list to add them. When you click on Edit instances both selected suppression and addition will be executed. On the second list only blocks with the same size than the structure and not already associated with the structure will be displayed.
 ![edit instance view] (http://i.imgur.com/an97OHp.png)
 
-### Edition saving
-All edition is saved in the serialized file if any (work with files give with args -o and -p).
+### Edits saving
+All edits are saved in the serialized file if any (work with files give with args -o and -p).

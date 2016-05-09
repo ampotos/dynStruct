@@ -377,11 +377,13 @@ def struct_instance_do_edit():
     if not struct:
         return bottle.template("error", msg="bad struct id")
 
-    for add in bottle.request.forms.add.split(','):
-        struct.add_block(_dynStruct.l_block[int(add)])
+    if bottle.request.forms.add != '':
+        for add in bottle.request.forms.add.split(','):
+            struct.add_block(_dynStruct.l_block[int(add)])
 
-    for remove in bottle.request.forms.remove.split(','):
-        struct.remove_block(_dynStruct.l_block[int(remove)])
+    if bottle.request.forms.remove != '':
+        for remove in bottle.request.forms.remove.split(','):
+            struct.remove_block(_dynStruct.l_block[int(remove)])
 
     _dynStruct.save_modif()
 

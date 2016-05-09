@@ -23,11 +23,11 @@ to compile dynStruct for a 32bits target on a 64bits os execute `build.sh 32`
 ###Usage
 
 ```
-drrun -c <dynStruct_path> <dynStruct_args> -- <prog_path> <prog_args>
+drrun -opt_cleancall 3 -c <dynStruct_path> <dynStruct_args> -- <prog_path> <prog_args>
 
   -h print this help
   -o <file_name>	set output file name for json (default: <prog_name>.ds_out)
-   			print output on console
+  - 			print output on console
   -w <module_name>	wrap <module_name>
 			 dynStruct record memory blocks only
 			 if *alloc is called from this module
@@ -45,7 +45,7 @@ this allow to don't care about the version of a library
 The main module is always monitored and wrapped
 Tha libc allocs functions are always used (regardless the use of the -a option)
 
-Example : drrun -c dynStruct -m libc.so - -- ls -l
+Example : drrun -opt_cleancall 3 -c dynStruct -m libc.so - -- ls -l
 
 This command run "ls -l" and will only look at block allocated by the program
 but will monitor and record memory access from the program and the libc
@@ -140,6 +140,9 @@ alloc by 0x0000000000400617(main : 0x00000000004005f9 in example) and free by 0x
 ```
 Now all the read access done by the libc are listed.
 
+### Known issue
+DynamoRIO can't run programs which are linked with the pthread.so library, so the data gatherer can't neither.
+
 ## Structure recovery
 
 The python script dynStruct.py do the structure recovery and will start the web_ui when available.
@@ -172,7 +175,7 @@ The recovery process can take several minutes if there are large block.
 ### Usage
 ```
 usage: dynStruct.py [-h] [-d DYNAMO_FILE] [-p PREVIOUS_FILE] [-o OUT_PICKLE]
-                    [-e <file_name>] [-c] [-w] [-l BIND_ADDR]
+                    [-n] [-e <file_name>] [-c] [-w] [-l BIND_ADDR]
 
 Dynstruct analize tool
 
@@ -181,12 +184,15 @@ optional arguments:
   -d DYNAMO_FILE    output file from dynStruct dynamoRio client
   -p PREVIOUS_FILE  file to load serialized data
   -o OUT_PICKLE     file to store serialized data.
+  -n                just load json without recovering structures
   -e <file_name>    export structures in C style on <file_name>
   -c                print structures in C style on console
+  -w                start the web view
+  -l BIND_ADDR      bind addr for the web view default 127.0.0.1:24242
 ```
 ### Example
 ```
-drrun -c dynStruct -o out_test -- tests/test
+drrun -opt_cleancall 3 -c dynStruct -o out_test -- tests/test
 python3 dynStruct.py -d out_test  -c
 ```
 will display
@@ -215,3 +221,46 @@ The same output can be obtained with :
 python3 dynStruct.py -d out_test  -o serialize_test
 python3 dynStruct.py -p serialize_test -c
 ```
+### Recovery accuracy
+The recovering of structure is actually not very accurate but it can still give you a good idea of the internal structure of a programme. Improving this will be the main objectif in the following month. 
+
+## Web interface
+DynStruct have a web interface whiche display raw data from the gatherer and the structures recovered by dynStruct.py
+
+This web interface can be start by using dynStruct.py with the -w option (and -l to change the listening ip/port of the interface).
+
+If we took the last previous example we can start the web itnerface with:
+```
+python3 dynStruct.py -p serialize_test -w
+```
+When you go to the web interface you will see something like:
+![Block search view](http://i.imgur.com/YdJqAQx.png)
+
+### Navigation
+The navbar on top allow you to switch between the different data of dynStruct.  
+Blocks and access are raw data from data gatherer (but more readable and with searching field).
+Structures contain structures recovered by dynStruct.py and the structure created by the user if any.  
+Download header allow you to downaload a C style header with the actuals structure (similar to ./dynStruct.py -e or ./dynStruct.py -c).
+
+### Blocks and Access
+The detailed view of blocks display blocks informations, all access made in this block and a link to the corresponding structure if any.
+![Block detailed view] (http://i.imgur.com/sNhQBMQ.png)
+
+### Structures
+You can access structures detailed view by clicking on the name of the structure in the structures search page.
+![structure detailed view] (http://i.imgur.com/qXaESky.png)
+
+On this view you have the information about the structure, the memebers of the structure and the list of blocks which are instances of this structure. You can edit the members of the structure and the list of blocks associated with this structure.    
+There is also a detailed view for each member with the list of accesses made to this member on each block associated with the structure.
+![member detailed view] (http://i.imgur.com/G5Y2DgQ.png)
+
+A member can be an inner structure, an array, an array of structure or a simple member (everything which don't match with the precedent categories).
+
+When you edit a structure you can remove it, remove a member (on the edit member view), or edit a member (it's name, type, size and number of unit in the case of an array). You can also create new member in the place of any padding member.
+![edit member view](http://i.imgur.com/jgZBMzm.png)
+
+On the Edit instance view you can select multiple blocks (by clicking on them) of the first list to remove them and multiple blocks on the second list to add them. When you click on Edit instances both selected suppression and addition will be executed. On the second list only blocks with the same size than the structure and not already associated with the structure will be displayed.
+![edit instance view] (http://i.imgur.com/an97OHp.png)
+
+### Edition saving
+All edition is saved in the serialized file if any (work with files give with args -o and -p).

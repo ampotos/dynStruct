@@ -1,5 +1,5 @@
 # dynStruct
-dynStruct is a tool using dynamoRio to monitor memory access of an ELF binary via a data gatherer,
+dynStruct is a tool using dynamoRio to monitor memory accesses of an ELF binary via a data gatherer,
 and use this data to recover structures of the original code.
 
 The data gathered can also be used to quickly find where and by which function a member of a structure is write or read.
@@ -17,7 +17,7 @@ Execute `build.sh`
 
 To compile dynStruct for a 32bits target on a 64bits os execute `build.sh 32`
 
-Install dependance for dynStruct.py: `pip3 install -r requirements.txt`
+Install dependencies for dynStruct.py: `pip3 install -r requirements.txt`
 
 ## Data gatherer
 
@@ -98,10 +98,10 @@ alloc by 0x0000000000400617(main : 0x00000000004005f9 in example) and free by 0x
 	details :
 			 4 bytes were accessed by 0x0000000000400624 (main : 0x00000000004005f9 in example) 1 times
 ```
-We see all the right access on str done by the program himself.
+We see all the write accesses on str done by the program himself.
 We can notice the 4 bytes access at offset 0 of the block due to gcc optimisation for initializing the string.
 
-Now if we run `drrun -c  dynStruct -m libc - -- tests/example` we are going to monitor all the libc access, and we get
+Now if we run `drrun -c  dynStruct -m libc - -- tests/example` we are going to monitor all the libc accesses, and we get
 ```
 test
 tast
@@ -139,7 +139,7 @@ alloc by 0x0000000000400617(main : 0x00000000004005f9 in example) and free by 0x
 			 4 bytes were accessed by 0x0000000000400624 (main : 0x00000000004005f9 in example) 1 times
 
 ```
-Now all the read access done by the libc are listed.
+Now all the read accesses done by the libc are listed.
 
 ### Known issue
 DynamoRIO can't run programs which are linked with the pthread.so library, so the data gatherer can't neither.
@@ -150,16 +150,16 @@ The python script dynStruct.py do the structure recovery and can start the web_u
 
 The idea behind the structure recovery is to have a quick idea of the structures are used by the program.
 
-It's impossible to recover exactly the same structures than it was in the source code, so some choices were made.
+It's impossible to recover exactly the structures used in the original source code, so some choices had to be made.
 To recover the size of members dynStruct.py look at the size of the accesses for a particular offset, it keep the more used
 size, if 2 or more size are used the same number of time it keep the smaller size.
 
 All type are ```uint<size>_t```, all the name are ```offset_<offset_int_the_struct>```.
-Some offset in blocks have no access in the ouput of the dynStruct dynamoRIO client, so the empty offset are fill
+Some offset in blocks have no read or write accesses in the ouput of the dynStruct dynamoRIO client, so the empty offset are fill
 with array called ```pad_offset<offset_in_the_struct>```, all pading are uint8_t.
 Array are detected, 5 or more consecutive members of a struct with the same size is considered as an array.
 Array are named ```array_<offset_int_the_struct>```.
-The last thing who is detected is array of structure, they are named ```struct_array_<offset_in_the_struct>```
+The last thing that is detected is array of structure, named ```struct_array_<offset_in_the_struct>```
 
 The recovery of struct try to be the most compact as possible, the output will look like :
 ```
@@ -227,10 +227,10 @@ python3 dynStruct.py -p serialize_test -c
 Serialized file allow you to load data from a binary without having to redo the structure recovery. Serialized file also saved modification done to structures via the web ui.
 
 ### Recovery accuracy
-The recovering of structure is actually not always accurate but it can still give you a good idea of the internal structures of a programme. Improving this will be the main objectif in the following month. 
+The recovering of structure is actually not always accurate but it can still give you a good idea of the internal structures of a program. Improving this will be the main goal in the following month. 
 
 ## Web interface
-DynStruct have a web interface which display raw data from the gatherer and the structures recovered by dynStruct.py
+DynStruct has a web interface which display raw data from the gatherer and the structures recovered by dynStruct.py
 
 This web interface can be start by using dynStruct.py with the -w option (and -l to change the listening ip/port of the interface).
 
@@ -243,12 +243,12 @@ When you go to the web interface you will see something like:
 
 ### Navigation
 The navbar on top allow you to switch between the different data dynStruct can display.  
-Blocks and access are raw data from data gatherer (but more readable than console ouput of the gatherer and with search fields).  
+Blocks and accesses are raw data from data gatherer (but more readable than console ouput of the gatherer and with search fields).  
 Structures contain structures recovered by dynStruct.py and the structures created by the user if any.  
 Download header allow you to download a C style header with the actuals structure (similar to ./dynStruct.py -e or ./dynStruct.py -c).
 
 ### Blocks and Access
-The detailed view of blocks display blocks informations, all access made in this block and a link to the corresponding structure if any.
+The detailed view of blocks display blocks informations, all accesses made in this block and a link to the corresponding structure if any.
 ![Block detailed view] (http://i.imgur.com/sNhQBMQ.png)
 
 ### Structures
@@ -257,7 +257,7 @@ You can access structures detailed view by clicking on the name of the structure
 
 On this view you have the information about the structure, the members of the structure and the list of blocks which are instances of this structure. You can edit the members of the structure and the list of blocks associated with this structure.    
   
-There is also a detailed view for each member with the list of access made to this member on each block associated with the structure.
+There is also a detailed view for each member with the list of accesses made to this member on each block associated with the structure.
 ![member detailed view] (http://i.imgur.com/G5Y2DgQ.png)
 
 A member can be an inner structure, an array, an array of structure or a simple member (everything which don't match with the previous categories). Union and bitfield are not actually handle by dynStruct.

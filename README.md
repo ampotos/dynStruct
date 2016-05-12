@@ -144,19 +144,11 @@ Now all the read accesses done by the libc are listed.
 ### Known issue
 DynamoRIO can't run programs which are linked with the pthread.so library, so the data gatherer can't neither.
 
-### Known issue
-
-DynamoRIO can't run programs which are linked with the pthread.so library, so the data gatherer can't neither.
-
-### Known issue
-
-DynamoRIO can't run programs which are linked with the pthread.so library, so the data gatherer can't neither.
-
 ## Structure recovery
 
 The python script dynStruct.py do the structure recovery and can start the web_ui.
 
-The idea behind the structure recovery is to have a quick idea of the structures are used by the program.
+The idea behind the structure recovery is to have a quick idea of the structures used by the program.
 
 It's impossible to recover exactly the structures used in the original source code, so some choices had to be made.
 To recover the size of members dynStruct.py look at the size of the accesses for a particular offset, it keep the more used

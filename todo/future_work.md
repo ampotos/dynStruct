@@ -1,7 +1,3 @@
-#web_ui (i'm actually working on it):
-	Actually the tool is not usable by anyone except me, and even I can't find a information quickly, the goal of the web_ui is to provide an easy to use interface which will provide the information quickly.  
-	Have an interface is mandatory for dynStruct because a want dynStruct to be usable for anybody.
-
 #just after the web ui is finish start using dynStruct in real ctf chall to find out more idea for enhancement (need the web_ui):
      	
 	When dynStruct will be usable I will ask a few friend to try it and give me their feelback (and I will use it as well).  
@@ -55,6 +51,7 @@
 	*inline instrumentaiton instead of clean call each time*  
 	*alloc for multiple access, orig, block each time to not have to call alloc every time*
 	*data reorganisation (remove ptr in tree_t struct and include a tree_t member in each struct which is tored in a tree)*
+	*flush free block periodically to reduce memory overhead for complexe program like emacs*
 
 #add an option to produce radare2 script which do automatique typing in radare2 debugger:
      	

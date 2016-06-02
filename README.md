@@ -142,7 +142,9 @@ alloc by 0x0000000000400617(main : 0x00000000004005f9 in example) and free by 0x
 Now all the read accesses done by the libc are listed.
 
 ### Known issue
-DynamoRIO can't run programs which are linked with the pthread.so library, so the data gatherer can't neither.
+The data gatherer write the output file only at the end of the execution and actually store all data in memory during execution.
+The result is for complexe program (like emacs) will used a huge amount of mememory (more than 4go) to run.
+Some optimisations about this memory overhead will come soon.
 
 ## Structure recovery
 

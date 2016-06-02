@@ -110,7 +110,7 @@ void post_malloc(void *wrapctx, void *user_data)
   malloc_t      *block = (malloc_t *)user_data;
 
   dr_mutex_lock(lock);
-  
+
   if (!block)
     {
       dr_mutex_unlock(lock);
@@ -130,7 +130,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   void          *start = drwrap_get_arg(wrapctx, 0);
   size_t        size = (size_t)drwrap_get_arg(wrapctx, 1);
   void		*drc = drwrap_get_drcontext(wrapctx);
-  
+
   dr_mutex_lock(lock);
   // the first call on 64 bit and the second in 32bit
   // are init call, so we have to do nothing
@@ -157,7 +157,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
       if (!(block = search_on_tree(active_blocks, start)))
 	{
 	  dr_mutex_unlock(lock);
-	  return ;
+	  return;
 	}
       block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
       get_caller_data(&(block->free_func_pc), &(block->free_func_sym),
@@ -186,8 +186,9 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
       // when we have to check if the module is wrapped
       if(!module_is_wrapped(drc))
 	{
-	  user_data = NULL;
+	  *user_data = NULL;
 	  dr_global_free(tmp, sizeof(*tmp));
+	  dr_mutex_unlock(lock);
 	  return;
 	}
       tmp->block = NULL;
@@ -238,7 +239,8 @@ void post_realloc(void *wrapctx, void *user_data)
   realloc_tmp_t	*data = user_data;
   
   // if user_data is not set realloc was called to do a free
-  // or the call to realloc is an init call  
+  // or the call to realloc is an init call or the block
+  // was alloc by a non wrap module
   if (data)
     {
       dr_mutex_lock(lock);
@@ -280,7 +282,7 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
   drc = drwrap_get_drcontext(wrapctx);
 
   dr_mutex_lock(lock);
-  
+
   if ((block = search_on_tree(active_blocks, addr)))
     {
       block->flag |= FREE;

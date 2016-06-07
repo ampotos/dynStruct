@@ -27,7 +27,12 @@ Install dependencies for dynStruct.py: `pip3 install -r requirements.txt`
 drrun -opt_cleancall 3 -c <dynStruct_path> <dynStruct_args> -- <prog_path> <prog_args>
 
   -h print this help
-  -o <file_name>	set output file name for json (default: <prog_name>.ds_out)
+  -o <file_name>	set output name for json file
+			 if a file with this name already exist the default name will be used
+			 in the case of forks, default name will be used for forks json files
+			 (default: <prog_name>.<pid>)
+  -d <dir_name>		set output directory for json files
+		         (default: current directory)
   - 			print output on console
   -w <module_name>	wrap <module_name>
 			 dynStruct record memory blocks only
@@ -140,6 +145,12 @@ alloc by 0x0000000000400617(main : 0x00000000004005f9 in example) and free by 0x
 
 ```
 Now all the read accesses done by the libc are listed.
+
+### Forking (or execve) programs
+If you use the data gatherer on a forking program, a file per process will be written.
+This allow to analyse each process independently.
+In the case of an execution of an other program the new file will have the name of the program executed.
+If you don't want the data gatherer to follow new processes use the options -no_follow_children for drrun (example : `drrun -no_follow_children -opt_cleancall 3 -c dynStruct -m libc.so - -- ls -l`)
 
 ### Known issue
 The data gatherer write the output file only at the end of the execution and actually store all data in memory during execution.

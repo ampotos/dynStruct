@@ -1,13 +1,3 @@
-#just after the web ui is finish start using dynStruct in real ctf chall to find out more idea for enhancement (need the web_ui):
-     	
-	When dynStruct will be usable I will ask a few friend to try it and give me their feelback (and I will use it as well).  
-	It's important to do this just after the interface because is a big changement has to be done, it will be easier to do it now thant in a few month.  
-
-# correct segf and deadlock found, and search for other issue in the data gatherer:
-  	  after some test i found multiple deadlock and 1 segf (see log book) in the data gatherer.
-	  I have to fix them before adding any other feature
-	  test the data gatherer on other prog to find other issue
-
 #store opcode for each acces and disass in python with capstone
 
        	this can be usefull for the dissertation
@@ -19,27 +9,14 @@
 	Just verify if dynStruct work properly wth multi-thread program.  
       	If not fix the issues.
 	known issue : pthread can't run under DynamoRIO
-
-#check what is the behavior with forking program:
-      
-	Same thing than for muti-threaded program.
 	
-#check the behavior with program using signal handler:
-
-	Same thing than for muti-threaded program.
-	*especially the state of the internal stack of function*
-
 #check the behavior of the plt part on diverse compiler (gcc work well, so test at least clang and tcc):
         
-	Until now all test are done using GCC, using an other compiler is not supposed to be a problem but this need the same check than multi-threaded program.       
+	Until now all test are done using GCC, using an other compiler is not supposed to be a problem but this need the same check than multi-threaded program.
 
-#add possibility to add an other dynamo file to a serialized file (by loading both of them): 
-        
-	dynStruct use a dynamic approach, so the code coverage of one run can not be enough.  
-	This option will allow to aggregate data extract for multiple run of the program.  
+#check if write instruction handle signed number, float number, ptr, ... via the opcode stored in an access and disass with capstone
 
-	*run struct recovery only on new block*  
-	*be careful of stuff like unique id from the dynamo data*  
+       The goal here is also to made the structure recovering more accurate by looking at some other information at runtime.
 
 #optimization of actual implem:
 	
@@ -52,6 +29,19 @@
 	*alloc for multiple access, orig, block each time to not have to call alloc every time*
 	*data reorganisation (remove ptr in tree_t struct and include a tree_t member in each struct which is tored in a tree)*
 	*flush free block periodically to reduce memory overhead for complexe program like emacs*
+
+#check the behavior with program using signal handler:
+
+	Same thing than for muti-threaded program.
+	*especially the state of the internal stack of function*
+
+#add possibility to add an other dynamo file to a serialized file (by loading both of them):
+
+	dynStruct use a dynamic approach, so the code coverage of one run can not be enough.
+	This option will allow to aggregate data extract for multiple run of the program.
+
+	*run struct recovery only on new block*
+	*be careful of stuff like unique id from the dynamo data*
 
 #add an option to produce radare2 script which do automatique typing in radare2 debugger:
      	
@@ -69,10 +59,6 @@
 	*ptr to func: easys for binary with symbol, for strip binary check if prologue at addr ? just check if addr it's in text section ?*  
 	*for other data ptr: check in what section is the addr ?*  
 	*if ptr to an other block remeber it (find a way to mark only 1 block, addr are not enough), used it to detect ptr to struct or ptr to array, to mark block maybe in increasing index to identify block here instead of in python (a long may be enough)*  
-
-#check if write instruction handle signed number, float number, ptr, ... via the opcode stored in an access and disass with capstone
-        
-	The goal here is also to made the structure recovering more accurate by looking at some other information at runtime.
 
 #struct recovering by padding:
 	

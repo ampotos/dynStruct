@@ -12,7 +12,8 @@ typedef struct module_name_s
 typedef struct
 {
   int			console;
-  char			*out_file; 
+  char			*out_dir;
+  char			*out_name;
   file_t		file_out;
   module_name_t		*wrap_modules_s;
   module_name_t		*monitor_modules_s; 
@@ -32,7 +33,5 @@ void clean_args(void);
 int module_is_wrapped(void *drcontext);
 int pc_is_monitored(app_pc pc);
 int module_is_alloc(const module_data_t *mod);
-
-void *get_output_name(void);
 
 #endif

@@ -10,8 +10,13 @@ static char *usage[] = {
   "drrun -opt_cleancall 3 -c <dynStruct_path> <dynStruct_args> -- <prog_path> <prog_args>\n\n",
   "  -h \t\t\tprint this help\n",
 
-  "  -o <file_name>\tset output file name for json\n",
-  "\t\t\t (default: <prog_name>.ds_out)\n",
+  "  -o <file_name>\tset output name for json file\n"
+  "\t\t\t if a file with this name already exist the default name will be used\n",
+  "\t\t\t in the case of forks, default name will be used for forks json files\n",
+  "\t\t\t (default: <prog_name>.<pid>)\n",
+
+  "  -d <dir_name>\t\tset output directory for json files\n",
+  "\t\t\t (default: current directory)\n",
 
   "  - \t\t\tprint output on console\n",
 
@@ -135,6 +140,125 @@ int set_alloc(char *name)
   return true;
 }
 
+char *get_output_name(int *size)
+{
+  char	*filename;
+  int	dir_size;
+  int	name_size;
+
+  if (args->console)
+    return NULL;
+
+  if (args->out_name)
+    {
+      if (!args->out_dir)
+	{
+	  filename = ds_strdup(args->out_name);
+	  *size = sizeof(*filename) * (ds_strlen(filename) + 1);
+	}
+      else
+	{
+	  dir_size = ds_strlen(args->out_dir);
+	  name_size = ds_strlen(args->out_name);
+	  *size = sizeof(*filename) * (name_size + dir_size + 2);
+	  if (!(filename = dr_global_alloc(sizeof(*filename) *
+					   (name_size + dir_size + 2))))
+	    return NULL;
+	  ds_memset(filename, 0, name_size + dir_size + 2);
+
+	  ds_strncpy(filename, args->out_dir, dir_size);
+	  filename[dir_size] = '/';
+	  ds_strncpy(filename + dir_size + 1, args->out_name, name_size);
+	}
+
+      return filename;
+    }
+
+  return NULL;
+}
+
+char *get_generic_name(int *size)
+{
+  module_data_t	*mod;
+  char		*filename;
+  const char	*mod_name;
+  int		mod_size;
+  int		dir_size = 0;
+  process_id_t	pid;
+  char		pid_str[6] = {0};
+  int		pid_size;
+  char		*tmp_ptr;
+
+  if (!(mod = dr_get_main_module()))
+    return NULL;
+
+  mod_name = dr_module_preferred_name(mod);
+  mod_size = ds_strlen(mod_name);
+
+  if (args->out_dir)
+    dir_size = ds_strlen(args->out_dir);
+
+  *size = sizeof(*filename) * (mod_size + 8 + dir_size);
+  if (!(filename = dr_global_alloc(sizeof(*filename) *
+				   (mod_size + 8 + dir_size))))
+    {
+      dr_free_module_data(mod);
+      return NULL;
+    }
+  ds_memset(filename, 0, sizeof(*filename) * (mod_size + 8 + dir_size));
+
+  if (args->out_dir)
+    {
+      ds_strncpy(filename, args->out_dir, dir_size);
+      filename[dir_size++] = '/';
+    }
+  ds_strncpy(filename + dir_size, mod_name, mod_size);
+  filename[dir_size + mod_size] = '.';
+
+  pid = dr_get_process_id();
+  tmp_ptr = pid_str;
+  while (pid > 9)
+    {
+      *tmp_ptr++ = pid % 10 + '0';
+      pid = pid / 10;
+    }
+  *tmp_ptr = pid + '0';
+
+  pid_size = ds_strlen(pid_str) - 1;
+  tmp_ptr = filename + dir_size + mod_size + 1;
+
+  while (pid_size >= 0)
+    *tmp_ptr++ = pid_str[pid_size--];
+
+  dr_free_module_data(mod);
+
+  return filename;
+}
+
+file_t open_out_file()
+{
+  int		name_size;
+  char		*filename = get_output_name(&name_size);
+  file_t	file;
+
+  if (!filename || dr_file_exists(filename))
+    {
+      if (filename)
+	dr_global_free(filename, name_size);
+
+      if (!(filename = get_generic_name(&name_size)))
+	{
+	  dr_printf("Enable to create file name");
+	  return INVALID_FILE;
+	}
+    }
+
+  file = dr_open_file(filename, DR_FILE_WRITE_OVERWRITE | DR_FILE_ALLOW_LARGE);
+  dr_global_free(filename, name_size);
+
+  return file;
+}
+
 int parse_arg(int argc, char **argv)
 {
   if (!(args = dr_global_alloc(sizeof(*args))))
@@ -160,7 +284,11 @@ int parse_arg(int argc, char **argv)
 	  args->console = true;
 	  break;
 	case 'o':
-	  args->out_file = argv[ct + 1];
+	  args->out_name = argv[ct + 1];
+	  ct++;
+	  break;
+	case 'd':
+	  args->out_dir = argv[ct + 1];
 	  ct++;
 	  break;
 	case 'w':
@@ -201,6 +329,12 @@ int parse_arg(int argc, char **argv)
 	}
     }
 
+  if (!args->console)
+    if ((args->file_out = open_out_file()) == INVALID_FILE)
+      {
+	dr_printf("Output file not created\n");
+	return false;
+      }
   return alloc_array();
 }
 
@@ -335,38 +469,4 @@ int module_is_alloc(const module_data_t *mod)
     return true;
 
   return false;
-}
-
-void *get_output_name(void)
-{
-  module_data_t	*mod;
-  char		*filename;
-  const char	*mod_name;
-  
-  if (args->console)
-    return NULL;
-
-  if (args->out_file)
-    return ds_strdup(args->out_file);
-
-  if (!(mod = dr_get_main_module()))
-    return NULL;
-
-  mod_name = dr_module_preferred_name(mod);
-  
-  if (!(filename = dr_global_alloc(sizeof(*filename) * ds_strlen(mod_name)
-				   + 8)))
-    {
-      dr_free_module_data(mod);
-      return NULL;
-    }
-
-  ds_memset(filename, 0, sizeof(*filename) * ds_strlen(mod_name) + 8);
-  
-  ds_strncpy(filename, mod_name, ds_strlen(mod_name));
-  ds_strncpy(filename + ds_strlen(filename), ".ds_out", 8);
-
-  dr_free_module_data(mod);
-
-  return filename;
 }

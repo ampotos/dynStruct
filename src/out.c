@@ -87,13 +87,10 @@ void print_console(void)
 
 void output(void)
 {
-  char	*filename = get_output_name();
-
-  if (!filename)
+  if (args->console)
     print_console();
   else
     {
-      args->file_out = dr_open_file(filename, DR_FILE_WRITE_OVERWRITE);
       write_json();
       dr_close_file(args->file_out);
     }

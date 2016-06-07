@@ -496,7 +496,8 @@ class Struct:
                 structs[-1].id = len(structs)
                 structs[-1].set_default_name()
             prbar.update()
-                
+        print('\n')
+
     @staticmethod
     def clean_all_struct(structs):
         list_structs = list(structs)

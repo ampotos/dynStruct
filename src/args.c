@@ -19,6 +19,7 @@ static char *usage[] = {
   "\t\t\t (default: current directory)\n",
 
   "  - \t\t\tprint output on console\n",
+  "\t\t\t Usable only on very small programs\n",
 
   "  -w <module_name>\twrap <module_name>\n",  
   "\t\t\t dynStruct record memory blocks only\n",
@@ -330,11 +331,16 @@ int parse_arg(int argc, char **argv)
     }
 
   if (!args->console)
-    if ((args->file_out = open_out_file()) == INVALID_FILE)
-      {
-	dr_printf("Output file not created\n");
-	return false;
-      }
+    {
+      if ((args->file_out = open_out_file()) == INVALID_FILE)
+	{
+	  dr_printf("Output file not created\n");
+	  return false;
+	}
+      else
+	dr_fprintf(args->file_out, "[");
+    }
+
   return alloc_array();
 }
 
@@ -429,6 +435,7 @@ void clean_args(void)
   clean_list_args(args->monitor_modules_s);
   clean_array_args(args->size_wrap, args->wrap_modules);
   clean_array_args(args->size_monitor, args->monitor_modules);
+  dr_global_free(args, sizeof(*args));
 }
 
 

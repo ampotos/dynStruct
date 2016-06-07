@@ -34,6 +34,7 @@ drrun -opt_cleancall 3 -c <dynStruct_path> <dynStruct_args> -- <prog_path> <prog
   -d <dir_name>		set output directory for json files
 		         (default: current directory)
   - 			print output on console
+			 Usable only on very small programs
   -w <module_name>	wrap <module_name>
 			 dynStruct record memory blocks only
 			 if *alloc is called from this module
@@ -157,6 +158,8 @@ The data gatherer write the output file only at the end of the execution and act
 The result is for complexe program (like emacs) will used a huge amount of mememory (more than 4go) to run.
 Some optimisations about this memory overhead will come soon.
 
+Also DynamoRIO have problem with running some program using the pthread library, so dynStruct have the same issue.
+
 ## Structure recovery
 
 The python script dynStruct.py do the structure recovery and can start the web_ui.
@@ -247,7 +250,7 @@ DynStruct has a web interface which display raw data from the gatherer and the s
 
 This web interface can be start by using dynStruct.py with the -w option (and -l to change the listening ip/port of the interface).
 
-If we took the last previous example we can start the web itnerface with:
+If we took the last previous example we can start the web interface with:
 ```
 python3 dynStruct.py -p serialize_test -w
 ```

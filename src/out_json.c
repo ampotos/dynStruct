@@ -77,11 +77,9 @@ void print_block_json(malloc_t *block)
   dr_global_free(block, sizeof(*block));
 }
 
-void    write_json(void)
+void write_json(void)
 {
   malloc_t      *tmp;
-  
-  dr_fprintf(args->file_out, "[");
   
   while (old_blocks)
     {
@@ -92,4 +90,18 @@ void    write_json(void)
   clean_tree(&active_blocks, (void (*)(void*))print_block_json);
 
   dr_fprintf(args->file_out, "{}]");
+}
+
+void flush_old_block(void)
+{
+  malloc_t      *tmp;
+
+  while (old_blocks)
+    {
+      tmp = old_blocks->next;
+      print_block_json(old_blocks);
+      old_blocks = tmp;
+    }
+
+  dr_flush_file(args->file_out);
 }

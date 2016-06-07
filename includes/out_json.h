@@ -3,6 +3,7 @@
 
 #include "dr_api.h"
 
-void	write_json(void);
+void write_json(void);
+void flush_old_block(void);
 
 #endif

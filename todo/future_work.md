@@ -1,19 +1,14 @@
+#check if it work correctly with multi-thread program:
+
+	Just verify if dynStruct work properly wth multi-thread program.
+	If not fix the issues.
+
 #store opcode for each acces and disass in python with capstone
 
        	this can be usefull for the dissertation
   	it could be very helpfull to have the instruction which did the access to understand certain behavior.
 	this will also help to have better type recovery.
-
-#check if it work correctly with multi-thread program:
-        
-	Just verify if dynStruct work properly wth multi-thread program.  
-      	If not fix the issues.
-	known issue : pthread can't run under DynamoRIO
 	
-#check the behavior of the plt part on diverse compiler (gcc work well, so test at least clang and tcc):
-        
-	Until now all test are done using GCC, using an other compiler is not supposed to be a problem but this need the same check than multi-threaded program.
-
 #check if write instruction handle signed number, float number, ptr, ... via the opcode stored in an access and disass with capstone
 
        The goal here is also to made the structure recovering more accurate by looking at some other information at runtime.
@@ -29,6 +24,10 @@
 	*alloc for multiple access, orig, block each time to not have to call alloc every time*
 	*data reorganisation (remove ptr in tree_t struct and include a tree_t member in each struct which is tored in a tree)*
 	*flush free block periodically to reduce memory overhead for complexe program like emacs*
+
+#check the behavior of the plt part on diverse compiler (gcc work well, so test at least clang and tcc):
+
+	Until now all test are done using GCC, using an other compiler is not supposed to be a problem but this need the same check than multi-threaded program.
 
 #check the behavior with program using signal handler:
 

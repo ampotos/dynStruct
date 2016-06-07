@@ -7,6 +7,7 @@
 #include "../includes/call.h"
 #include "../includes/sym.h"
 #include "../includes/args.h"
+#include "../includes/out_json.h"
 
 static int malloc_init = 0;
 static int realloc_init = 0;
@@ -274,6 +275,10 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
   malloc_t	*block;
   void		*drc;
   void		*addr;
+
+  // used to know when flush old_blocks
+  // list to limit memory usage
+  static int	old_blocks_count = 0;
   
   // free(0) do nothing
   if (!(addr = drwrap_get_arg(wrapctx, 0)))
@@ -292,10 +297,18 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
 	  get_caller_data(&(block->free_func_pc), &(block->free_func_sym),
 			  &(block->free_module_name), drc, 1);
 	}
+
       block->next = old_blocks;
       old_blocks = block;
+      old_blocks_count++;
 
       del_from_tree(&active_blocks, block->start, NULL);
+
+      if (!args->console && old_blocks_count == MAX_OLD_BLOCKS)
+	{
+	  flush_old_block();
+	  old_blocks_count = 0;
+	}
     }
 
   dr_mutex_unlock(lock);

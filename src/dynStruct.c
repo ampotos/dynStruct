@@ -166,6 +166,8 @@ static void exit_event(void)
 
   clean_args();
   
+  drmgr_unregister_tls_field(tls_stack_idx);
+
   dr_mutex_unlock(lock);
   dr_mutex_destroy(lock);
   

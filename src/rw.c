@@ -12,7 +12,10 @@ orig_t *new_orig(size_t size, void *pc, void *drcontext)
   orig_t	*orig;
   
   if (!(orig = dr_global_alloc(sizeof(*orig))))
-    dr_printf("dr_malloc fail\n");
+    {
+      dr_printf("dr_malloc fail\n");
+      return NULL;
+    }
   ds_memset(orig, 0, sizeof(*orig));
   
   orig->size = size;
@@ -44,10 +47,15 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
   if (!orig_tree)
     {
       if (!(orig_tree = new_orig(size, pc, drcontext)))
-	dr_printf("dr_malloc fail\n");
+	{
+	  dr_printf("dr_malloc fail\n");
+	  return;
+	}
       if (!(new_node = dr_global_alloc(sizeof(*new_node))))
-	dr_printf("dr_malloc fail\n");
-
+	{
+	  dr_printf("dr_malloc fail\n");
+	  return;
+	}
       new_node->high_addr = pc;
       new_node->min_addr = pc;
       new_node->data = orig_tree;
@@ -61,9 +69,15 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
   if (!orig_list)
     {
       if (!(orig_list = new_orig(size, pc, drcontext)))
-	dr_printf("dr_malloc fail\n");
+	{
+	  dr_printf("dr_malloc fail\n");
+	  return;
+	}
       if (!(new_node = dr_global_alloc(sizeof(*new_node))))
-	dr_printf("dr_malloc fail\n");
+	{
+	  dr_printf("dr_malloc fail\n");
+	  return;
+	}
 
       while (orig_tree->next)
 	orig_tree = orig_tree->next;

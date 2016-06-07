@@ -48,6 +48,11 @@ typedef struct malloc_s
 #define ALLOC_BY_REALLOC (0x1 << 2)
 #define FREE_BY_REALLOC (0x1 << 3)
 
+// maximum number of old blocks in the old_blocks list
+// if this number is reached, all old block in the list are
+// write in the json output file
+#define MAX_OLD_BLOCKS 100
+
 // this struct is only use as a user_data for realloc wrapping
 typedef struct
 {

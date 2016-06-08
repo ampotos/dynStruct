@@ -74,6 +74,33 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
     }
 }
 
+access_t *get_access(size_t offset, tree_t **t_access)
+{
+  access_t      *access;
+
+  if ((access = search_same_addr_on_tree(*t_access, (void *)offset))\
+      )
+    return access;
+
+  // if no access with this offset is found we create a new one
+  if (!(access = dr_global_alloc(sizeof(*access))))
+    {
+      dr_printf("dr_malloc fail\n");
+      return NULL;
+    }
+
+  ds_memset(access, 0, sizeof(*access));
+  access->offset = offset;
+
+  access->node.data = access;
+  access->node.high_addr = (void *)offset;
+  access->node.min_addr = (void *)offset;
+
+  add_to_tree(t_access, (tree_t*)access);
+
+  return access;
+}
+
 void add_hit(void *pc, size_t size, void *target, int read, void *drcontext)
 {
   malloc_t	*block = search_on_tree(active_blocks, target);

@@ -6,7 +6,8 @@
 // store nb_hit and size of the hit by pc on access instruction
 typedef struct orig_s
 {
-  // next is use if an orig have the same addr but the same access size
+  tree_t	node;
+  // next is use if an orig have the same addr but not the same access size
   struct orig_s	*next;
   size_t	size;
   size_t	nb_hit;
@@ -18,28 +19,30 @@ typedef struct orig_s
 
 typedef struct access_s
 {
-  size_t           offset;
-  size_t	   total_hits;
-  tree_t	   *origs;
+  tree_t		node;
+  size_t		offset;
+  size_t		total_hits;
+  tree_t		*origs;
 } access_t;
 
 typedef struct malloc_s
 {
-  struct malloc_s *next;
-  void            *start;
-  void            *end;
-  size_t          size;
-  tree_t          *read;
-  tree_t          *write;
-  unsigned int    flag;
-  void		  *alloc_pc;
-  void		  *alloc_func_pc;
-  char		  *alloc_func_sym;
-  const char	  *alloc_module_name;
-  void		  *free_pc;
-  void		  *free_func_pc;
-  char		  *free_func_sym;
-  const char	  *free_module_name;
+  tree_t		node;
+  struct malloc_s	*next;
+  void			*start;
+  void			*end;
+  size_t		size;
+  tree_t		*read;
+  tree_t		*write;
+  unsigned int		flag;
+  void			*alloc_pc;
+  void			*alloc_func_pc;
+  char			*alloc_func_sym;
+  const char		*alloc_module_name;
+  void			*free_pc;
+  void			*free_func_pc;
+  char			*free_func_sym;
+  const char		*free_module_name;
 } malloc_t;
 
 // define flag for malloc_t

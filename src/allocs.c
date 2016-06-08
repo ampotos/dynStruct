@@ -207,7 +207,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
     }
   else
     {
-      del_from_tree(&active_blocks, start, NULL);
+      del_from_tree(&active_blocks, start, NULL, false);
   
       if ((new_block = dr_global_alloc(sizeof(*new_block))))
 	{
@@ -302,7 +302,7 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
       old_blocks = block;
       old_blocks_count++;
 
-      del_from_tree(&active_blocks, block->start, NULL);
+      del_from_tree(&active_blocks, block->start, NULL, false);
 
       if (!args->console && old_blocks_count == MAX_OLD_BLOCKS)
 	{

@@ -9,32 +9,25 @@
 access_t *get_access(size_t offset, tree_t **t_access)
 {
   access_t	*access;
-  tree_t	*new_node;
   
   if ((access = search_same_addr_on_tree(*t_access, (void *)offset)))
     return access;
 
   // if no access with this offset is found we create a new one
-  if (!(new_node = dr_global_alloc(sizeof(*new_node))))
-    {
-      dr_printf("dr_malloc fail\n");
-      return NULL;
-    }
   if (!(access = dr_global_alloc(sizeof(*access))))
     {
       dr_printf("dr_malloc fail\n");
-      dr_global_free(new_node, sizeof(*new_node));
       return NULL;
     }
   
   ds_memset(access, 0, sizeof(*access));
   access->offset = offset;
 
-  new_node->data = access;
-  new_node->high_addr = (void *)offset;
-  new_node->min_addr = (void *)offset;
+  access->node.data = access;
+  access->node.high_addr = (void *)offset;
+  access->node.min_addr = (void *)offset;
 
-  add_to_tree(t_access, new_node);
+  add_to_tree(t_access, (tree_t*)access);
 
   return access;
 }
@@ -61,8 +54,6 @@ malloc_t *add_block(size_t size, void *pc, void *drcontext)
 void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
 		     int realloc)
 {
-  tree_t	*new_node;
-
   if (!start && block)
     {
       if (!realloc)
@@ -78,7 +69,7 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
 	  block->next = old_blocks;
 	  old_blocks = block;
 
-	  del_from_tree(&active_blocks, block->start, NULL);
+	  del_from_tree(&active_blocks, block->start, NULL, false);
         }
     }
   else if (block)
@@ -87,16 +78,10 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
       block->end = block->start + block->size;
       block->flag = flag;
 
-      if (!(new_node = dr_global_alloc(sizeof(*new_node))))
-	{
-	  dr_printf("Can't alloc\n");
-	  dr_global_free(block, sizeof(*block));
-	  return ;
-	}
-      new_node->min_addr = block->start;
-      new_node->high_addr = block->end;
-      new_node->data = block;
-      add_to_tree(&active_blocks, new_node);
+      block->node.min_addr = block->start;
+      block->node.high_addr = block->end;
+      block->node.data = block;
+      add_to_tree(&active_blocks, (tree_t *)block);
     }
   else
     dr_printf("Error : *alloc post wrapping call without pre wrapping\n");

@@ -158,8 +158,6 @@ The data gatherer write the output file only at the end of the execution and act
 The result is for complexe program (like emacs) will used a huge amount of mememory (more than 4go) to run.
 Some optimisations about this memory overhead will come soon.
 
-Also DynamoRIO have problem with running some program using the pthread library, so dynStruct have the same issue.
-
 ## Structure recovery
 
 The python script dynStruct.py do the structure recovery and can start the web_ui.

@@ -33,7 +33,6 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 {
   orig_t	*orig_tree = search_same_addr_on_tree(access->origs, pc);
   orig_t	*orig_list = orig_tree;
-  tree_t	*new_node;
 
   while (orig_list && orig_list->size != size)
     orig_list = orig_list->next;
@@ -51,15 +50,10 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 	  dr_printf("dr_malloc fail\n");
 	  return;
 	}
-      if (!(new_node = dr_global_alloc(sizeof(*new_node))))
-	{
-	  dr_printf("dr_malloc fail\n");
-	  return;
-	}
-      new_node->high_addr = pc;
-      new_node->min_addr = pc;
-      new_node->data = orig_tree;
-      add_to_tree(&(access->origs), new_node);
+      orig_tree->node.high_addr = pc;
+      orig_tree->node.min_addr = pc;
+      orig_tree->node.data = orig_tree;
+      add_to_tree(&(access->origs), (tree_t*)orig_tree);
 
       return;
     }
@@ -69,11 +63,6 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
   if (!orig_list)
     {
       if (!(orig_list = new_orig(size, pc, drcontext)))
-	{
-	  dr_printf("dr_malloc fail\n");
-	  return;
-	}
-      if (!(new_node = dr_global_alloc(sizeof(*new_node))))
 	{
 	  dr_printf("dr_malloc fail\n");
 	  return;

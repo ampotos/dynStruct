@@ -14,8 +14,8 @@ typedef struct tree_s
 
 void *search_on_tree(tree_t *tree, void *addr);
 void *search_same_addr_on_tree(tree_t *tree, void *addr);
-void del_from_tree(tree_t **tree, void *start_addr, void (*)(void *));
-void clean_tree(tree_t **tree, void (*)(void *));
+void del_from_tree(tree_t **tree, void *start_addr, void (*)(void *), int free);
+void clean_tree(tree_t **tree, void (*)(void *), int free);
 void add_to_tree(tree_t **tree, tree_t *node);
 
 #endif

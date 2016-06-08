@@ -211,5 +211,5 @@ void remove_plt(const module_data_t *mod)
   if (!(seg = find_load_section(mod, &tmp_data, PLT_NAME)))
     return;
 
-  del_from_tree(&plt_tree, seg->start + tmp_data.sect_offset, NULL);
+  del_from_tree(&plt_tree, seg->start + tmp_data.sect_offset, NULL, true);
 }

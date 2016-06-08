@@ -34,7 +34,7 @@ void print_access_json(access_t *access)
 	     access->offset, access->total_hits);
   
   dr_fprintf(args->file_out, "\"details\":[");
-  clean_tree(&(access->origs), (void (*)(void *))print_orig_json);
+  clean_tree(&(access->origs), (void (*)(void *))print_orig_json, false);
   dr_fprintf(args->file_out, "{}]}, ");
 
   dr_global_free(access, sizeof(*access));
@@ -66,11 +66,11 @@ void print_block_json(malloc_t *block)
 	     "\"free_module\":\"%s\", ", NULL_STR(block->free_module_name));
 
   dr_fprintf(args->file_out, "\"read_access\" : [");
-  clean_tree(&(block->read), (void (*)(void*))print_access_json);
+  clean_tree(&(block->read), (void (*)(void*))print_access_json, false);
   dr_fprintf(args->file_out, "{}], ");
   
   dr_fprintf(args->file_out, "\"write_access\" : [");
-  clean_tree(&(block->write), (void (*)(void*))print_access_json);
+  clean_tree(&(block->write), (void (*)(void*))print_access_json, false);
   dr_fprintf(args->file_out, "{}]");
 
   dr_fprintf(args->file_out, "}, ");
@@ -87,7 +87,7 @@ void write_json(void)
       print_block_json(old_blocks);
       old_blocks = tmp;
     }
-  clean_tree(&active_blocks, (void (*)(void*))print_block_json);
+  clean_tree(&active_blocks, (void (*)(void*))print_block_json, false);
 
   dr_fprintf(args->file_out, "{}]");
 }

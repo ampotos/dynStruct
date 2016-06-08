@@ -281,7 +281,7 @@ void *get_node(tree_t *tree, void *addr)
 }
 
 void del_from_tree(tree_t **tree, void *start_addr,
-		      void (* free_func)(void *))
+		   void (* free_func)(void *), int free)
 {
   tree_t	*node = get_node(*tree, start_addr);
   tree_t	*to_switch;
@@ -359,7 +359,9 @@ void del_from_tree(tree_t **tree, void *start_addr,
 
   if (free_func)
     free_func(node->data);
-  dr_global_free(node, sizeof(*node));
+
+  if (free)
+    dr_global_free(node, sizeof(*node));
 
   while (parent_node)
     {
@@ -399,9 +401,9 @@ void *search_same_addr_on_tree(tree_t *tree, void *addr)
   return tree->data;
 }
 
-void clean_tree(tree_t **tree, void (* free_func)(void *))
+void clean_tree(tree_t **tree, void (* free_func)(void *), int free)
 {
   while (*tree)
-    del_from_tree(tree, (*tree)->min_addr, free_func);
+    del_from_tree(tree, (*tree)->min_addr, free_func, free);
 }
  

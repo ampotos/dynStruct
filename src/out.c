@@ -25,7 +25,7 @@ void free_access(access_t *access)
 	    access->total_hits);
   dr_printf("\tdetails :\n");
 
-  clean_tree(&(access->origs), (void (*)(void *))free_orig);
+  clean_tree(&(access->origs), (void (*)(void *))free_orig, false);
   dr_global_free(access, sizeof(*access));
 }
 
@@ -62,12 +62,12 @@ void print_block(malloc_t *block)
   if (block->read)
     {
       dr_printf("\t READ :\n");
-      clean_tree(&(block->read), (void (*)(void*))free_access);
+      clean_tree(&(block->read), (void (*)(void*))free_access, false);
     }
   if (block->write)
     {
       dr_printf("\t WRITE :\n");
-      clean_tree(&(block->write), (void (*)(void*))free_access);
+      clean_tree(&(block->write), (void (*)(void*))free_access, false);
     }
   dr_global_free(block, sizeof(*block));
 }
@@ -82,7 +82,7 @@ void print_console(void)
       print_block(old_blocks);
       old_blocks = tmp;
     }
-  clean_tree(&active_blocks, (void (*)(void*))print_block);
+  clean_tree(&active_blocks, (void (*)(void*))print_block, false);
 }
 
 void output(void)

@@ -213,7 +213,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
     {
       del_from_tree(&active_blocks, start, NULL, false);
   
-      if ((new_block = dr_custom_alloc(drc, 0, sizeof(*new_block),
+      if ((new_block = dr_custom_alloc(NULL, 0, sizeof(*new_block),
 				       DR_MEMPROT_WRITE | DR_MEMPROT_READ, NULL)))
 	{
 	  block->flag |= FREE_BY_REALLOC;

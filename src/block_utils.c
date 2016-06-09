@@ -8,7 +8,7 @@
 
 malloc_t *add_block(size_t size, void *pc, void *drcontext)
 {
-  malloc_t      *new = dr_custom_alloc(drcontext, 0, sizeof(*new),
+  malloc_t      *new = dr_custom_alloc(NULL, 0, sizeof(*new),
 				       DR_MEMPROT_WRITE | DR_MEMPROT_READ, NULL);
 
   if (!new)

@@ -69,7 +69,7 @@ void print_block(malloc_t *block)
     }
 
   custom_free_pages(block);
-  dr_custom_free(dr_get_current_drcontext(), 0, block, sizeof(*block));
+  dr_custom_free(NULL, 0, block, sizeof(*block));
 }
 
 void print_console(void)

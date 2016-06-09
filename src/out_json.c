@@ -73,7 +73,7 @@ void print_block_json(malloc_t *block)
   dr_fprintf(args->file_out, "}, ");
 
   custom_free_pages(block);
-  dr_custom_free(dr_get_current_drcontext(), 0, block, sizeof(*block));
+  dr_custom_free(NULL, 0, block, sizeof(*block));
 }
 
 void write_json(void)

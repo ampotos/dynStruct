@@ -14,7 +14,6 @@ void free_orig(orig_t *orig)
 		orig->size, orig->addr, orig->start_func_sym,
 		orig->start_func_addr, orig->module_name, orig->nb_hit);
       tmp = orig->next;
-      dr_global_free(orig, sizeof(*orig));
       orig = tmp;
     }
 }
@@ -26,7 +25,6 @@ void free_access(access_t *access)
   dr_printf("\tdetails :\n");
 
   clean_tree(&(access->origs), (void (*)(void *))free_orig, false);
-  dr_global_free(access, sizeof(*access));
 }
 
 void print_block(malloc_t *block)
@@ -69,7 +67,9 @@ void print_block(malloc_t *block)
       dr_printf("\t WRITE :\n");
       clean_tree(&(block->write), (void (*)(void*))free_access, false);
     }
-  dr_global_free(block, sizeof(*block));
+
+  custom_free_pages(block);
+  dr_custom_free(dr_get_current_drcontext(), 0, block, sizeof(*block));
 }
 
 void print_console(void)

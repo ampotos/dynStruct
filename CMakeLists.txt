@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-add_library(dynStruct SHARED src/dynStruct.c src/utils.c src/block_utils.c src/allocs.c src/rw.c src/out.c src/call.c src/sym.c src/tree.c src/elf.c src/args.c src/out_json.c)
+add_library(dynStruct SHARED src/dynStruct.c src/utils.c src/block_utils.c src/allocs.c src/rw.c src/out.c src/call.c src/sym.c src/tree.c src/elf.c src/args.c src/out_json.c src/custom_alloc.c)
 find_package(DynamoRIO)
 if (NOT DynamoRIO_FOUND)
   message(FATAL_ERROR "DynamoRIO package required to build")

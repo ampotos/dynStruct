@@ -8,7 +8,8 @@
 
 malloc_t *add_block(size_t size, void *pc, void *drcontext)
 {
-  malloc_t      *new = dr_global_alloc(sizeof(*new));
+  malloc_t      *new = dr_custom_alloc(drcontext, 0, sizeof(*new),
+				       DR_MEMPROT_WRITE | DR_MEMPROT_READ, NULL);
 
   if (!new)
     dr_printf("dr_malloc fail\n");
@@ -33,7 +34,7 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
       if (!realloc)
         {
           dr_printf("alloc of size %d failed\n", block->size);
-	  dr_global_free(block, sizeof(*block));
+	  dr_custom_free(dr_get_current_drcontext(), 0, block, sizeof(*block));
         }
       else if (!(block->flag & FREE))
         {

@@ -25,6 +25,9 @@ typedef struct access_s
   tree_t		*origs;
 } access_t;
 
+// include here because it need access_t and orig_t declaration
+#include "custom_alloc.h"
+
 typedef struct malloc_s
 {
   tree_t		node;
@@ -43,6 +46,8 @@ typedef struct malloc_s
   void			*free_func_pc;
   char			*free_func_sym;
   const char		*free_module_name;
+  access_page_t		*access_pages;
+  orig_page_t		*orig_pages;
 } malloc_t;
 
 // define flag for malloc_t

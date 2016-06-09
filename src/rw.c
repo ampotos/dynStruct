@@ -6,12 +6,13 @@
 #include "../includes/allocs.h"
 #include "../includes/call.h"
 #include "../includes/sym.h"
+#include "../includes/custom_alloc.h"
 
-orig_t *new_orig(size_t size, void *pc, void *drcontext)
+orig_t *new_orig(size_t size, void *pc, void *drcontext, malloc_t *block)
 {
   orig_t	*orig;
   
-  if (!(orig = dr_global_alloc(sizeof(*orig))))
+  if (!(orig = alloc_orig(block)))
     {
       dr_printf("dr_malloc fail\n");
       return NULL;
@@ -29,7 +30,7 @@ orig_t *new_orig(size_t size, void *pc, void *drcontext)
   return orig;
 }
 
-void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
+void incr_orig(access_t *access, size_t size, void *pc, void *drcontext, malloc_t *block)
 {
   orig_t	*orig_tree = search_same_addr_on_tree(access->origs, pc);
   orig_t	*orig_list = orig_tree;
@@ -45,7 +46,7 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
 
   if (!orig_tree)
     {
-      if (!(orig_tree = new_orig(size, pc, drcontext)))
+      if (!(orig_tree = new_orig(size, pc, drcontext, block)))
 	{
 	  dr_printf("dr_malloc fail\n");
 	  return;
@@ -62,7 +63,7 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
   // entry and put it in the linked list for this node;
   if (!orig_list)
     {
-      if (!(orig_list = new_orig(size, pc, drcontext)))
+      if (!(orig_list = new_orig(size, pc, drcontext, block)))
 	{
 	  dr_printf("dr_malloc fail\n");
 	  return;
@@ -74,16 +75,15 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext)
     }
 }
 
-access_t *get_access(size_t offset, tree_t **t_access)
+access_t *get_access(size_t offset, tree_t **t_access, malloc_t *block)
 {
   access_t      *access;
 
-  if ((access = search_same_addr_on_tree(*t_access, (void *)offset))\
-      )
+  if ((access = search_same_addr_on_tree(*t_access, (void *)offset)))
     return access;
 
   // if no access with this offset is found we create a new one
-  if (!(access = dr_global_alloc(sizeof(*access))))
+  if (!(access = alloc_access(block)))
     {
       dr_printf("dr_malloc fail\n");
       return NULL;
@@ -116,12 +116,12 @@ void add_hit(void *pc, size_t size, void *target, int read, void *drcontext)
   dr_mutex_lock(lock);
 
   if (read)
-    access = get_access(target - block->start, &(block->read));
+    access = get_access(target - block->start, &(block->read), block);
   else
-    access = get_access(target - block->start, &(block->write));
+    access = get_access(target - block->start, &(block->write), block);
 
   access->total_hits++;
-  incr_orig(access, size, pc, drcontext);
+  incr_orig(access, size, pc, drcontext, block);
 
   dr_mutex_unlock(lock);  
 }

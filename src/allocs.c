@@ -12,6 +12,10 @@
 static int malloc_init = 0;
 static int realloc_init = 0;
 
+// used to know when flush old_blocks
+// list to limit memory usage
+static int	old_blocks_count = 0;
+
 // return the addr of the previous instructions
 // a bad addr can be return in some specific case but generally work good
 void *get_prev_instr_pc(void *pc, void *drc)
@@ -167,7 +171,8 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
       return;
     }
 
-  if (!(tmp = dr_global_alloc(sizeof(realloc_tmp_t))))
+  if (!(tmp = dr_custom_alloc(drc, 0, sizeof(realloc_tmp_t),
+			      DR_MEMPROT_WRITE | DR_MEMPROT_READ, NULL)))
     {
       dr_printf("dr_malloc fail\n");
       dr_mutex_unlock(lock);
@@ -209,7 +214,8 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
     {
       del_from_tree(&active_blocks, start, NULL, false);
   
-      if ((new_block = dr_global_alloc(sizeof(*new_block))))
+      if ((new_block = dr_custom_alloc(drc, 0, sizeof(*new_block),
+				       DR_MEMPROT_WRITE | DR_MEMPROT_READ, NULL)))
 	{
 	  block->flag |= FREE_BY_REALLOC;
 	  block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);
@@ -217,6 +223,13 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
 			  &(block->free_module_name), drc, 1);
 	  block->next = old_blocks;
 	  old_blocks = block;
+
+	  old_blocks_count++;
+	  if (!args->console && old_blocks_count == MAX_OLD_BLOCKS)
+	    {
+	      flush_old_block();
+	      old_blocks_count = 0;
+	    }
       
 	  ds_memset(new_block, 0, sizeof(*new_block));
 	  new_block->flag |= ALLOC_BY_REALLOC;
@@ -275,10 +288,6 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
   malloc_t	*block;
   void		*drc;
   void		*addr;
-
-  // used to know when flush old_blocks
-  // list to limit memory usage
-  static int	old_blocks_count = 0;
   
   // free(0) do nothing
   if (!(addr = drwrap_get_arg(wrapctx, 0)))

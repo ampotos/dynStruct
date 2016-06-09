@@ -23,7 +23,6 @@ void print_orig_json(orig_t *orig)
 		 NULL_STR(orig->module_name));
 		 
       tmp = orig->next;
-      dr_global_free(orig, sizeof(*orig));
       orig = tmp;
     }
 }
@@ -36,8 +35,6 @@ void print_access_json(access_t *access)
   dr_fprintf(args->file_out, "\"details\":[");
   clean_tree(&(access->origs), (void (*)(void *))print_orig_json, false);
   dr_fprintf(args->file_out, "{}]}, ");
-
-  dr_global_free(access, sizeof(*access));
 }
 
 void print_block_json(malloc_t *block)
@@ -74,7 +71,9 @@ void print_block_json(malloc_t *block)
   dr_fprintf(args->file_out, "{}]");
 
   dr_fprintf(args->file_out, "}, ");
-  dr_global_free(block, sizeof(*block));
+
+  custom_free_pages(block);
+  dr_custom_free(dr_get_current_drcontext(), 0, block, sizeof(*block));
 }
 
 void write_json(void)

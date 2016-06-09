@@ -15,7 +15,7 @@
       <td> <code>{{"malloc" if not block.alloc_by_realloc else "realloc"}}</code></td>
       <td> <code><span class="text-danger">{{'0x%x' % (block.alloc_pc & 0xffffffffffffffff)}}</span>:<span class="{{'text-success' if block.alloc_sym else 'text-danger'}}"><strong>{{block.alloc_sym if block.alloc_sym else '0x%x' % (block.alloc_func & 0xffffffffffffffff)}}</strong></span>{{"+" if block.alloc_pc - block.alloc_func > 0 else ""}}{{'%s' % (hex(block.alloc_pc - block.alloc_func))}}@<span class="text-warning">{{block.alloc_module}}</span></code></td>
     </tr>
-% if block.free:
+% if block.free or block.free_by_realloc:
     <tr class="danger">
       <td class="text-center"><code>free</code></td>
       <td> <code>{{"free" if not block.free_by_realloc else "realloc"}} </code></td>

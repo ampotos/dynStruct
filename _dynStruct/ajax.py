@@ -87,7 +87,7 @@ def block_json_list(blocks, query):
                                    block.alloc_func, block.alloc_module)
         tmp.append(alloc_pc)
 
-        if block.free:
+        if block.free or block.free_by_realloc:
             free_pc = make_pc_display(block.free_pc, block.free_sym,
                                        block.free_func, block.free_module)
             tmp.append(free_pc)

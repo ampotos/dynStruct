@@ -171,8 +171,7 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
       return;
     }
 
-  if (!(tmp = dr_custom_alloc(drc, 0, sizeof(realloc_tmp_t),
-			      DR_MEMPROT_WRITE | DR_MEMPROT_READ, NULL)))
+  if (!(tmp = dr_global_alloc(sizeof(realloc_tmp_t))))
     {
       dr_printf("dr_malloc fail\n");
       dr_mutex_unlock(lock);

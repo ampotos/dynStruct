@@ -394,9 +394,9 @@ void *search_same_addr_on_tree(tree_t *tree, void *addr)
     return NULL;
 
   if (tree->high_addr < addr)
-    return search_on_tree(tree->right, addr);
+    return search_same_addr_on_tree(tree->right, addr);
   else if (tree->min_addr > addr)
-    return search_on_tree(tree->left, addr);
+    return search_same_addr_on_tree(tree->left, addr);
 
   return tree->data;
 }

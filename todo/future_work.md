@@ -21,9 +21,6 @@
 
 	*look at the new sample in DynamoRIO doc with replacement of clean call at each intruction by inline instrumentation*
 	*inline instrumentaiton instead of clean call each time*  
-	*alloc for multiple access, orig, block each time to not have to call alloc every time*
-	*data reorganisation (remove ptr in tree_t struct and include a tree_t member in each struct which is tored in a tree)*
-	*flush free block periodically to reduce memory overhead for complexe program like emacs*
 
 #check the behavior of the plt part on diverse compiler (gcc work well, so test at least clang and tcc):
 

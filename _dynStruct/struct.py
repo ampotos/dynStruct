@@ -93,6 +93,8 @@ class Struct:
         self.name = "struct_%d" % self.id            
 
     def clean_struct(self):
+        # todo:
+        #  consider array block with only 1 type and padding (even if multiple padding and multiple array) at clean_array time
         self.add_pad()
         self.clean_array()
         self.clean_array_struct()

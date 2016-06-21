@@ -9,7 +9,7 @@ access_t *alloc_access(malloc_t *block)
   if (!(block->access_pages) ||
       block->access_pages->header.next_idx == MAX_IDX_ACCESS)
     {
-      if (!(new_page = dr_custom_alloc(NULL, DR_ALLOC_NON_HEAP, PAGE_SIZE,
+      if (!(new_page = dr_custom_alloc(NULL, DR_ALLOC_NON_HEAP | DR_ALLOC_NON_DR, PAGE_SIZE,
 				       DR_MEMPROT_WRITE | DR_MEMPROT_READ , NULL)))
 	return NULL;
       new_page->header.next_page = block->access_pages;
@@ -26,7 +26,7 @@ orig_t *alloc_orig(malloc_t *block)
   if (!(block->orig_pages) ||
       block->orig_pages->header.next_idx == MAX_IDX_ORIG)
     {
-      if (!(new_page = dr_custom_alloc(NULL, DR_ALLOC_NON_HEAP, PAGE_SIZE,
+      if (!(new_page = dr_custom_alloc(NULL, DR_ALLOC_NON_HEAP | DR_ALLOC_NON_DR, PAGE_SIZE,
 				       DR_MEMPROT_WRITE | DR_MEMPROT_READ, NULL)))
 	return NULL;
       new_page->header.next_page = block->orig_pages;

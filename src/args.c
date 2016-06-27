@@ -143,14 +143,11 @@ int set_alloc(char *name)
 
 char *get_output_name(int *size)
 {
-  char	*filename;
+  char	*filename = NULL;
   int	dir_size;
   int	name_size;
 
-  if (args->console)
-    return NULL;
-
-  if (args->out_name)
+  if (!args->console && args->out_name)
     {
       if (!args->out_dir)
 	{
@@ -171,11 +168,9 @@ char *get_output_name(int *size)
 	  filename[dir_size] = '/';
 	  ds_strncpy(filename + dir_size + 1, args->out_name, name_size);
 	}
-
-      return filename;
     }
 
-  return NULL;
+  return filename;
 }
 
 char *get_generic_name(int *size)

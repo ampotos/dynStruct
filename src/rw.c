@@ -137,7 +137,7 @@ void check_opnd(opnd_t opnd, void *pc, int read, void *drcontext,
   else if (opnd_is_memory_reference(opnd) && opnd_get_addr(opnd))
     add_hit(pc, opnd_size_in_bytes(opnd_get_size(opnd)), opnd_get_addr(opnd),
 	    read, drcontext);
-  // for now no other kind of memory reference are used to access heap data
+  // for now no other kind of memory reference was noticed to access heap data
   else if (opnd_is_memory_reference(opnd))
     dr_printf("need to implem other memory ref\n");
 }

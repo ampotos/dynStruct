@@ -218,7 +218,6 @@ void get_caller_data(void **addr, char **sym, const char **module,
 	    {
 	      func->module_name = dr_module_preferred_name(mod->module);
 	      *module = func->module_name;
-	      return;
 	    }
 	}
     }

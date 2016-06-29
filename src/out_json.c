@@ -14,14 +14,16 @@ void print_orig_json(orig_t *orig)
     {
       dr_fprintf(args->file_out, "{\"size_access\":%lu, \"nb_access\":%lu, ",
 		 orig->size, orig->nb_hit);
-
       dr_fprintf(args->file_out,
 		 "\"pc\":%lu, \"func_pc\":%lu, \"func_sym\":\"%s\", ",
 		 orig->addr, orig->start_func_addr,
 		 NULL_STR(orig->start_func_sym));
-      dr_fprintf(args->file_out, "\"func_module\":\"%s\"}, ",
+      dr_fprintf(args->file_out, "\"func_module\":\"%s\", \"opcode\": 0x",
 		 NULL_STR(orig->module_name));
-		 
+      for (unsigned int size = 0; size < orig->instr_size; size++)
+	dr_fprintf(args->file_out, "%x", orig->raw_instr[size]);
+      dr_fprintf(args->file_out, "}, ");
+
       tmp = orig->next;
       orig = tmp;
     }

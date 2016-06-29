@@ -8,6 +8,12 @@
 #include "../includes/sym.h"
 #include "../includes/custom_alloc.h"
 
+void copy_instr(orig_t *orig)
+{
+  for (unsigned int size = 0; size < orig->instr_size; size++)
+    orig->raw_instr[size] = ((char *)orig->addr)[size];
+}
+
 orig_t *new_orig(size_t size, void *pc, void *drcontext, malloc_t *block)
 {
   orig_t	*orig;
@@ -22,6 +28,9 @@ orig_t *new_orig(size_t size, void *pc, void *drcontext, malloc_t *block)
   orig->size = size;
   orig->nb_hit = 1;
   orig->addr = pc;
+  orig->instr_size = (char *)decode_next_pc(drcontext, pc) - (char *)pc;
+  orig->raw_instr = alloc_instr(block, orig->instr_size);
+  copy_instr(orig);
   // get the start addr of the function doing the access
   get_caller_data(&(orig->start_func_addr),
 		  &(orig->start_func_sym),

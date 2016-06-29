@@ -12,6 +12,8 @@ typedef struct orig_s
   size_t	size;
   size_t	nb_hit;
   void		*addr;
+  unsigned int	instr_size;
+  char		*raw_instr;
   void		*start_func_addr;
   char		*start_func_sym;
   const char	*module_name;
@@ -48,6 +50,7 @@ typedef struct malloc_s
   const char		*free_module_name;
   access_page_t		*access_pages;
   orig_page_t		*orig_pages;
+  instr_page_t		*instr_pages;
 } malloc_t;
 
 // define flag for malloc_t

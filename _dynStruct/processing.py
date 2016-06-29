@@ -83,6 +83,10 @@ def filter_access(access, query, t):
                             access.pc - access.func_pc):
             return False
 
+    if query["columns[4][search][value]"]:
+        if not query["columns[4][search][value]"] in access.instr_str:
+            return False
+
     return True
 
 # start size malloc_caller free_caller struct detailed_view 
@@ -105,7 +109,8 @@ def sorting_access(l, column, order):
               "1": lambda item: int(item[1].split('>')[1].split('<')[0], 16),
               "2": lambda item: int(item[2].split('>')[1].split('<')[0]),
               "3": lambda item: int(item[3].split('>')[2].split('<')[0], 16),
-              "4": lambda item: int(item[4].split('_')[1].split('<')[0])
+              "4": lambda item: item[4],
+              "5": lambda item: int(item[5].split('_')[1].split('<')[0])
               }
     l.sort(key=getter[column] ,reverse=order)
     return l

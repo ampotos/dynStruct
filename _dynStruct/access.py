@@ -1,5 +1,7 @@
-class Access:
+import binascii
+import _dynStruct
 
+class Access:
 
     def __init__(self, access, orig, addr_start, block, id_access):
         self.block = block
@@ -7,12 +9,20 @@ class Access:
         self.addr = addr_start + self.offset
         self.size = orig["size_access"]
         self.id_access = id_access
-        
+
+        if len(orig["opcode"]) % 2:
+            orig["opcode"] = "0" + orig["opcode"]
+        self.instr_op = orig["opcode"]
+
         json_attrib = ["nb_access", "pc", "func_pc",
                        "func_sym", "func_module"]
         
         for k in json_attrib:
             setattr(self, k, (orig[k]))
+
+        self.instr = [instr for instr in
+                      _dynStruct.disasm.disasm(binascii.unhexlify(self.instr_op),
+                                               self.pc)][0]
         
     def is_offset(self, offset):
         return self.offset == offset

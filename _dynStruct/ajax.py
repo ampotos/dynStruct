@@ -30,8 +30,11 @@ def access_json_list(accesses, t, query, start_offset=0):
                                    access.func_module)
 
         tmp = [t, hex(access.offset - start_offset), access.size, instr_pc,
-                    '<a href=/block?id=%d>block_%d</a>' % \
-                    (access.block.id_block, access.block.id_block)]
+               '<span class="text-success"><strong>%s</strong></span>\
+               <span class="text-info">%s</span>' %\
+               (access.instr.mnemonic, access.instr.op_str),
+               '<a href=/block?id=%d>block_%d</a>' % \
+               (access.block.id_block, access.block.id_block)]
         ret.append(["<code>%s</code>" % (s) for s in tmp]) 
     return (len(accesses), ret)
 

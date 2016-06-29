@@ -10,11 +10,12 @@ void free_orig(orig_t *orig)
 
   while (orig)
     {
-      dr_printf("\t\t\t %d bytes were accessed by %p (%s : %p in %s, opcode :0x",
+      dr_printf("%p\n", *((char **)(orig->raw_instr)));
+      dr_printf("\t\t\t %d bytes were accessed by %p (%s : %p in %s, opcode: ",
 		orig->size, orig->addr, orig->start_func_sym,
 		orig->start_func_addr, orig->module_name);
       for (unsigned int size = 0; size < orig->instr_size; size++)
-	dr_printf("%x", orig->raw_instr[size]);
+	dr_printf("%02x", orig->raw_instr[size]);
       dr_printf(") %d times\n", orig->nb_hit);
       tmp = orig->next;
       orig = tmp;

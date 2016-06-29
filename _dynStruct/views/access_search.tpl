@@ -15,10 +15,11 @@
 	$(row).css('font-weight', 'bold');
   }
   $('td:eq(3)', row).css('font-weight', 'normal');
+  $('td:eq(4)', row).css('font-weight', 'normal');
 	},
   % if defined('in_block_view'):
   "columnDefs": [
-  { "visible": false, "targets": 4 }
+  { "visible": false, "targets": 5 }
     ]  
   % end
   }
@@ -50,6 +51,7 @@
 	<th> offset </th>
 	<th> size (in bytes)</th>
 	<th> agent </th>
+	<th> instruction </th>
 	<th> block_id </th>
       </tr>
     </thead>
@@ -59,6 +61,7 @@
 	<th> <input class="form-control" type="text" placeholder="Search offset" /> </th>
 	<th> <input class="form-control" type="text" placeholder="Search size" /> </th>
 	<th> <input class="form-control" type="text" placeholder="Search agent" /> </th>
+	<th> <input class="form-control" type="text" placeholder="Search instruction" /> </th>
 	<th>  </th>
       </tr>
     </tfoot>

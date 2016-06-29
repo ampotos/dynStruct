@@ -333,7 +333,8 @@ int parse_arg(int argc, char **argv)
 	  return false;
 	}
       else
-	dr_fprintf(args->file_out, "[");
+	dr_fprintf(args->file_out, "{\"is_64\":%d, \"blocks\":[",
+		   dr_get_isa_mode(dr_get_current_drcontext()) == DR_ISA_AMD64);
     }
 
   return alloc_array();

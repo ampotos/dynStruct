@@ -13,7 +13,7 @@ typedef struct orig_s
   size_t	nb_hit;
   void		*addr;
   unsigned int	instr_size;
-  char		*raw_instr;
+  unsigned char	*raw_instr;
   void		*start_func_addr;
   char		*start_func_sym;
   const char	*module_name;

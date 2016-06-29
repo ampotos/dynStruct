@@ -28,11 +28,7 @@ orig_t *new_orig(size_t size, void *pc, void *drcontext, malloc_t *block)
   orig->size = size;
   orig->nb_hit = 1;
   orig->addr = pc;
-#ifdef BUILD_64
-  orig->instr_size = decode_sizeof(drcontext, pc, 0, 0);
-#else
-  orig->instr_size = decode_sizeof(drcontext, pc, 0);
-#endif
+  orig->instr_size = (void *)decode_next_pc(drcontext, pc) - pc;
   orig->raw_instr = alloc_instr(block, orig->instr_size);
   copy_instr(orig);
   // get the start addr of the function doing the access

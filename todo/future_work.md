@@ -1,14 +1,10 @@
+This file is the todo list of dynStruct. This are just ideas, ways to look, some of them can be impossible to do.
+
 #check if it work correctly with multi-thread program:
 
 	Just verify if dynStruct work properly wth multi-thread program.
 	If not fix the issues.
 
-#store opcode for each acces and disass in python with capstone
-
-       	this can be usefull for the dissertation
-  	it could be very helpfull to have the instruction which did the access to understand certain behavior.
-	this will also help to have better type recovery.
-	
 #check if write instruction handle signed number, float number, ptr, ... via the opcode stored in an access and disass with capstone
 
        The goal here is also to made the structure recovering more accurate by looking at some other information at runtime.
@@ -107,7 +103,7 @@
 
        For program who deal directly with mmap.
 
-#wrap brk syscall to handle old fashion allocator:
+#wrap brk syscall to handle old style allocator:
 
        Same reason as the last one
 

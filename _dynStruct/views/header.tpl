@@ -17,7 +17,7 @@
 	  <li> <a href="/access_search">Access</a></li>
 	  <li> <a href="/struct_create">Create Structure</a></li>
 	  <li> <a href="/header.h">Download Header</a></li>
-	  <li> <a href="/quit">Quit</a></li>
+	  <li> <a href="/quit">Stop dynStruct.py</a></li>
 	</ul>
       </div>
     </div>

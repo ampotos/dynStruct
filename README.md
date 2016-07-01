@@ -5,11 +5,17 @@ and use this data to recover structures of the original code.
 The data gathered can also be used to quickly find where and by which function a member of a structure is write or read.
 
 ## Requirements
+### Data gatherer
 * CMake >= 2.8
 * [DynamoRIO](https://github.com/DynamoRIO/dynamorio)
+
+### Structure recovery and web interface
 * Python3
+* [Capstone] (http://www.capstone-engine.org/)
+* [Bottle] (http://bottlepy.org/docs/dev/index.html)
 
 ## Setup
+### Data Gatherer 
 Set the environment variable DYNAMORIO_HOME to the absolute path of your
 DynamoRIO installation
 
@@ -17,6 +23,7 @@ Execute `build.sh`
 
 To compile dynStruct for a 32bits target on a 64bits os execute `build.sh 32`
 
+### Structure recovery and web interface
 Install dependencies for dynStruct.py: `pip3 install -r requirements.txt`
 
 ## Data gatherer
@@ -90,19 +97,19 @@ If we run `drrun -c  dynStruct - -- tests/example` we get
 ```
 test
 tast
-block : 0x0000000000603010-0x0000000000603015(0x5) was free
-alloc by 0x0000000000400617(main : 0x00000000004005f9 in example) and free by 0x000000000040064c(main : 0x00000000004005f9 in example)
+block : 0x0000000000602010-0x0000000000602015(0x5) was free
+alloc by 0x00000000004005b5(main : 0x00000000004005a8 in test_mini) and free by 0x00000000004005ea(main : 0x00000000004005a8 in test_mini)
 	 WRITE :
 	 was access at offset 1 (1 times)
 	details :
-			 1 bytes were accessed by 0x00000000004005e7 (print : 0x00000000004005b6 in example) 1 times
+			 1 bytes were accessed by 0x0000000000400596 (print : 0x0000000000400576 in test_mini, opcode: c60061) 1 times
 	 was access at offset 4 (2 times)
 	details :
-			 1 bytes were accessed by 0x000000000040062a (main : 0x00000000004005f9 in example) 1 times
-			 1 bytes were accessed by 0x0000000000400636 (main : 0x00000000004005f9 in example) 1 times
+			 1 bytes were accessed by 0x00000000004005c8 (main : 0x00000000004005a8 in test_mini, opcode: c6400400) 1 times
+			 1 bytes were accessed by 0x00000000004005d4 (main : 0x00000000004005a8 in test_mini, opcode: c60000) 1 times
 	 was access at offset 0 (1 times)
 	details :
-			 4 bytes were accessed by 0x0000000000400624 (main : 0x00000000004005f9 in example) 1 times
+			 4 bytes were accessed by 0x00000000004005c2 (main : 0x00000000004005a8 in test_mini, opcode: c70074657374) 1 times
 ```
 We see all the write accesses on str done by the program himself.
 We can notice the 4 bytes access at offset 0 of the block due to gcc optimisation for initializing the string.
@@ -111,52 +118,49 @@ Now if we run `drrun -c  dynStruct -m libc - -- tests/example` we are going to m
 ```
 test
 tast
-block : 0x0000000000603010-0x0000000000603015(0x5) was free
-alloc by 0x0000000000400617(main : 0x00000000004005f9 in example) and free by 0x000000000040064c(main : 0x00000000004005f9 in example)
+block : 0x0000000000602010-0x0000000000602015(0x5) was free
+alloc by 0x00000000004005b5(main : 0x00000000004005a8 in example) and free by 0x00000000004005ea(main : 0x00000000004005a8 in example)
 	 READ :
 	 was access at offset 1 (2 times)
 	details :
-			 1 bytes were accessed by 0x00007fca292156c2 (_IO_default_xsputn : 0x00007fca29215650 in libc.so.6) 1 times
-			 1 bytes were accessed by 0x00007fca29213c9d (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007fca29213b70 in libc.so.6) 1 times
+			 1 bytes were accessed by 0x00007f51cc88b483 (_IO_default_xsputn : 0x00007f51cc88b410 in libc.so.6, opcode: 0fb67500) 1 times
+			 1 bytes were accessed by 0x00007f51cc889aad (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007f51cc889980 in libc.so.6, opcode: 80380a) 1 times
 	 was access at offset 2 (2 times)
 	details :
-			 1 bytes were accessed by 0x00007fca292156c2 (_IO_default_xsputn : 0x00007fca29215650 in libc.so.6) 1 times
-			 1 bytes were accessed by 0x00007fca29213c9d (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007fca29213b70 in libc.so.6) 1 times
+			 1 bytes were accessed by 0x00007f51cc88b483 (_IO_default_xsputn : 0x00007f51cc88b410 in libc.so.6, opcode: 0fb67500) 1 times
+			 1 bytes were accessed by 0x00007f51cc889aad (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007f51cc889980 in libc.so.6, opcode: 80380a) 1 times
 	 was access at offset 3 (2 times)
 	details :
-			 1 bytes were accessed by 0x00007fca292156c2 (_IO_default_xsputn : 0x00007fca29215650 in libc.so.6) 1 times
-			 1 bytes were accessed by 0x00007fca29213c81 (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007fca29213b70 in libc.so.6) 1 times
+			 1 bytes were accessed by 0x00007f51cc88b483 (_IO_default_xsputn : 0x00007f51cc88b410 in libc.so.6, opcode: 0fb67500) 1 times
+			 1 bytes were accessed by 0x00007f51cc889a91 (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007f51cc889980 in libc.so.6, opcode: 807aff0a) 1 times
 	 was access at offset 0 (5 times)
 	details :
-			 1 bytes were accessed by 0x00007fca292156c2 (_IO_default_xsputn : 0x00007fca29215650 in libc.so.6) 1 times
-			 16 bytes were accessed by 0x00007fca292210ca (strlen : 0x00007fca292210a0 in libc.so.6) 2 times
-			 4 bytes were accessed by 0x00007fca29224c2e (__mempcpy_sse2 : 0x00007fca29224c00 in libc.so.6) 1 times
-			 1 bytes were accessed by 0x00007fca29213c9d (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007fca29213b70 in libc.so.6) 1 times
+			 1 bytes were accessed by 0x00007f51cc88b483 (_IO_default_xsputn : 0x00007f51cc88b410 in libc.so.6, opcode: 0fb67500) 1 times
+			 16 bytes were accessed by 0x00007f51cc896d76 (strlen : 0x00007f51cc896d50 in libc.so.6, opcode: f30f6f20) 2 times
+			 4 bytes were accessed by 0x00007f51cc89a8ae (__mempcpy_sse2 : 0x00007f51cc89a880 in libc.so.6, opcode: 8b0e) 1 times
+			 1 bytes were accessed by 0x00007f51cc889aad (_IO_file_xsputn@@GLIBC_2.2.5 : 0x00007f51cc889980 in libc.so.6, opcode: 80380a) 1 times
 	 WRITE :
 	 was access at offset 1 (1 times)
 	details :
-			 1 bytes were accessed by 0x00000000004005e7 (print : 0x00000000004005b6 in example) 1 times
+			 1 bytes were accessed by 0x0000000000400596 (print : 0x0000000000400576 in example, opcode: c60061) 1 times
 	 was access at offset 4 (2 times)
 	details :
-			 1 bytes were accessed by 0x000000000040062a (main : 0x00000000004005f9 in example) 1 times
-			 1 bytes were accessed by 0x0000000000400636 (main : 0x00000000004005f9 in example) 1 times
+			 1 bytes were accessed by 0x00000000004005c8 (main : 0x00000000004005a8 in example, opcode: c6400400) 1 times
+			 1 bytes were accessed by 0x00000000004005d4 (main : 0x00000000004005a8 in example, opcode: c60000) 1 times
 	 was access at offset 0 (1 times)
 	details :
-			 4 bytes were accessed by 0x0000000000400624 (main : 0x00000000004005f9 in example) 1 times
-
+			 4 bytes were accessed by 0x00000000004005c2 (main : 0x00000000004005a8 in example, opcode: c70074657374) 1 times
 ```
 Now all the read accesses done by the libc are listed.
 
-### Forking (or execve) programs
-If you use the data gatherer on a forking program, a file per process will be written.
+### Multi-process programs
+If you use the data gatherer on a multi-process program, a file per process will be written.
 This allow to analyse each process independently.
 In the case of an execution of an other program the new file will have the name of the program executed.
 If you don't want the data gatherer to follow new processes use the options -no_follow_children for drrun (example : `drrun -no_follow_children -opt_cleancall 3 -c dynStruct -m libc.so - -- ls -l`)
 
-### Known issue
-The data gatherer write the output file only at the end of the execution and actually store all data in memory during execution.
-The result is for complexe program (like emacs) will used a huge amount of mememory (more than 4go) to run.
-Some optimisations about this memory overhead will come soon.
+### Output
+In order to reduce the memory overhead of the data gatherer, if there is an output file the data will be written in it every 100 block free.
 
 ## Structure recovery
 
@@ -241,7 +245,10 @@ python3 dynStruct.py -p serialize_test -c
 Serialized file allow you to load data from a binary without having to redo the structure recovery. Serialized file also saved modification done to structures via the web ui.
 
 ### Recovery accuracy
-The recovering of structure is actually not always accurate but it can still give you a good idea of the internal structures of a program. Improving this will be the main goal in the following month. 
+The recovering of structure is actually not always accurate but it can still give you a good idea of the internal structures of a program. Improving this will be the main goal in the following month.  
+
+### Known issue
+For now the script dynStruct.py keep all loaded data from the json on memory in diverse objects. This mean for big json file (multiple hundred of Mo) the memory consumption of this script is very high and may even run out of memory, making the structure recovery process through dynStruct.py impossible. This is not a priority right now but in the future this issue will have a particular attention.
 
 ## Web interface
 DynStruct has a web interface which display raw data from the gatherer and the structures recovered by dynStruct.py
@@ -263,7 +270,7 @@ Download header allow you to download a C style header with the actuals structur
 
 ### Blocks and Access
 The detailed view of blocks display blocks informations, all accesses made in this block and a link to the corresponding structure if any.
-![Block detailed view] (http://i.imgur.com/sNhQBMQ.png)
+![Block detailed view] (http://i.imgur.com/uWRa5Bv.png)
 
 ### Structures
 You can access structures detailed view by clicking on the name of the structure in the structures search page.
@@ -272,7 +279,7 @@ You can access structures detailed view by clicking on the name of the structure
 On this view you have the information about the structure, the members of the structure and the list of blocks which are instances of this structure. You can edit the members of the structure and the list of blocks associated with this structure.    
   
 There is also a detailed view for each member with the list of accesses made to this member on each block associated with the structure.
-![member detailed view] (http://i.imgur.com/G5Y2DgQ.png)
+![member detailed view] (http://i.imgur.com/o8CLK1G.png)
 
 A member can be an inner structure, an array, an array of structure or a simple member (everything which don't match with the previous categories). Union and bitfield are not actually handle by dynStruct.
 
@@ -285,3 +292,6 @@ On the second list only blocks with the same size than the structure and not alr
 
 ### Edits saving
 All edits are saved in the serialized file if any (work with files give with args -o and -p).
+
+### Know issue
+The web interface is run via the same script than the structure recovery, so thay the web interface have the same issue than the structure recovery.

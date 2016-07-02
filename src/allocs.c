@@ -272,7 +272,7 @@ void post_realloc(void *wrapctx, void *user_data)
       // because malloc wrapper receive a null size
       else if ((block = search_on_tree(active_blocks, ret)))
 	{
-	  block->size = ((realloc_tmp_t*)user_data)->size;
+	  block->size = data->size;
 	  block->end = block->start + block->size;
 	}
 
@@ -299,6 +299,7 @@ void pre_free(void *wrapctx, __attribute__((unused))OUT void **user_data)
   if ((block = search_on_tree(active_blocks, addr)))
     {
       block->flag |= FREE;
+      // can be set if free by realloc
       if (!(block->free_pc))
 	{
 	  block->free_pc = get_prev_instr_pc(drwrap_get_retaddr(wrapctx), drc);

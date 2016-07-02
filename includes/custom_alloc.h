@@ -28,7 +28,7 @@ typedef struct orig_page_s
 typedef struct instr_page_s
 {
   page_header_t	header;
-  char		*instrs[MAX_IDX_INSTR];
+  char		instrs[MAX_IDX_INSTR];
 } instr_page_t;
 
 struct malloc_s;

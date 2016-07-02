@@ -34,7 +34,7 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
       if (!realloc)
         {
           dr_printf("alloc of size %d failed\n", block->size);
-	  dr_custom_free(dr_get_current_drcontext(), 0, block, sizeof(*block));
+	  dr_custom_free(NULL, 0, block, sizeof(*block));
         }
       else if (!(block->flag & FREE))
         {

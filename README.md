@@ -162,6 +162,11 @@ If you don't want the data gatherer to follow new processes use the options -no_
 ### Output
 In order to reduce the memory overhead of the data gatherer, if there is an output file the data will be written in it every 100 block free.
 
+###Known issue
+Trying to wrap ld-linux don't work because it use it's internal malloc (so the -a option have to be use to be able to wrap it) and it's internal malloc don't like the libc's malloc.
+It seem ld-linux's malloc can return overlapping block (without freeing them) so the active block tree is completely wrong which result usually in a segfault.
+No other case of segfault with the same root problem were seem yet, if it's the case open an issue, I will look to find a proper fix for that.
+
 ## Structure recovery
 
 The python script dynStruct.py do the structure recovery and can start the web_ui.

@@ -3,8 +3,8 @@
 
 int get_balance(tree_t *node)
 {
-  int	left = -1;
-  int	right = -1;
+  int	left = 0;
+  int	right = 0;
 
   if (node->left)
     left = node->left->height;

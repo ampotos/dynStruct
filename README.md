@@ -2,7 +2,9 @@
 dynStruct is a tool using dynamoRio to monitor memory accesses of an ELF binary via a data gatherer,
 and use this data to recover structures of the original code.
 
-The data gathered can also be used to quickly find where and by which function a member of a structure is write or read.
+![First screenshot](http://i.imgur.com/gKcr6G2.png)
+
+dynStruct can also be used to quickly find where and by which function a member of a structure is write or read.
 
 ## Requirements
 ### Data gatherer

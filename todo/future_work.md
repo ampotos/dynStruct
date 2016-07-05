@@ -17,6 +17,10 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 
 	*look at the new sample in DynamoRIO doc with replacement of clean call at each intruction by inline instrumentation*
 	*inline instrumentaiton instead of clean call each time*  
+	*add a buffering for output, (dr_printf and dr_fprintf are not buffered)*
+
+#optimize memory use of dynStruct.py
+	Actually dynStruct.py keep every object in ram, which made impossible to analyse big output from the data gatherer.
 
 #check the behavior of the plt part on diverse compiler (gcc work well, so test at least clang and tcc):
 

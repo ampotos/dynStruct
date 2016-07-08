@@ -50,131 +50,106 @@ void recompute_height(tree_t *node)
     }
 }
 
+void fix_tree_rotate(tree_t *old_node, tree_t *new_node, tree_t *parent, tree_t **tree)
+{
+  if (!parent)
+    {
+      new_node->parent = NULL;
+      *tree = new_node;
+    }
+  else
+    {
+      if (parent->right == old_node)
+	parent->right = new_node;
+      else
+	parent->left = new_node;
+      new_node->parent = parent;
+    }
+
+  recompute_height(old_node);
+  recompute_height(new_node);
+}
+
+void rotate_left(tree_t *node, tree_t **tree)
+{
+  tree_t *parent = node->parent;
+  tree_t *tmp;
+
+  tmp = node->right;
+  node->right = tmp->left;
+  if (node->right)
+    node->right->parent = node;
+  tmp->left = node;
+  node->parent = tmp;
+
+  fix_tree_rotate(node, tmp, parent, tree);
+}
+
+void rotate_right(tree_t *node, tree_t **tree)
+{
+  tree_t *parent = node->parent;
+  tree_t *tmp;
+
+  tmp = node->left;
+  node->left = tmp->right;
+  if (node->left)
+    node->left->parent = node;
+  tmp->right = node;
+  node->parent = tmp;
+
+  fix_tree_rotate(node, tmp, parent, tree);
+}
 
 void balance_tree(tree_t *node, tree_t **tree)
 {
   tree_t	*parent = node->parent;
-  tree_t	*tmp;
-  tree_t	*tmp2;
+  int		left;
+
+  if (parent)
+    left = parent->left == node ? 1 : 0;
 
   if (get_balance(node) < -1)
-    if (get_balance(node->right) <= 0)
-      {
-	tmp = node->right;
-	node->right = tmp->left;
-	if (node->right)
-	  node->right->parent = node;
-	tmp->left = node;
-	node->parent = tmp;
+    {
+      if (get_balance(node->right) <= 0)
+	rotate_left(node, tree);
+      else
+	{
+	  rotate_left(node, tree);
 
-	if (!parent)
-	  {
-	    tmp->parent = NULL;
-	    *tree = tmp;
-	  }
-	else
-	  {
-	    if (parent->right == node)
-	      parent->right = tmp;
-	    else
-	      parent->left = tmp;
-	    tmp->parent = parent;
-	  }
+	  if (parent)
+	    {
+	      if (left)
+		node = parent->left;
+	      else
+		node = parent->right;
+	    }
+	  else
+	    node = *tree;
 
-	recompute_height(node);
-	recompute_height(tmp->parent);
-      }
-    else
-      {
-	tmp = node->right;
-	tmp2 = tmp->left;
-	tmp->left = tmp2->right;
-	if (tmp->left)
-	  tmp->left->parent = tmp;
-	node->right = tmp2->left;
-	if (node->right)
-	  node->right->parent = node;
-	tmp2->right = tmp;
-	tmp->parent = tmp2;
-	tmp2->left = node;
-	node->parent = tmp2;
-
-	if (!parent)
-	  {
-	    tmp2->parent = NULL;
-	    *tree = tmp2;
-	  }
-	else
-	  {
-	    if (parent->right == node)
-	      parent->right = tmp2;
-	    else
-	      parent->left = tmp2;
-	    tmp2->parent = parent;
-	  }
-
-	recompute_height(node);
-	recompute_height(tmp);
-      }
+	  rotate_right(node, tree);
+	}
+    }
   else
-    if (get_balance(node->left) >= 0)
-      {
-	tmp = node->left;
-	node->left = tmp->right;
-	if (node->left)
-	  node->left->parent = node;
-	tmp->right = node;
-	node->parent = tmp;
+    {
+      if (get_balance(node->left) > 0)
+	rotate_right(node, tree);
+      else
+	{
+	  rotate_right(node, tree);
 
-	if (!parent)
-	  {
-	    tmp->parent = NULL;
-	    *tree = tmp;
-	  }
-	else
-	  {
-	    if (parent->right == node)
-	      parent->right = tmp;
-	    else
-	      parent->left = tmp;
-	    tmp->parent = parent;
-	  }
+	  if (parent)
+	    {
+	      if (left)
+		node = parent->left;
+	      else
+		node = parent->right;
+	    }
+	  else
+	    node = *tree;
 
-	recompute_height(node);
-	recompute_height(tmp->parent);
-      }
-    else
-      {
-	tmp = node->left;
-	tmp2 = tmp->right;
-	node->left = tmp2->right;
-	if (node->left)
-	  node->left->parent = node;
-	tmp->right = tmp2->left;
-	if (tmp->right)
-	  tmp->right->parent = tmp;
-	tmp2->left = tmp;
-	tmp->parent = tmp2;
-	tmp2->right = node;
-	node->parent = tmp2;
-
-	if (!parent)
-	  {
-	    tmp2->parent = NULL;
-	    *tree = tmp2;
-	  }
-	else
-	  {
-	    if (parent->right == node)
-	      parent->right = tmp2;
-	    else
-	      parent->left = tmp2;
-	    tmp2->parent = parent;
-	  }
-
-	recompute_height(node);
-	recompute_height(tmp);
-      }
+	  rotate_left(node, tree);
+	}
+    }
 }
 
 void add_to_tree(tree_t **tree, tree_t *node)
@@ -295,9 +270,10 @@ void del_from_tree(tree_t **tree, void *start_addr,
     return;
   parent_node = node->parent;
 
+  // if no child just delet the node
   if (!(node->right) && !(node->left))
     del_leaf(tree, node);
-  // swap and delete
+  // if node have 2 child node swap and delete
   else if (node->right && node->left)
     {
       to_switch = node->right;
@@ -306,6 +282,7 @@ void del_from_tree(tree_t **tree, void *start_addr,
 
       parent_switch = to_switch->parent;
 
+      // switch node
       tmp_height = node->height;
       node->height = to_switch->height;
       to_switch->height = tmp_height;
@@ -333,6 +310,7 @@ void del_from_tree(tree_t **tree, void *start_addr,
           node->parent = parent_switch;
         }
 
+      // switch left child node
       tmp_node = to_switch->left;
       to_switch->left = node->left;
       node->left = tmp_node;
@@ -340,7 +318,8 @@ void del_from_tree(tree_t **tree, void *start_addr,
       	to_switch->left->parent = to_switch;
       if (node->left)
       	node->left->parent = node;
-	
+
+      // switch right child node
       tmp_node = to_switch->right;
       to_switch->right = node->right;
       node->right = tmp_node;
@@ -349,11 +328,13 @@ void del_from_tree(tree_t **tree, void *start_addr,
       if (node->right)
       	node->right->parent = node;
 
+      // delete selected node
       if (!(node->height))
       	del_leaf(tree, node);
       else
       	del_branch(tree, node);
     }
+  // if node have 1 child delete it without swaping
   else
     del_branch(tree, node);
 

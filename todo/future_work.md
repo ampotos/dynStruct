@@ -31,6 +31,10 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 	Same thing than for muti-threaded program.
 	*especially the state of the internal stack of function*
 
+#Use a little bit of static analysis in recovery time to have a better context for the access
+        Actually 1 additionnal instruction are recorded by the data gatherer to provide some context to the access instruciton (which is usually a MOV). Save more isntruction is not a good idea for overhead reason and increasing size of the ouput file.
+	But using some static analysis in the recovering step to avoid having to record these instruction and have a better context is possible and provide very usefull information to have a good type recovering for the structure.
+
 #add possibility to add an other dynamo file to a serialized file (by loading both of them):
 
 	dynStruct use a dynamic approach, so the code coverage of one run can not be enough.

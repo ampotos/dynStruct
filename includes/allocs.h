@@ -14,6 +14,9 @@ typedef struct orig_s
   void		*addr;
   unsigned int	instr_size;
   unsigned char	*raw_instr;
+  void		*ctx_addr;
+  unsigned int	ctx_instr_size;
+  unsigned char	*raw_ctx_instr;
   void		*start_func_addr;
   char		*start_func_sym;
   const char	*module_name;

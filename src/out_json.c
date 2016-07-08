@@ -22,6 +22,10 @@ void print_orig_json(orig_t *orig)
 		 NULL_STR(orig->module_name));
       for (unsigned int size = 0; size < orig->instr_size; size++)
 	dr_fprintf(args->file_out, "%02x", orig->raw_instr[size]);
+      dr_fprintf(args->file_out, "\", \"ctx_instr_addr\":\"%lu\", \"ctx_opcode\":\"",
+		 orig->ctx_addr);
+      for (unsigned int size = 0; size < orig->ctx_instr_size; size++)
+	dr_fprintf(args->file_out, "%02x", orig->raw_ctx_instr[size]);
       dr_fprintf(args->file_out, "\"}, ");
 
       tmp = orig->next;

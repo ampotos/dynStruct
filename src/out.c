@@ -15,6 +15,9 @@ void free_orig(orig_t *orig)
 		orig->start_func_addr, orig->module_name);
       for (unsigned int size = 0; size < orig->instr_size; size++)
 	dr_printf("%02x", orig->raw_instr[size]);
+      dr_printf(") ctx_instr_addr %p (opcode: ", orig->ctx_addr);
+      for (unsigned int size = 0; size < orig->ctx_instr_size; size++)
+	dr_printf("%02x", orig->raw_ctx_instr[size]);
       dr_printf(") %d times\n", orig->nb_hit);
       tmp = orig->next;
       orig = tmp;

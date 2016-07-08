@@ -1,5 +1,6 @@
 #include "dr_api.h"
 #include "dr_ir_opnd.h"
+#include "dr_ir_instr.h"
 #include "drmgr.h"
 #include "../includes/utils.h"
 #include "../includes/block_utils.h"
@@ -7,16 +8,19 @@
 #include "../includes/call.h"
 #include "../includes/sym.h"
 #include "../includes/custom_alloc.h"
+#include "../includes/rw.h"
 
-void copy_instr(orig_t *orig)
+void copy_instr(void* addr, int size, unsigned char *instr)
 {
-  for (unsigned int size = 0; size < orig->instr_size; size++)
-    orig->raw_instr[size] = ((char *)orig->addr)[size];
+  for (; size > 0; size--)
+    instr[size - 1] = ((char *)addr)[size - 1];
 }
 
-orig_t *new_orig(size_t size, void *pc, void *drcontext, malloc_t *block)
+orig_t *new_orig(size_t size, void *pc, void *drcontext, malloc_t *block,
+		 ctx_t *ctx)
 {
   orig_t	*orig;
+  void		*next_pc;
   
   if (!(orig = alloc_orig(block)))
     {
@@ -28,9 +32,24 @@ orig_t *new_orig(size_t size, void *pc, void *drcontext, malloc_t *block)
   orig->size = size;
   orig->nb_hit = 1;
   orig->addr = pc;
-  orig->instr_size = (void *)decode_next_pc(drcontext, pc) - pc;
+  next_pc = decode_next_pc(drcontext, pc);
+  orig->instr_size = next_pc - pc;
   orig->raw_instr = alloc_instr(block, orig->instr_size);
-  copy_instr(orig);
+  copy_instr(orig->addr, orig->instr_size, orig->raw_instr);
+
+  // get ctx isntruction to have information in structure recovery
+  if (ctx->dr_addr)
+    {
+      orig->ctx_addr = ctx->addr;
+      orig->ctx_instr_size = (void*)decode_next_pc(drcontext, ctx->dr_addr) - ctx->dr_addr;
+      orig->raw_ctx_instr = alloc_instr(block, orig->ctx_instr_size);
+      copy_instr(ctx->dr_addr, orig->ctx_instr_size, orig->raw_ctx_instr);
+    }
+  else
+    {
+      orig->ctx_addr = NULL;
+      orig->ctx_instr_size = 0;
+    }
   // get the start addr of the function doing the access
   get_caller_data(&(orig->start_func_addr),
 		  &(orig->start_func_sym),
@@ -39,7 +58,8 @@ orig_t *new_orig(size_t size, void *pc, void *drcontext, malloc_t *block)
   return orig;
 }
 
-void incr_orig(access_t *access, size_t size, void *pc, void *drcontext, malloc_t *block)
+void incr_orig(access_t *access, size_t size, void *pc, void *drcontext,
+	       malloc_t *block, ctx_t *ctx)
 {
   orig_t	*orig_tree = search_same_addr_on_tree(access->origs, pc);
   orig_t	*orig_list = orig_tree;
@@ -55,7 +75,7 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext, malloc_
 
   if (!orig_tree)
     {
-      if (!(orig_tree = new_orig(size, pc, drcontext, block)))
+      if (!(orig_tree = new_orig(size, pc, drcontext, block, ctx)))
 	{
 	  dr_printf("dr_malloc fail\n");
 	  return;
@@ -72,7 +92,7 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext, malloc_
   // entry and put it in the linked list for this node;
   if (!orig_list)
     {
-      if (!(orig_list = new_orig(size, pc, drcontext, block)))
+      if (!(orig_list = new_orig(size, pc, drcontext, block, ctx)))
 	{
 	  dr_printf("dr_malloc fail\n");
 	  return;
@@ -110,7 +130,8 @@ access_t *get_access(size_t offset, tree_t **t_access, malloc_t *block)
   return access;
 }
 
-void add_hit(void *pc, size_t size, void *target, int read, void *drcontext)
+void add_hit(void *pc, size_t size, void *target, int read, void *drcontext,
+	     ctx_t *ctx)
 {
   malloc_t	*block = search_on_tree(active_blocks, target);
   access_t	*access;
@@ -130,33 +151,34 @@ void add_hit(void *pc, size_t size, void *target, int read, void *drcontext)
     access = get_access(target - block->start, &(block->write), block);
 
   access->total_hits++;
-  incr_orig(access, size, pc, drcontext, block);
+  incr_orig(access, size, pc, drcontext, block, ctx);
 
   dr_mutex_unlock(lock);  
 }
 
 void check_opnd(opnd_t opnd, void *pc, int read, void *drcontext,
-		  dr_mcontext_t *mctx)
+		dr_mcontext_t *mctx, void *prev_pc)
 {
   if (opnd_is_memory_reference(opnd) && opnd_is_base_disp(opnd))
     add_hit(pc, opnd_size_in_bytes(opnd_get_size(opnd)),
 	    opnd_get_disp(opnd) + (void *)reg_get_value(opnd_get_base(opnd),
 						       mctx),
-	    read, drcontext);
+	    read, drcontext, prev_pc);
   else if (opnd_is_memory_reference(opnd) && opnd_get_addr(opnd))
     add_hit(pc, opnd_size_in_bytes(opnd_get_size(opnd)), opnd_get_addr(opnd),
-	    read, drcontext);
+	    read, drcontext, prev_pc);
   // for now no other kind of memory reference was noticed to access heap data
   else if (opnd_is_memory_reference(opnd))
     dr_printf("need to implem other memory ref\n");
 }
 
-void memory_read(void *pc)
+void memory_read(void *pc, void *next_pc)
 {
   void		*drcontext = dr_get_current_drcontext();
   instr_t	*instr = instr_create(drcontext);
   dr_mcontext_t mctx;
   opnd_t	src;
+  ctx_t		ctx;
   
   pc = dr_app_pc_for_decoding(pc);
 
@@ -171,24 +193,28 @@ void memory_read(void *pc)
       return;
     }
 
+  ctx.addr = next_pc;
+  ctx.dr_addr = next_pc;
+
   for (int i = 0; i < instr_num_srcs(instr); i++)
     {
       src = instr_get_src(instr, i);
-      check_opnd(src, pc, 1, drcontext, &mctx);
+      check_opnd(src, pc, 1, drcontext, &mctx, &ctx);
     }
  
   instr_destroy(drcontext, instr);
 }
 
-void memory_write(void *pc)
+void memory_write(void *pc, void *prev_pc)
 {
   void		*drcontext = dr_get_current_drcontext();
   instr_t	*instr = instr_create(drcontext);
   dr_mcontext_t mctx;
   opnd_t	dst;
+  ctx_t		ctx;
   
   pc = dr_app_pc_for_decoding(pc);
-  
+
   mctx.flags = DR_MC_CONTROL|DR_MC_INTEGER;
   mctx.size = sizeof(mctx);
   dr_get_mcontext(drcontext, &mctx);
@@ -200,10 +226,13 @@ void memory_write(void *pc)
       return;
     }
 
+  ctx.addr = prev_pc;
+  ctx.dr_addr = prev_pc;
+
   for (int i = 0; i < instr_num_dsts(instr); i++)
     {
       dst = instr_get_dst(instr, i);
-      check_opnd(dst, pc, 0, drcontext, &mctx);
+      check_opnd(dst, pc, 0, drcontext, &mctx, &ctx);
     }
 
   instr_destroy(drcontext, instr);

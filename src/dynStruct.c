@@ -1,5 +1,6 @@
 #include "dr_api.h"
 #include "dr_ir_opnd.h"
+#include "dr_ir_instr.h"
 #include "drutil.h"
 #include "drwrap.h"
 #include "drmgr.h"
@@ -46,6 +47,8 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
 				        __attribute__((unused))void *user_data)
 {
   app_pc	pc;
+  instr_t	*ctx_instr;
+  app_pc	ctx_pc;
 
   pc = instr_get_app_pc(instr);
   
@@ -60,21 +63,33 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
   	for (int i = 0; i < instr_num_srcs(instr); i++)
   	  if (opnd_is_memory_reference(instr_get_src(instr, i)))
   	    {
+	      ctx_instr = instr_get_prev_app(instr);
+	      if (ctx_instr)
+		ctx_pc = instr_get_app_pc(ctx_instr);
+	      else
+		ctx_pc = NULL;
   	      dr_insert_clean_call(drcontext, bb, instr, &memory_read,
-  				   false, 1, OPND_CREATE_INTPTR(pc));
+				   false, 2, OPND_CREATE_INTPTR(pc),
+				   OPND_CREATE_INTPTR(ctx_pc));
   	      // break to not instrument the same instruction 2 time
   	      break;
   	    }
       
       if (instr_writes_memory(instr))
-  	for (int i = 0; i < instr_num_dsts(instr); i++)
-  	  if (opnd_is_memory_reference(instr_get_dst(instr, i)))
-  	    {
-  	      dr_insert_clean_call(drcontext, bb, instr, &memory_write,
-  				   false, 1, OPND_CREATE_INTPTR(pc));
+	for (int i = 0; i < instr_num_dsts(instr); i++)
+	  if (opnd_is_memory_reference(instr_get_dst(instr, i)))
+	    {
+	      ctx_instr = instr_get_prev_app(instr);
+	      if (ctx_instr)
+		ctx_pc = instr_get_app_pc(ctx_instr);
+	      else
+		ctx_pc = NULL;
+	      dr_insert_clean_call(drcontext, bb, instr, &memory_write,
+				   false, 2, OPND_CREATE_INTPTR(pc),
+				   OPND_CREATE_INTPTR(ctx_pc));
       	      /* break to not instrument the same instruction 2 time */
-  	      break;
-  	    }
+	      break;
+	    }
     }
   
   // if one day dynStruct has to be used on arm, maybe some call will be missed

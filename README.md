@@ -277,7 +277,8 @@ Download header allow you to download a C style header with the actuals structur
 
 ### Blocks and Access
 The detailed view of blocks display blocks informations, all accesses made in this block and a link to the corresponding structure if any.
-![Block detailed view] (http://i.imgur.com/uWRa5Bv.png)
+The context instruction is the previous instruction for a write access and the next one for a read access, this is used to in the structure recovery process.
+![Block detailed view] (http://i.imgur.com/sB4PpjD.png)
 
 ### Structures
 You can access structures detailed view by clicking on the name of the structure in the structures search page.
@@ -286,7 +287,7 @@ You can access structures detailed view by clicking on the name of the structure
 On this view you have the information about the structure, the members of the structure and the list of blocks which are instances of this structure. You can edit the members of the structure and the list of blocks associated with this structure.    
   
 There is also a detailed view for each member with the list of accesses made to this member on each block associated with the structure.
-![member detailed view] (http://i.imgur.com/o8CLK1G.png)
+![member detailed view] (http://i.imgur.com/cGJN0ZC.png)
 
 A member can be an inner structure, an array, an array of structure or a simple member (everything which don't match with the previous categories). Union and bitfield are not actually handle by dynStruct.
 

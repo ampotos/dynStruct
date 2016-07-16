@@ -35,17 +35,9 @@ def access_json_list(accesses, t, query, start_offset=0):
                                    access.func_module)
 
         tmp = [t, hex(access.offset - start_offset), access.size, instr_pc,
-               make_instr_display(access.instr)]
-        if access.ctx_instr:
-            if access.ctx_addr > access.pc:
-                s = "Next : "
-            else:
-                s = "Prev : "
-            tmp.append('<span class="text-warning">%s</span>' % (s) + make_instr_display(access.ctx_instr))
-        else:
-            tmp.append('<span class="text-danger">No context</span>')
-        tmp.append('<a href=/block?id=%d>block_%d</a>' % \
-               (access.block.id_block, access.block.id_block))
+               access.instr_display, access.ctx_instr_display,
+               '<a href=/block?id=%d>block_%d</a>' % \
+               (access.block.id_block, access.block.id_block)]
         ret.append(["<code>%s</code>" % (s) for s in tmp]) 
     return (len(accesses), ret)
 

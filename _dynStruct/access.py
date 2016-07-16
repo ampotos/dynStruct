@@ -27,13 +27,24 @@ class Access:
         self.instr = [instr for instr in
                       _dynStruct.disasm.disasm(binascii.unhexlify(self.instr_op),
                                                self.pc)][0]
+        self.instr_display = '<span class="text-success"><strong>%s</strong>\
+        </span><span class="text-info">%s</span>' % (self.instr.mnemonic,
+                                                     self.instr.op_str)
 
         if self.ctx_opcode:
             self.ctx_instr = [instr for instr in
                               _dynStruct.disasm.disasm(binascii.unhexlify(self.ctx_opcode),
                                                        self.ctx_addr)][0]
+            if self.ctx_addr > self.pc:
+                self.ctx_instr_display = "Next : "
+            else:
+                self.ctx_instr_display = "Prev : "
+            self.ctx_instr_display += '<span class="text-success"><strong>%s</strong>\
+            </span><span class="text-info">%s</span>' % (self.ctx_instr.mnemonic,
+                                                         self.ctx_instr.op_str)
         else:
             self.ctx_instr = None
+            self.ctx_instr_display = '<span class="text-danger">No context</span>'
 
     def is_offset(self, offset):
         return self.offset == offset
@@ -56,3 +67,9 @@ class Access:
             return True
 
         return False
+
+    @staticmethod
+    def remove_instrs(access_list):
+        for access in access_list:
+            del access.ctx_instr
+            del access.instr

@@ -74,6 +74,10 @@ def main():
         if args.run_recovering:
             _dynStruct.Struct.recover_all_struct(_dynStruct.l_block, _dynStruct.l_struct);
             _dynStruct.Struct.clean_all_struct(_dynStruct.l_struct)
+
+        # We don't need capstone instr object anymore sot remove them
+        _dynStruct.Access.remove_instrs(_dynStruct.l_access_w)
+        _dynStruct.Access.remove_instrs(_dynStruct.l_access_r)
     elif args.previous_file:
         with open(args.previous_file, "rb") as f:
             data = pickle.load(f)

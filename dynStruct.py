@@ -40,6 +40,8 @@ def load_json(json_data, l_block, l_access_w, l_access_r):
     else:
         _dynStruct.disasm = capstone.Cs(capstone.CS_ARCH_X86,
                                         capstone.CS_MODE_32)
+    # active detail to operand information (used to analize context instr)
+    _dynStruct.disasm.detail = True
     try:
         prbar = pyprind.ProgBar(len(json_data["blocks"]), track_time=False, title="Loading Json data")
         for block in filter(None, json_data["blocks"]):

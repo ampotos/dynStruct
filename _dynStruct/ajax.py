@@ -20,6 +20,11 @@ def make_pc_display(pc, sym, func_pc, func_module):
 
     return display
 
+def make_instr_display(instr):
+    return '<span class="text-success"><strong>%s</strong></span>\
+    <span class="text-info">%s</span>' % (instr.mnemonic, instr.op_str)
+
+
 def access_json_list(accesses, t, query, start_offset=0):
     ret = []
     for access in accesses:
@@ -30,11 +35,17 @@ def access_json_list(accesses, t, query, start_offset=0):
                                    access.func_module)
 
         tmp = [t, hex(access.offset - start_offset), access.size, instr_pc,
-               '<span class="text-success"><strong>%s</strong></span>\
-               <span class="text-info">%s</span>' %\
-               (access.instr.mnemonic, access.instr.op_str),
-               '<a href=/block?id=%d>block_%d</a>' % \
-               (access.block.id_block, access.block.id_block)]
+               make_instr_display(access.instr)]
+        if access.ctx_instr:
+            if access.ctx_addr > access.pc:
+                s = "Next : "
+            else:
+                s = "Prev : "
+            tmp.append('<span class="text-warning">%s</span>' % (s) + make_instr_display(access.ctx_instr))
+        else:
+            tmp.append('<span class="text-danger">No context</span>')
+        tmp.append('<a href=/block?id=%d>block_%d</a>' % \
+               (access.block.id_block, access.block.id_block))
         ret.append(["<code>%s</code>" % (s) for s in tmp]) 
     return (len(accesses), ret)
 

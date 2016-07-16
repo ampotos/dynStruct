@@ -63,7 +63,7 @@ static dr_emit_flags_t bb_insert_event( void *drcontext,
   	for (int i = 0; i < instr_num_srcs(instr); i++)
   	  if (opnd_is_memory_reference(instr_get_src(instr, i)))
   	    {
-	      ctx_instr = instr_get_prev_app(instr);
+	      ctx_instr = instr_get_next_app(instr);
 	      if (ctx_instr)
 		ctx_pc = instr_get_app_pc(ctx_instr);
 	      else

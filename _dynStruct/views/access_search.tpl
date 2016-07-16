@@ -19,7 +19,7 @@
 	},
   % if defined('in_block_view'):
   "columnDefs": [
-  { "visible": false, "targets": 5 }
+  { "visible": false, "targets": 6}
     ]  
   % end
   }
@@ -52,6 +52,7 @@
 	<th> size (in bytes)</th>
 	<th> agent </th>
 	<th> instruction </th>
+	<th> context instruction </th>
 	<th> block_id </th>
       </tr>
     </thead>
@@ -62,6 +63,7 @@
 	<th> <input class="form-control" type="text" placeholder="Search size" /> </th>
 	<th> <input class="form-control" type="text" placeholder="Search agent" /> </th>
 	<th> <input class="form-control" type="text" placeholder="Search instruction" /> </th>
+	<th> <input class="form-control" type="text" placeholder="Search context instruction" /> </th>
 	<th>  </th>
       </tr>
     </tfoot>

@@ -84,7 +84,11 @@ def filter_access(access, query, t):
             return False
 
     if query["columns[4][search][value]"]:
-        if not query["columns[4][search][value]"] in access.instr_str:
+        if not query["columns[4][search][value]"] in ' '.join([access.instr.mnemonic, access.instr.op_str]):
+            return False
+
+    if query["columns[5][search][value]"]:
+        if not query["columns[5][search][value]"] in ' '.join([access.ctx_instr.mnemonic, access.ctx_instr.op_str]):
             return False
 
     return True
@@ -110,7 +114,8 @@ def sorting_access(l, column, order):
               "2": lambda item: int(item[2].split('>')[1].split('<')[0]),
               "3": lambda item: int(item[3].split('>')[2].split('<')[0], 16),
               "4": lambda item: item[4],
-              "5": lambda item: int(item[5].split('_')[1].split('<')[0])
+              "5": lambda item: item[5],
+              "6": lambda item: int(item[6].split('_')[1].split('<')[0])
               }
     l.sort(key=getter[column] ,reverse=order)
     return l

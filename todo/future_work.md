@@ -9,6 +9,10 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 
        The goal here is also to made the structure recovering more accurate by looking at some other information at runtime.
 
+# Handle signal to write output beofre exiting the program:
+	Handle all signal which generate an exit if not catch by the program and wite the output file at that moment
+	This can be useful to analyse program which take a long time to run completly (can stop after a few min and have the needed data to recover struct).
+
 #optimization of actual implem:
 	
 	Actually runing a simple ls with dynStruct took ~120ms instead of 2ms or 3ms without it.  
@@ -34,6 +38,7 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 #Use a little bit of static analysis in recovery time to have a better context for the access
         Actually 1 additionnal instruction are recorded by the data gatherer to provide some context to the access instruciton (which is usually a MOV). Save more isntruction is not a good idea for overhead reason and increasing size of the ouput file.
 	But using some static analysis in the recovering step to avoid having to record these instruction and have a better context is possible and provide very usefull information to have a good type recovering for the structure.
+	This will not work with self-modifying code
 
 #add possibility to add an other dynamo file to a serialized file (by loading both of them):
 
@@ -68,7 +73,7 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 	*used padding to determine inner struct ven it's not a array_struct*
 
 #detect array at runtime by pattern of how the data are accessed:
-	
+	Must record alignement size os the program in the data gatherer
 	The goal here is to try to avoid the confusion between array and structure whith all member having the same size.  
 	These access pattern can be compiler dependent and depend of the optimization level.  
 	This can also add a non negligible overhead, so maybe this not a good idea but to know that I have to try.

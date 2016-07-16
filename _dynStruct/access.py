@@ -14,8 +14,12 @@ class Access:
             orig["opcode"] = "0" + orig["opcode"]
         self.instr_op = orig["opcode"]
 
+        if orig["ctx_opcode"] and len(orig["ctx_opcode"]) % 2:
+            orig["ctx_opcode"] = "0" + orig["ctx_opcode"]
+        self.ctx_opcode = orig["ctx_opcode"]
+
         json_attrib = ["nb_access", "pc", "func_pc",
-                       "func_sym", "func_module"]
+                       "func_sym", "func_module", "ctx_addr"]
         
         for k in json_attrib:
             setattr(self, k, (orig[k]))
@@ -23,7 +27,14 @@ class Access:
         self.instr = [instr for instr in
                       _dynStruct.disasm.disasm(binascii.unhexlify(self.instr_op),
                                                self.pc)][0]
-        
+
+        if self.ctx_opcode:
+            self.ctx_instr = [instr for instr in
+                              _dynStruct.disasm.disasm(binascii.unhexlify(self.ctx_opcode),
+                                                       self.ctx_addr)][0]
+        else:
+            self.ctx_instr = None
+
     def is_offset(self, offset):
         return self.offset == offset
 

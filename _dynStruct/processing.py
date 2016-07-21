@@ -22,6 +22,7 @@ def block_contain(addr, block):
 def size_filter(size, size_block):
     return ("%d" % size_block).startswith(size)
 
+#todo fix offset search for member struct view
 def offset_filter(offset, offset_block):
     return ("0x%x" % offset_block).startswith(offset)
 

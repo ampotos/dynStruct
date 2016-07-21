@@ -55,6 +55,12 @@ class StructMember:
         return not False in [True if m1.same_type(m2) else False for (m1, m2) in
                              zip(self.sub_struct.members,
                                  other.sub_struct.members)]
+
+    def same_or_padding(self, other):
+
+        return self.t == other.t and\
+            self.offset == other.offset and\
+            self.size == other.size
         
     def print_struct(self):
         str_struct = "\n\t".join(str(self.sub_struct).split('\n')[:-1])[:-1]
@@ -67,12 +73,11 @@ class StructMember:
     def print_array(self):
         return "%s %s[%d];\n" % (self.t, self.name, self.number_unit)
     
-    def set_array(self, nb_unit, size_unit, t):
+    def set_array(self, nb_unit, size_unit):
         self.is_array = True
         self.number_unit = nb_unit
         self.size_unit = size_unit
-        self.t = t
-        self.web_t = "array of %s" % (t)
+        self.web_t = "array of %s" % (self.t)
 
     def set_struct(self, size, new_struct, name):
         self.is_struct = True

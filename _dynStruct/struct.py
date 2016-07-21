@@ -1,6 +1,7 @@
 from .struct_member import StructMember
 import _dynStruct
 import pyprind
+import copy
 
 # list of classical function which we ignore the access
 # because there access are non relative to the struct
@@ -62,10 +63,21 @@ class Struct:
     
     def get_member(self, offset):
         for member in self.members:
-            if member.offset == offset:
+            if member.offset == offset or \
+               (member.offset < offset and member.offset + member.size > offset):
                 return member
         return None
 
+    def insert_member(self, new_member):
+        # call only by merge, so only on offset without member yet
+        for member in self.members:
+            if member.offset > new_member.offset:
+                self.members.insert(self.members.index(member), new_member)
+                return
+
+        # new member go at the end fo the struct
+        self.members.append(new_member)
+            
     def recover(self, block):
         actual_offset = 0
 
@@ -93,8 +105,6 @@ class Struct:
         self.name = "struct_%d" % self.id            
 
     def clean_struct(self):
-        # todo:
-        #  consider array block with only 1 type and padding (even if multiple padding and multiple array) at clean_array time
         self.add_pad()
         self.clean_array()
         self.clean_array_struct()
@@ -125,23 +135,21 @@ class Struct:
                                   self.size - old_offset, 1, None, True)
 
     def clean_array(self):
-        # TODO handle type for array creation (use type of on of the member)
-        (index, index_end, nb_unit, size) = self.find_sub_array()
+        # todo:
+        #  consider array block with only 1 type and padding (even if multiple padding and multiple array) at clean_array time
+        (index, index_end, nb_unit) = self.find_sub_array()
         while nb_unit:
             tmp_members = list(self.members)
+            size = self.members[index].size
             self.add_member_array(index,
                                   "array_0x%x" % self.members[index].offset,
                                   self.members[index].offset, size * nb_unit,
-                                  "int%d_t" % (size * 8), nb_unit, size, None, False)
+                                  self.members[index].t, nb_unit, size, None, False)
             for member in tmp_members[index : index_end]:
                 self.members.remove(member)
-            (index, index_end, nb_unit, size) = self.find_sub_array()
-
+            (index, index_end, nb_unit) = self.find_sub_array()
 
     def clean_array_struct(self):
-        # TODO do not match struct of 2 identique member only
-        # not recognize as array because len of 4
-        # shloud not be recognize as array fo struct either
         (index_start, index_end) = self.get_struct_pattern(0)
 
         while index_start != index_end:
@@ -173,6 +181,11 @@ class Struct:
             half_size = int(len(self.members[start_idx + 1:]) / 2)
             for size in range(2, half_size):
                 tmp_idx = start_idx + size
+                if size < min_size_array and len(set([m.t for m in\
+                                                     self.members[start_idx :\
+                                                                  start_idx +\
+                                                                  size]])) == 1:
+                    continue
                 if False not in [True if m1.same_type(m2) else False for (m1, m2) in
                                  zip(self.members[start_idx : start_idx + size],
                                      self.members[tmp_idx : tmp_idx + size])]:
@@ -192,13 +205,14 @@ class Struct:
         return nb_unit
             
     def find_sub_array(self):
-        # TODO handle type for array detection
         for member in self.members:
+            t = member.t
             size = member.size
             ct = 0
             for m in self.members[self.members.index(member) :]:
-                if (m.size == size and not m.is_array) or\
-                   (m.is_array and m.size_unit == size and not m.is_padding):
+                if (m.size == size and m.t == t and not m.is_array) or\
+                   (m.is_array and m.size_unit == size and\
+                    m.t == t and not m.is_padding):
                     if m.is_array:
                         ct += m.number_unit
                     else:
@@ -207,21 +221,21 @@ class Struct:
                     if ct >= min_size_array:
                         return (self.members.index(member),
                                 self.members.index(m),
-                                ct, size)
+                                ct)
                     break
                 
             if ct >= min_size_array:
                 return (self.members.index(member),
                         self.members.index(self.members[-1]) + 1,
-                        ct, size)
+                        ct)
                 
-        return (None, 0, 0, 0)
+        return (None, 0, 0)
                         
     def add_member_array(self, index, name, offset, size, t,
                          nb_unit, size_unit, block, padding):
-        new_member = StructMember(offset, size)
+        new_member = StructMember(offset, size, t=t)
         new_member.name = name
-        new_member.set_array(nb_unit, size_unit, t)
+        new_member.set_array(nb_unit, size_unit)
         new_member.is_padding = padding
         if padding:
             new_member.web_t = "padding"
@@ -407,47 +421,41 @@ class Struct:
     def change_to_str(self, block):
         self.members.clear()
         self.members = [StructMember(0, self.size)]
-        self.members[0].set_array(self.size, 1, 'char')
+        self.members[0].set_array(self.size, 1)
+        self.members[0].t = 'char'
 
-    def block_is_struct(self, block):
-        # todo maybe create a struct here to not make analysis 2 time
-        # espacially with the context analysis
-        if block.size != self.size:
+    def struct_is_equal(self, struct):
+        if struct.size != self.size:
             return False
 
-        actual_offset = 0
-        while actual_offset < self.size:
-            accesses = block.get_access_by_offset(actual_offset)
-            if not accesses:
-                actual_offset += 1
+        for other_member in struct.members:
+            member = self.get_member(other_member.offset)
+            if not member:
                 continue
-
-            self.filter_access(accesses)
-            if self.has_str_access(accesses):
-                if len(self.members) == 1 and self.members[0].is_array and\
-                   self.members[0].size_unit == 1:
-                    return True
-
-            if len(accesses) == 0:
-                actual_offset += 1
-                continue
-
-            # todo change here to handle type
-            # todo also handle member replace by padding
-            size_member = self.get_best_size(accesses)
-            if not self.has_member(actual_offset, size_member):
+            if not (member.t == other_member.t and\
+                    member.offset == other_member.offset and\
+                    member.size == other_member.size):
                 return False
             
-            actual_offset += size_member
-
         return True
 
-    def has_member(self, offset, size):
-        for member in self.members:
-            if member.offset == offset and member.size == size:
-                return True
+    def merge(self, struct):
+        for other_member in struct.members:
+            member = self.get_member(other_member.offset)
+            if not member:
+                self.insert_member(copy.deepcopy(other_member))
+        print([a.t for a in self.members])
+
+    def has_member_or_padding(self, offset, size, t):
+        member = self.get_member(offset)
+
+        # if member replace by padding
+        if not member:
+            return True
+        if member.offset == offset and member.size == size and member.t == t:
+            return True
         return False
-    
+
     def add_block(self, block):
         self.blocks.append(block)
         block.struct = self
@@ -505,13 +513,15 @@ class Struct:
             if not block.w_access and not block.r_access:
                 continue
 
+            tmp_struct = Struct(block)
             for struct in structs:
-                if struct.block_is_struct(block):
+                if struct.struct_is_equal(tmp_struct):
+                    struct.merge(tmp_struct)
                     struct.add_block(block)
                     break;
 
-            if not block.struct:
-                structs.append(Struct(block))
+            if block.struct == tmp_struct:
+                structs.append(tmp_struct)
 
             if len(structs) == 0:
                 continue

@@ -13,11 +13,6 @@ str_func = ["strlen", "strcpy", "strncpy", "strcmp", "strncmp", "strdup", "strca
 # minimal size for a sub_array
 min_size_array = 5
 
-# size for basic type
-# use to remove struct with only 1 member of one of these sizes
-# (or array of unit size of one of these sizes)
-base_size = [1, 2, 4, 8, 16]
-
 class Struct:
 
 
@@ -77,7 +72,7 @@ class Struct:
 
         # new member go at the end fo the struct
         self.members.append(new_member)
-            
+
     def recover(self, block):
         actual_offset = 0
 
@@ -135,8 +130,6 @@ class Struct:
                                   self.size - old_offset, 1, None, True)
 
     def clean_array(self):
-        # todo:
-        #  consider array block with only 1 type and padding (even if multiple padding and multiple array) at clean_array time
         (index, index_end, nb_unit) = self.find_sub_array()
         while nb_unit:
             tmp_members = list(self.members)
@@ -444,7 +437,6 @@ class Struct:
             member = self.get_member(other_member.offset)
             if not member:
                 self.insert_member(copy.deepcopy(other_member))
-        print([a.t for a in self.members])
 
     def has_member_or_padding(self, offset, size, t):
         member = self.get_member(offset)
@@ -490,20 +482,30 @@ class Struct:
 
     def not_a_struct(self):
 
-        if not self.members[0].is_array_struct and\
-           not self.members[0].is_struct and\
-           ((self.members[0].is_array and\
-             self.members[0].size_unit in base_size) or\
-            (not self.members[0].is_array and\
-             self.members[0].size in base_size)):
-            if len(self.members) == 1:
-                return True
-            else:
-                for member in self.members[1:]:
-                    if not member.is_padding:
-                        return False
-                return True
-                    
+        non_padding = [m for m in self.members if not m.is_padding]
+
+        if len(non_padding) < 2 and not non_padding[0].is_array_struct\
+           and not non_padding[0].is_struct:
+            return True
+
+        if not False in [m.is_array for m in non_padding]:
+            if False in [m.t == non_padding[0].t for m in non_padding]:
+                return False
+
+            # if only padding and multiple arrays of the same size
+            # it's likely the block is an array with not every
+            # index accessed
+            return True
+
+        if not True in [m.is_array or m.is_struct or m.is_array_struct or\
+                        m.is_padding or m.is_sub_struct for m in non_padding]:
+            if False in [m.t == non_padding[0].t for m in non_padding]:
+                return False
+
+            # this a struct with only multiple simple member of the same type
+            # and padding. This is not really a structure
+            return True
+
         return False
 
     @staticmethod

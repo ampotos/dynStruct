@@ -97,8 +97,10 @@ class Access:
                    (src_op.type == capstone.x86.X86_OP_REG and src_op.reg in xmm_regs):
                     if size == 4:
                         return float_str
-                    else:
+                    elif size == 8:
                         return double_str
+                    else:
+                        return None
                 elif self.ctx_instr and self.ctx_instr.mnemonic.startswith('mov'):
                     dest_ctx_reg = self.ctx_instr.operands[0].reg
                     src_ctx_op = self.ctx_instr.operands[1]
@@ -106,8 +108,10 @@ class Access:
                        src_ctx_op.type == capstone.x86.X86_OP_REG and src_ctx_op.reg in xmm_regs:
                         if size == 4:
                             return float_str
-                        else:
+                        elif size == 8:
                             return double_str
+                        else:
+                            return None
 
             # Next analysis need a ctx_instr
             if not self.ctx_instr:
@@ -174,8 +178,10 @@ class Access:
                 if dest_op.reg in xmm_regs:
                     if size == 4:
                         return float_str
-                    else:
+                    elif size == 8:
                         return double_str
+                    else:
+                        return None
 
                 # if the context instr is a call using the previously right
                 # reg, the value is a ptr to func

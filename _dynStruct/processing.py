@@ -1,3 +1,5 @@
+import _dynStruct
+
 def paging(start, size, l):
     return l[start:start + size]
 
@@ -22,9 +24,13 @@ def block_contain(addr, block):
 def size_filter(size, size_block):
     return ("%d" % size_block).startswith(size)
 
-#todo fix offset search for member struct view
-def offset_filter(offset, offset_block):
-    return ("0x%x" % offset_block).startswith(offset)
+def offset_filter(offset, offset_block, query):
+    # fix offset if we are in member view
+    id_member = query.id_member
+    if id_member and id_member != "None":
+        for off in id_member.split('.')[1:]:
+            offset_block -= int(off)
+    return (hex(offset_block).startswith(offset))
 
 def agent_filter(agent_str, addr, module, func_sym, func, offset):
     if func_sym:
@@ -71,7 +77,7 @@ def filter_access(access, query, t):
             return False
         
     if query["columns[1][search][value]"]:
-        if not offset_filter(query["columns[1][search][value]"], access.offset):
+        if not offset_filter(query["columns[1][search][value]"], access.offset, query):
             return False
 
     if query["columns[2][search][value]"]:

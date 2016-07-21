@@ -55,11 +55,9 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 	This script will load the structure recovered (with user modification) in radare2 and used address of malloc from block in the struct to automatically associated the structure (pf* commands in radare2).
 
 #pointeur detection:
-	
-	The structure recovering of dynStruct is only based on the size of the different access, looking at some more information at runtime will allow dynStruct to be extract pointeur.  
-	I think it's also possible to detect pointer to structure and know what is this structure.  
 
-	*instruction which manipul addr (like ld, ...)*   
+	By looking at the addr store in block on the data gatherer it could be possible to detect pointer to structure/heap/read_only data and in case of heap pointer, store to what block (for linked-list detection for example).
+
 	*ptr to heap data: easy just look if addr in block tree*  
 	*ptr to func: easys for binary with symbol, for strip binary check if prologue at addr ? just check if addr it's in text section ?*  
 	*for other data ptr: check in what section is the addr ?*  
@@ -69,7 +67,8 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 	
 	Compiler generally align structure, so holes (called pad in dynStruct.py output) are detect in the middle of a struct may mean there is an inner struct.  
 	I'm not sure if this is possible be cause detect the start of the inner struct will be a challenge.  
-
+	For that you have to store the alignement use by the program in struct (and find a way tu find it).
+	
 	*used padding to determine inner struct ven it's not a array_struct*
 
 #detect array at runtime by pattern of how the data are accessed:
@@ -102,7 +101,9 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 
 #add a option to dynStruct.py to load struct from a C style header instead of runing recovering
        this will add the possibility to change the structures without the graphical interface
+       need to de-compact the struct before matching with block (and keep the same compact struct than in the file).
        *if use with serrialized data remove, replace existing struct who have the same name with the one on the header if size are equal.*
+
 
 #check other language like rust, go, ... (I think most of them don't call malloc but have their own allocator system, mmap wrapping can help but it's not very precise): need flexibility on allocator:
 
@@ -110,7 +111,7 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 
 #search other usage of the data extract:
 
-       This one is just if some new idea to use the data extract pop in my mind.
+       This one is just if some new idea to use the data extract appear.
 
 #wrap mmap syscall and use new memory as a big block (not for structure recovering), mark block as mmap and don't try to recover struct. but if mmap by allocator don't save it:
 

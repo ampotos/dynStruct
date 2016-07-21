@@ -23,12 +23,12 @@ class Block:
 
         for access in filter(None, block["read_access"]):
             for orig in filter(None, access["details"]):
-                self.r_access.append(Access(access["offset"], orig, self.start, self, len(l_access_r)))
+                self.r_access.append(Access(access["offset"], orig, self.start, self, len(l_access_r), 'read'))
                 l_access_r.append(self.r_access[-1])
             
         for access in filter(None, block["write_access"]):
                 for orig in filter(None, access["details"]):
-                    self.w_access.append(Access(access["offset"], orig, self.start, self, len(l_access_w)))
+                    self.w_access.append(Access(access["offset"], orig, self.start, self, len(l_access_w), 'write'))
                     l_access_w.append(self.w_access[-1])
                     
     def get_access_by_offset(self, offset):

@@ -16,6 +16,7 @@
   }
   $('td:eq(3)', row).css('font-weight', 'normal');
   $('td:eq(4)', row).css('font-weight', 'normal');
+  $('td:eq(5)', row).css('font-weight', 'normal');
 	},
   % if defined('in_block_view'):
   "columnDefs": [

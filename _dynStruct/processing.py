@@ -84,11 +84,11 @@ def filter_access(access, query, t):
             return False
 
     if query["columns[4][search][value]"]:
-        if not query["columns[4][search][value]"] in ' '.join([access.instr.mnemonic, access.instr.op_str]):
+        if not query["columns[4][search][value]"] in access.instr_search:
             return False
 
     if query["columns[5][search][value]"]:
-        if not query["columns[5][search][value]"] in ' '.join([access.ctx_instr.mnemonic, access.ctx_instr.op_str]):
+        if not query["columns[5][search][value]"] in access.ctx_instr_search:
             return False
 
     return True

@@ -2,13 +2,12 @@ from .struct_member import StructMember
 import _dynStruct
 import pyprind
 
-# list of classical string manipulation function
-# use to detecte string
-str_func = ["strlen", "strcpy", "strncpy", "strcmp", "strncmp", "strdup"]
-
 # list of classical function which we ignore the access
 # because there access are non relative to the struct
-ignore_func = ["memset", "memcpy", "memcmp"]
+ignore_func = ["memset", "memcpy", "memcmp", "mempcpy"]
+
+# list of classical-# use to detecte string
+str_func = ["strlen", "strcpy", "strncpy", "strcmp", "strncmp", "strdup", "strcat"]
 
 # minimal size for a sub_array
 min_size_array = 5
@@ -85,8 +84,9 @@ class Struct:
                 actual_offset += 1
                 continue
             
-            size_member = self.get_best_size(block, actual_offset, accesses)
-            self.members.append(StructMember(actual_offset, size_member))
+            size_member = self.get_best_size(accesses)
+            t = self.get_type(accesses, size_member)
+            self.members.append(StructMember(actual_offset, size_member, t))
             actual_offset += size_member
 
     def set_default_name(self):
@@ -125,19 +125,23 @@ class Struct:
                                   self.size - old_offset, 1, None, True)
 
     def clean_array(self):
+        # TODO handle type for array creation (use type of on of the member)
         (index, index_end, nb_unit, size) = self.find_sub_array()
         while nb_unit:
             tmp_members = list(self.members)
             self.add_member_array(index,
                                   "array_0x%x" % self.members[index].offset,
                                   self.members[index].offset, size * nb_unit,
-                                  "uint%d_t" % (size * 8), nb_unit, size, None, False)
+                                  "int%d_t" % (size * 8), nb_unit, size, None, False)
             for member in tmp_members[index : index_end]:
                 self.members.remove(member)
             (index, index_end, nb_unit, size) = self.find_sub_array()
 
 
     def clean_array_struct(self):
+        # TODO do not match struct of 2 identique member only
+        # not recognize as array because len of 4
+        # shloud not be recognize as array fo struct either
         (index_start, index_end) = self.get_struct_pattern(0)
 
         while index_start != index_end:
@@ -188,6 +192,7 @@ class Struct:
         return nb_unit
             
     def find_sub_array(self):
+        # TODO handle type for array detection
         for member in self.members:
             size = member.size
             ct = 0
@@ -349,7 +354,7 @@ class Struct:
 
         self.members.insert(pad_idx, new_member)
         
-    def get_best_size(self, block, offset, accesses):
+    def get_best_size(self, accesses):
         sizes = {}
         max_size = 0
         
@@ -369,9 +374,25 @@ class Struct:
                 max_hit = sizes[size]
 
         return min([sz for sz in sizes if sizes[sz] == max_hit])
-        
-    def filter_access(self, accesses):
+
+    def get_type(self, accesses, size):
+
+        types = {}
         for access in accesses:
+            t = access.analyse_ctx(size)
+            if t and t in types.keys():
+                types[t] += 1
+            elif t:
+                types[t] = 1
+
+        if not len(types):
+            return "int%d_t" % (size * 8)
+
+        return max(types.keys(), key=lambda x: types[x])
+
+    def filter_access(self, accesses):
+        accesses_cpy = list(accesses)
+        for access in accesses_cpy:
             for func in ignore_func:
                 if func.lower() in access.func_sym.lower():
                     accesses.remove(access)
@@ -382,13 +403,15 @@ class Struct:
                 if func.lower() in access.func_sym.lower():
                     return True
         return False
-                    
+
     def change_to_str(self, block):
         self.members.clear()
         self.members = [StructMember(0, self.size)]
-        self.members[0].set_array(self.size, 1, 'uint8_t')
-        
+        self.members[0].set_array(self.size, 1, 'char')
+
     def block_is_struct(self, block):
+        # todo maybe create a struct here to not make analysis 2 time
+        # espacially with the context analysis
         if block.size != self.size:
             return False
 
@@ -408,8 +431,10 @@ class Struct:
             if len(accesses) == 0:
                 actual_offset += 1
                 continue
-                
-            size_member = self.get_best_size(block, actual_offset, accesses)
+
+            # todo change here to handle type
+            # todo also handle member replace by padding
+            size_member = self.get_best_size(accesses)
             if not self.has_member(actual_offset, size_member):
                 return False
             

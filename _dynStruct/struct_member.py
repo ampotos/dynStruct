@@ -3,10 +3,13 @@
 class StructMember:
 
 
-    def __init__(self, offset, size):
+    def __init__(self, offset, size, t = None):
         self.offset = offset
         self.size = size
-        self.t = "uint%d_t" % (self.size * 8)
+        if not t:
+            self.t = "uint%d_t" % (self.size * 8)
+        else:
+            self.t = t
         self.web_t = self.t
         self.set_default_name()
         

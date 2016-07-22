@@ -488,16 +488,7 @@ class Struct:
            and not non_padding[0].is_struct:
             return True
 
-        if not False in [m.is_array for m in non_padding]:
-            if False in [m.t == non_padding[0].t for m in non_padding]:
-                return False
-
-            # if only padding and multiple arrays of the same size
-            # it's likely the block is an array with not every
-            # index accessed
-            return True
-
-        if not True in [m.is_array or m.is_struct or m.is_array_struct or\
+        if not True in [m.is_struct or m.is_array_struct or\
                         m.is_padding or m.is_sub_struct for m in non_padding]:
             if False in [m.t == non_padding[0].t for m in non_padding]:
                 return False

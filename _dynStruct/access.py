@@ -190,9 +190,7 @@ class Access:
                    self.ctx_instr.operands[0].reg == dest_op.reg:
                     return ptr_func_str
 
-                if self.ctx_instr.mnemonic.startswith('mov'):
-
-                    ctx_src_op = self.ctx_instr.operands[1]
+                for ctx_src_op in self.ctx_instr.operands:
                     # if it's a mov with just base + disp and base == written register
                     # it's likely to be a ptr sur struct or array
                     if ctx_src_op.type == capstone.x86.X86_OP_MEM and\

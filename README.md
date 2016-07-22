@@ -2,7 +2,7 @@
 dynStruct is a tool using dynamoRio to monitor memory accesses of an ELF binary via a data gatherer,
 and use this data to recover structures of the original code.
 
-![First screenshot](http://i.imgur.com/gKcr6G2.png)
+![First screenshot](http://i.imgur.com/e5avsw0.png)
 
 dynStruct can also be used to quickly find where and by which function a member of a structure is write or read.
 
@@ -179,21 +179,25 @@ It's impossible to recover exactly the structures used in the original source co
 To recover the size of members dynStruct.py look at the size of the accesses for a particular offset, it keep the more used
 size, if 2 or more size are used the same number of time it keep the smaller size.
 
-All type are ```uint<size>_t```, all the name are ```offset_<offset_int_the_struct>```.
+The default types are ```int<size>_t```, all the default names are ```offset_<offset_int_the_struct>```.
 Some offset in blocks have no read or write accesses in the ouput of the dynStruct dynamoRIO client, so the empty offset are fill
 with array called ```pad_offset<offset_in_the_struct>```, all pading are uint8_t.
 Array are detected, 5 or more consecutive members of a struct with the same size is considered as an array.
 Array are named ```array_<offset_int_the_struct>```.
-The last thing that is detected is array of structure, named ```struct_array_<offset_in_the_struct>```
+The last thing that is detected is array of structure, named ```struct_array_<offset_in_the_struct>```    
+
+dynStruct also record the assembly instruction which does the access and a context instruction, the context instruction is the next one in the case of a read access and the previous one in the case of write access.  
+This context allow to recover type of structure members, the recovered type are pointer (when possible with commentaire for struct pointer and array pointer), function pointer, double, float, signed integer and unsigned integer. When a type is recovered it replace the type in the default type of the structure member.  
+This context analysis if not 100% reliable but is usually right.
 
 The recovery of struct try to be the most compact as possible, the output will look like :
 ```
 struct struct_14{
-	uint32_t array_0x0[5];
+	int32_t array_0x0[5];
 	struct {
-		uint64_t offset_0x0;
-		uint8_t offset_0x8;
-		uint8_t pad_offset_0x9[7];
+		int64_t offset_0x0;
+		int8_t offset_0x8;
+		int8_t pad_offset_0x9[7];
 	}struct_array_0x14[2];
 } 
 ```
@@ -225,21 +229,14 @@ python3 dynStruct.py -d out_test  -c
 will display
 ```
 //total size : 0x20
-struct struct_2 {
-	uint32_t offset_0x0;
-	uint32_t offset_0x4;
-	uint32_t offset_0x8;
+struct struct_2 
+{	int32_t offset_0x0;
+	int32_t offset_0x4;
+	int32_t offset_0x8;
 	uint8_t pad_offset_0xc[4];
-	uint64_t offset_0x10;
-	uint8_t offset_0x18;
+	void(*ptr_fun)() offset_0x10;
+	int8_t offset_0x18;
 	uint8_t pad_offset_0x19[7];
-};
-
-//total size : 0x18
-struct struct_3 {
-	uint64_t offset_0x0;
-	uint64_t offset_0x8;
-	uint64_t offset_0x10;
 };
 ```
 
@@ -252,7 +249,7 @@ python3 dynStruct.py -p serialize_test -c
 Serialized file allow you to load data from a binary without having to redo the structure recovery. Serialized file also saved modification done to structures via the web ui.
 
 ### Recovery accuracy
-The recovering of structure is actually not always accurate but it can still give you a good idea of the internal structures of a program. Improving this will be the main goal in the following month.  
+The recovering of structure is actually not always 100% accurate but it can still give you a good idea of the internal structures of a program. Improving this will be the main goal in the following month.  
 
 ### Known issue
 For now the script dynStruct.py keep all loaded data from the json on memory in diverse objects. This mean for big json file (multiple hundred of Mo) the memory consumption of this script is very high and may even run out of memory, making the structure recovery process through dynStruct.py impossible. This is not a priority right now but in the future this issue will have a particular attention.
@@ -282,7 +279,7 @@ The context instruction is the previous instruction for a write access and the n
 
 ### Structures
 You can access structures detailed view by clicking on the name of the structure in the structures search page.
-![structure detailed view] (http://i.imgur.com/qXaESky.png)
+![structure detailed view] (http://i.imgur.com/AVeVyjr.png)
 
 On this view you have the information about the structure, the members of the structure and the list of blocks which are instances of this structure. You can edit the members of the structure and the list of blocks associated with this structure.    
   
@@ -292,7 +289,7 @@ There is also a detailed view for each member with the list of accesses made to 
 A member can be an inner structure, an array, an array of structure or a simple member (everything which don't match with the previous categories). Union and bitfield are not actually handle by dynStruct.
 
 When you edit a structure you can remove it, remove a member (on the edit member view), or edit a member (it's name, type, size and number of units in the case of an array). You can also create new member in the place of any padding member.
-![edit member view](http://i.imgur.com/jgZBMzm.png)
+![edit member view](http://i.imgur.com/GmNyNra.png)
 
 On the Edit instance view you can select multiple blocks (by clicking on them) of the first list to remove them and multiple blocks on the second list to add them. When you click on Edit instances both selected suppression and addition will be executed.  
 On the second list only blocks with the same size than the structure and not already associated with the structure will be displayed.

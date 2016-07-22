@@ -63,13 +63,15 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 	*for other data ptr: check in what section is the addr ?*  
 	*if ptr to an other block remeber it (find a way to mark only 1 block, addr are not enough), used it to detect ptr to struct or ptr to array, to mark block maybe in increasing index to identify block here instead of in python (a long may be enough)*  
 
-#struct recovering by padding:
+#inner struct recovering:
 	
 	Compiler generally align structure, so holes (called pad in dynStruct.py output) are detect in the middle of a struct may mean there is an inner struct.  
 	I'm not sure if this is possible be cause detect the start of the inner struct will be a challenge.  
 	For that you have to store the alignement use by the program in struct (and find a way tu find it).
 	
 	*used padding to determine inner struct ven it's not a array_struct*
+
+	also by adding saving the previous isntruciton as ctx for read access, it could be possible to toll if the member is the start of a structure in an array of struct or inner structure (because of the ptern of access which usualy is reg = root_ptr, member = reg + offset)
 
 #detect array at runtime by pattern of how the data are accessed:
 	Must record alignement size os the program in the data gatherer

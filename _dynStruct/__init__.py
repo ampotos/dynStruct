@@ -25,3 +25,11 @@ l_access_w = []
 l_access_r = []
 serialized_file = ""
 disasm = None
+
+ptr_func_str = 'void(*ptr_fun)()'
+ptr_struct_str = 'void * // pointer to structure'
+ptr_array_str = 'void * // pointer to array'
+ptr_str = 'void *'
+double_str = 'double'
+float_str = 'float'
+unsigned_str = 'uint%d_t'

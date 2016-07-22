@@ -2,13 +2,6 @@ import binascii
 import _dynStruct
 import capstone
 
-ptr_func_str = 'void(*ptr_fun)()'
-ptr_struct_str = 'void * // pointer to structure'
-ptr_array_str = 'void * // pointer to array'
-ptr_str = 'void *'
-double_str = 'double'
-float_str = 'float'
-
 unsigned_int_instr = [capstone.x86.X86_INS_ADCX, capstone.x86.X86_INS_ADOX,
                       capstone.x86.X86_INS_DIV, capstone.x86.X86_INS_MUL,
                       capstone.x86.X86_INS_MULX]
@@ -96,9 +89,9 @@ class Access:
                 if src_op.type == capstone.x86.X86_OP_FP or\
                    (src_op.type == capstone.x86.X86_OP_REG and src_op.reg in xmm_regs):
                     if size == 4:
-                        return float_str
+                        return _dynStruct.float_str
                     elif size == 8:
-                        return double_str
+                        return _dynStruct.double_str
                     else:
                         return None
                 elif self.ctx_instr and self.ctx_instr.mnemonic.startswith('mov'):
@@ -107,9 +100,9 @@ class Access:
                     if self.instr.operands[1].reg == dest_ctx_reg and\
                        src_ctx_op.type == capstone.x86.X86_OP_REG and src_ctx_op.reg in xmm_regs:
                         if size == 4:
-                            return float_str
+                            return _dynStruct.float_str
                         elif size == 8:
-                            return double_str
+                            return _dynStruct.double_str
                         else:
                             return None
 
@@ -133,17 +126,17 @@ class Access:
                             if op_src.mem.index == 0 and\
                                int((op_src.mem.disp + self.instr.address) / 4096)\
                                == int(self.instr.address / 4096):
-                                return ptr_func_str
+                                return _dynStruct.ptr_func_str
 
                     # if not it's just a ptr because we cannot have more information
-                    return ptr_str
+                    return _dynStruct.ptr_str
 
             # when the mov is an imm value on the same page than rip => func_ptr
             if self.instr.mnemonic.startswith('mov') and\
                self.instr.op_find(capstone.x86.X86_OP_IMM, 1):
                 if int(self.instr.address / 4096) ==\
                    int(self.instr.operands[1].imm / 4096):
-                    return ptr_func_str
+                    return _dynStruct.ptr_func_str
 
             # detecting if signed or unsigned
             if self.instr.mnemonic.startswith('mov') and len(self.ctx_instr.operands) == 2:
@@ -153,13 +146,13 @@ class Access:
                    src_op.type == capstone.x86.X86_OP_REG and\
                    src_op.reg == dest_ctx_op.reg:
                     if self.instr.id in unsigned_int_instr:
-                        return 'uint%d_t' % (size)
+                        return _dynStruct.unsigned_str % (size)
 
         # For read access we can only detect ptr because a use of the value read
         # Basically member is pointer if the value read is dereferenced
         else:
             if self.instr.id == capstone.x86.X86_INS_CALL:
-                return ptr_func_str
+                return _dynStruct.ptr_func_str
 
             # For other instruction we need context to perform the analysis
             if not self.ctx_instr:
@@ -177,9 +170,9 @@ class Access:
                 # point
                 if dest_op.reg in xmm_regs:
                     if size == 4:
-                        return float_str
+                        return _dynStruct.float_str
                     elif size == 8:
-                        return double_str
+                        return _dynStruct.double_str
                     else:
                         return None
 
@@ -188,7 +181,7 @@ class Access:
                 if self.ctx_instr.id == capstone.x86.X86_INS_CALL and\
                    self.ctx_instr.operands[0].type == capstone.x86.X86_INS_CALL and\
                    self.ctx_instr.operands[0].reg == dest_op.reg:
-                    return ptr_func_str
+                    return _dynStruct.ptr_func_str
 
                 for ctx_src_op in self.ctx_instr.operands:
                     # if it's a mov with just base + disp and base == written register
@@ -198,21 +191,21 @@ class Access:
 
                         # if disp != 0 it's certainly a struct ptr
                         if ctx_src_op.mem.segment == 0 and ctx_src_op.mem.disp != 0:
-                            return ptr_struct_str
+                            return _dynStruct.ptr_struct_str
 
                         # if disp == 0 and index != 0 it's certainly an array
                         if ctx_src_op.mem.segment == 0 and ctx_src_op.mem.index != 0:
-                            return ptr_array_str
+                            return _dynStruct.ptr_array_str
 
                         # else it's a pointer with no more information
-                        return ptr_str
+                        return _dynStruct.ptr_str
 
                 # if the context instr have 2 operand and the second one use
                 # the written ptr as base, it's ptr
                 if (self.ctx_instr.operands) == 2 and\
                    self.ctx_instr.operands[1].type == capstone.x86.X86_OP_MEM and\
                    self.ctx_instr.operands[1].reg == ctx_src_op:
-                    return ptr_str
+                    return _dynStruct.ptr_str
 
         return None
 

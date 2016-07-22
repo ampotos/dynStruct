@@ -392,6 +392,13 @@ class Struct:
             elif t:
                 types[t] = 1
 
+        # ptr_struct_str and ptr_array_str are ptr_str with a comment
+        # they provide more information but are the same C type than ptr_str
+        # So they have to be prioritary on ptr_str
+        if _dynStruct.ptr_str in types and\
+           (_dynStruct.ptr_array_str or _dynStruct.ptr_struct_str):
+            types[_dynStruct.ptr_str] = 0
+
         if not len(types):
             return "int%d_t" % (size * 8)
 
@@ -481,7 +488,7 @@ class Struct:
             self.looks_array = False
 
     def not_a_struct(self):
-
+        return False
         non_padding = [m for m in self.members if not m.is_padding]
 
         if len(non_padding) < 2 and not non_padding[0].is_array_struct\

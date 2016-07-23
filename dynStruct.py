@@ -17,6 +17,8 @@ def get_args():
                         help='file to store serialized data.')
     parser.add_argument('-n', dest='run_recovering', action='store_false',
                         help='just load json without recovering structures')
+    parser.add_argument('-k', dest='run_cleaning', action='store_false',
+                        help='don\'t remove block which look like array after structure recovery')
     parser.add_argument('-e', type=str, default=None, dest='out_file',
                         metavar='<file_name>',
                         help='export structures in C style on <file_name>')
@@ -72,8 +74,8 @@ def main():
         f.close()
         load_json(json_data, _dynStruct.l_block, _dynStruct.l_access_w, _dynStruct.l_access_r)
         if args.run_recovering:
-            _dynStruct.Struct.recover_all_struct(_dynStruct.l_block, _dynStruct.l_struct);
-            _dynStruct.Struct.clean_all_struct(_dynStruct.l_struct)
+            _dynStruct.Struct.recover_all_struct(_dynStruct.l_block, _dynStruct.l_struct)
+            _dynStruct.Struct.clean_all_struct(_dynStruct.l_struct, args.run_cleaning)
 
         # We don't need capstone instr object anymore sot remove them
         _dynStruct.Access.remove_instrs(_dynStruct.l_access_w)

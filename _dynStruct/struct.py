@@ -488,7 +488,6 @@ class Struct:
             self.looks_array = False
 
     def not_a_struct(self):
-        return False
         non_padding = [m for m in self.members if not m.is_padding]
 
         if len(non_padding) < 2 and not non_padding[0].is_array_struct\
@@ -496,7 +495,7 @@ class Struct:
             return True
 
         if not True in [m.is_struct or m.is_array_struct or\
-                        m.is_padding or m.is_sub_struct for m in non_padding]:
+                         m.is_sub_struct for m in non_padding]:
             if False in [m.t == non_padding[0].t for m in non_padding]:
                 return False
 
@@ -536,11 +535,11 @@ class Struct:
         print('\n')
 
     @staticmethod
-    def clean_all_struct(structs):
+    def clean_all_struct(structs, cleaning):
         list_structs = list(structs)
         for struct in list_structs:
             struct.clean_struct()
-            if struct.not_a_struct():
+            if cleaning and struct.not_a_struct():
                 struct.remove_all_block()
                 structs.remove(struct)
 

@@ -1,4 +1,4 @@
-
+import _dynStruct
 
 class StructMember:
 
@@ -31,6 +31,11 @@ class StructMember:
             s = self.print_struct()
         elif self.is_array_struct:
             s = self.print_array_struct()
+        elif self.t == _dynStruct.ptr_func_str:
+            s = self.t % (self.name)
+            s += ';\n'
+        elif '//' in self.t:
+            s = "%s %s; //%s\n" % (self.t.split('//')[0], self.name, self.t.split('//')[1])
         else:
             s = "%s %s;\n" % (self.t, self.name)
 

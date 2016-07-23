@@ -432,11 +432,23 @@ class Struct:
             member = self.get_member(other_member.offset)
             if not member:
                 continue
-            if not (member.t == other_member.t and\
-                    member.offset == other_member.offset and\
+            if not (member.offset == other_member.offset and\
                     member.size == other_member.size):
                 return False
-            
+
+            #If the only diff is type, check if there are ptr with comment and ptr
+            types = [member.t, other_member.t]
+            if not types[0] == types[1] and \
+               not ((types[0].startswith(_dynStruct.ptr_str) or\
+                     types[0] == _dynStruct.ptr_func_str) and\
+                    (types[1].startswith(_dynStruct.ptr_str) or\
+                     'int%d_t' % _dynStruct.bits in types[1])) and\
+                not ((types[1].startswith(_dynStruct.ptr_str) or \
+                      types[1] == _dynStruct.ptr_func_str) and\
+                     (types[0].startswith(_dynStruct.ptr_str) or\
+                      'int%d_t' % _dynStruct.bits in types[0])):
+                return False
+
         return True
 
     def merge(self, struct):
@@ -444,6 +456,15 @@ class Struct:
             member = self.get_member(other_member.offset)
             if not member:
                 self.insert_member(copy.deepcopy(other_member))
+
+            # only case possible: change on ptr type
+            # check which ptr we should keep and if other_member
+            # replace it in self.members
+            if member.t != other_member.t:
+                if member.t == 'int%d_t' % _dynStruct.bits or\
+                   member.t == _dynStruct.ptr_str:
+                    self.members.delete(member)
+                    self.insert_member(copy.deepcopy(other_member))
 
     def has_member_or_padding(self, offset, size, t):
         member = self.get_member(offset)

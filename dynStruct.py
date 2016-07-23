@@ -39,9 +39,11 @@ def load_json(json_data, l_block, l_access_w, l_access_r):
     if json_data["is_64"] == 1:
         _dynStruct.disasm = capstone.Cs(capstone.CS_ARCH_X86,
                                         capstone.CS_MODE_64)
+        _dynStruct.bits = 64
     else:
         _dynStruct.disasm = capstone.Cs(capstone.CS_ARCH_X86,
                                         capstone.CS_MODE_32)
+        _dynStruct.bits = 32
     # active detail to operand information (used to analize context instr)
     _dynStruct.disasm.detail = True
     try:

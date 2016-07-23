@@ -19,6 +19,8 @@ from .processing import filter_access
 from .processing import sorting_block
 from .processing import sorting_access
 
+bits = 0
+
 l_struct = []
 l_block = []
 l_access_w = []
@@ -26,7 +28,7 @@ l_access_r = []
 serialized_file = ""
 disasm = None
 
-ptr_func_str = 'void(*ptr_fun)()'
+ptr_func_str = 'void(*%s)()'
 ptr_struct_str = 'void * // pointer to structure'
 ptr_array_str = 'void * // pointer to array'
 ptr_str = 'void *'

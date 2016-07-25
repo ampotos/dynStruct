@@ -387,16 +387,33 @@ def struct_instance_do_edit():
 
     _dynStruct.save_modif()
 
+@bottle.route("/struct_do_detect")
+def struct_do_detect():
+    id_struct = check_struct_id(bottle.request.query.id_struct)
+    if not id_struct:
+        return bottle.template("error", msg="Bad struct id")
+    struct = _dynStruct.Struct.get_by_id(id_struct)
+    struct.detect(_dynStruct.l_block) 
+    _dynStruct.save_modif()
+    bottle.redirect("/struct?id=%s" % (id_struct))
+
 @bottle.route("/do_recovery")
 def do_recovery():
     block_id = check_block_id(bottle.request.query.id_block)
+    if not block_id:
+        return bottle.template("error", msg="Bad block id")
     block = _dynStruct.l_block[block_id]
     if not block.struct:
         new_struct = _dynStruct.Struct(block)
-        new_struct.id = _dynStruct.l_struct[-1].id + 1;
+        try:
+            new_struct.id = _dynStruct.l_struct[-1].id + 1;
+        except IndexError:
+            new_struct.id = 1
         new_struct.set_default_name()
         _dynStruct.l_struct.append(new_struct)
         _dynStruct.save_modif()
+    else:
+        return bottle.template("error", msg="Block already linked")
     bottle.redirect("/block?id=%d" % (block_id))
 
 @bottle.route("/quit")

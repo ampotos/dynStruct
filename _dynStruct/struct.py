@@ -530,6 +530,15 @@ class Struct:
 
         return False
 
+    def detect(self, blocks):
+        for block in blocks:
+            if block.size != self.size or block.struct or \
+               (not block.w_access and not block.r_access):
+                continue
+            tmp_struct = Struct(block)
+            if self.struct_is_equal(tmp_struct):
+                self.add_block(block)
+
     @staticmethod
     def recover_all_struct(blocks, structs):        
         prbar = pyprind.ProgBar(len(blocks), track_time=False, title="\nRecovering structures")

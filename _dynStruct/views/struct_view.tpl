@@ -16,6 +16,7 @@
 % include('member_search.tpl', in_page=True, id_struct=struct.id)
   <h1 class="text-center"> Instances</h1>
   <h3 class="text-center"> <a href="/struct_edit_instance?id_struct={{struct.id}}">Edit instances </a> </h3>
+  <h3 class="text-center"> <a href="/struct_do_detect?id_struct={{struct.id}}">Detect instances </a> </h3>
 % include('block_search.tpl', in_page=True, in_struct_view=True, id_struct=struct.id)
 </div>
 

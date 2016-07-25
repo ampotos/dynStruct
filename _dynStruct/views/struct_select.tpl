@@ -37,6 +37,7 @@
 	<th> <input class="form-control" type="text" placeholder="Search name" /> </th>
 	<th> <input class="form-control" type="text" placeholder="Search nb of members" /> </th>
 	<th> <input class="form-control" type="text" placeholder="Search nb of instances" /> </th>
+	<th> </th>
       </tr>
     </tfoot>
   </table>

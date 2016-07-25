@@ -346,6 +346,25 @@ def add_to_struct_struct_from_block():
         return bottle.template("error", msg="Bad block id")
     return bottle.template("struct_select", id_block=id_block)
 
+@bottle.route("/do_add_to_struct")
+def add_to_struct_struct_from_block():
+    id_block = check_block_id(bottle.request.query.id_block)
+    id_struct = check_struct_id(bottle.request.query.id_struct)
+
+    if id_block != 0 and not id_block:
+        return bottle.template("error", msg="Bad block id")
+
+    if not id_struct:
+        return bottle.template("error", msg="Bad struct id")
+
+    block = _dynStruct.l_block[id_block]
+    if block.struct:
+        return bottle.template("error", msg="Block already linked")
+    struct = _dynStruct.Struct.get_by_id(id_struct)
+    struct.add_block(block)
+    _dynStruct.save_modif()
+    return bottle.template("block_view", block=block)
+
 @bottle.route("/struct_select_get")
 def get_list_compat_struct():
     id_block = check_block_id(bottle.request.query.id_block)

@@ -85,17 +85,21 @@ def filter_access(access, query, t):
             return False
 
     if query["columns[3][search][value]"]:
-        if not agent_filter(query["columns[3][search][value]"], access.pc,
+        if query["columns[3][search][value]"] != str(access.nb_access):
+            return False
+
+    if query["columns[4][search][value]"]:
+        if not agent_filter(query["columns[4][search][value]"], access.pc,
                             access.func_module, access.func_sym, access.func_pc,
                             access.pc - access.func_pc):
             return False
 
-    if query["columns[4][search][value]"]:
-        if not query["columns[4][search][value]"] in access.instr_search:
+    if query["columns[5][search][value]"]:
+        if not query["columns[5][search][value]"] in access.instr_search:
             return False
 
-    if query["columns[5][search][value]"]:
-        if not query["columns[5][search][value]"] in access.ctx_instr_search:
+    if query["columns[6][search][value]"]:
+        if not query["columns[6][search][value]"] in access.ctx_instr_search:
             return False
 
     return True
@@ -119,10 +123,11 @@ def sorting_access(l, column, order):
     getter = {"0": lambda item: item[0],
               "1": lambda item: int(item[1].split('>')[1].split('<')[0], 16),
               "2": lambda item: int(item[2].split('>')[1].split('<')[0]),
-              "3": lambda item: int(item[3].split('>')[2].split('<')[0], 16),
-              "4": lambda item: item[4],
+              "3": lambda item: item[3],
+              "4": lambda item: int(item[4].split('>')[2].split('<')[0], 16),
               "5": lambda item: item[5],
-              "6": lambda item: int(item[6].split('_')[1].split('<')[0])
+              "6": lambda item: item[6],
+              "7": lambda item: int(item[7].split('_')[1].split('<')[0])
               }
     l.sort(key=getter[column] ,reverse=order)
     return l

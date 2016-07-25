@@ -10,12 +10,11 @@ xmm_regs = [xmm for xmm in range(capstone.x86.X86_REG_XMM0 - 1, capstone.x86.X86
 
 class Access:
 
-    def __init__(self, access, orig, addr_start, block, id_access, t):
+    def __init__(self, access, orig, addr_start, block, t):
         self.block = block
         self.offset = access
         self.addr = addr_start + self.offset
         self.size = orig["size_access"]
-        self.id_access = id_access
         self.t = t
 
         if len(orig["opcode"]) % 2:

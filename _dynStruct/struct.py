@@ -391,9 +391,9 @@ class Struct:
         for access in accesses:
             t = access.analyse_ctx(size)
             if t and t in types.keys():
-                types[t] += 1
+                types[t] += access.nb_access
             elif t:
-                types[t] = 1
+                types[t] = access.nb_access
 
         _dynStruct.Access.remove_instrs(accesses)
         # ptr_struct_str and ptr_array_str are ptr_str with a comment

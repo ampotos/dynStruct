@@ -34,8 +34,8 @@ def access_json_list(accesses, t, query, start_offset=0):
         instr_pc = make_pc_display(access.pc, access.func_sym, access.func_pc,
                                    access.func_module)
 
-        tmp = [t, hex(access.offset - start_offset), access.size, instr_pc,
-               access.instr_display, access.ctx_instr_display,
+        tmp = [t, hex(access.offset - start_offset), access.size, access.nb_access,
+               instr_pc, access.instr_display, access.ctx_instr_display,
                '<a href=/block?id=%d>block_%d</a>' % \
                (access.block.id_block, access.block.id_block)]
         ret.append(["<code>%s</code>" % (s) for s in tmp]) 

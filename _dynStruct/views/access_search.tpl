@@ -14,13 +14,13 @@
         if ( data[0] == "<code>write</code>" ) {
 	$(row).css('font-weight', 'bold');
   }
-  $('td:eq(3)', row).css('font-weight', 'normal');
   $('td:eq(4)', row).css('font-weight', 'normal');
   $('td:eq(5)', row).css('font-weight', 'normal');
+  $('td:eq(6)', row).css('font-weight', 'normal');
 	},
   % if defined('in_block_view'):
   "columnDefs": [
-  { "visible": false, "targets": 6}
+  { "visible": false, "targets": 7}
     ]  
   % end
   }
@@ -51,6 +51,7 @@
 	<th> access </th>
 	<th> offset </th>
 	<th> size (in bytes)</th>
+	<th> occurance </th>
 	<th> agent </th>
 	<th> instruction </th>
 	<th> context instruction </th>
@@ -62,6 +63,7 @@
 	<th> <select class="form-control"><option value=""></option><option value="write">write</option><option value="read">read</option></select></th>
 	<th> <input class="form-control" type="text" placeholder="Search offset" /> </th>
 	<th> <input class="form-control" type="text" placeholder="Search size" /> </th>
+	<th> <input class="form-control" type="text" placeholder="Search occurance" /> </th>
 	<th> <input class="form-control" type="text" placeholder="Search agent" /> </th>
 	<th> <input class="form-control" type="text" placeholder="Search instruction" /> </th>
 	<th> <input class="form-control" type="text" placeholder="Search context instruction" /> </th>

@@ -17,7 +17,6 @@ class Access:
         self.size = orig["size_access"]
         self.id_access = id_access
         self.t = t
-        self.ctx_instr = None
 
         if len(orig["opcode"]) % 2:
             orig["opcode"] = "0" + orig["opcode"]
@@ -33,17 +32,13 @@ class Access:
         for k in json_attrib:
             setattr(self, k, (orig[k]))
 
-        self.instr = [instr for instr in
-                      _dynStruct.disasm.disasm(binascii.unhexlify(self.instr_op),
-                                               self.pc)][0]
+        self.disass()
+
         self.instr_display = '<span class="text-success"><strong>%s</strong>\
         </span><span class="text-info">%s</span>' % (self.instr.mnemonic,
                                                      self.instr.op_str)
         self.instr_search = '%s %s' % (self.instr.mnemonic, self.instr.op_str)
         if self.ctx_opcode:
-            self.ctx_instr = [instr for instr in
-                              _dynStruct.disasm.disasm(binascii.unhexlify(self.ctx_opcode),
-                                                       self.ctx_addr)][0]
             if self.ctx_addr > self.pc:
                 self.ctx_instr_display = "Next : "
             else:
@@ -78,9 +73,25 @@ class Access:
 
         return False
 
+    def disass(self):
+        if not _dynStruct.disasm:
+            _dynStruct.create_disasm()
+
+        if not hasattr(self, 'instr'):
+            self.instr = [instr for instr in
+                          _dynStruct.disasm.disasm(binascii.unhexlify(self.instr_op),
+                                                   self.pc)][0]
+            if self.ctx_opcode:
+                self.ctx_instr = [instr for instr in
+                                  _dynStruct.disasm.disasm(binascii.unhexlify(self.ctx_opcode),
+                                                           self.ctx_addr)][0]
+
     def analyse_ctx(self, size):
         #TODO extend analyse to other instruction and
         # SSEX, AVX and other intel extension
+
+        if not hasattr(self, 'instr'):
+            self.disass()
 
         if self.t == 'write':
             # Detect if the written val is the result from a floating point register
@@ -94,7 +105,7 @@ class Access:
                         return _dynStruct.double_str
                     else:
                         return None
-                elif self.ctx_instr and self.ctx_instr.mnemonic.startswith('mov'):
+                elif self.ctx_opcode and self.ctx_instr.mnemonic.startswith('mov'):
                     dest_ctx_reg = self.ctx_instr.operands[0].reg
                     src_ctx_op = self.ctx_instr.operands[1]
                     if self.instr.operands[1].reg == dest_ctx_reg and\
@@ -107,7 +118,7 @@ class Access:
                             return None
 
             # Next analysis need a ctx_instr
-            if not self.ctx_instr:
+            if not self.ctx_opcode:
                 return None
 
             # detect ptr if ctx = lea and instr = mov with the reg value
@@ -212,5 +223,7 @@ class Access:
     @staticmethod
     def remove_instrs(access_list):
         for access in access_list:
-            del access.ctx_instr
-            del access.instr
+            if hasattr(access, 'instr'):
+                del access.instr
+            if hasattr(access, 'ctx_instr'):
+                del access.ctx_instr

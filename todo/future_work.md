@@ -5,10 +5,6 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 	Just verify if dynStruct work properly wth multi-thread program.
 	If not fix the issues.
 
-#check if write instruction handle signed number, float number, ptr, ... via the opcode stored in an access and disass with capstone
-
-       The goal here is also to made the structure recovering more accurate by looking at some other information at runtime.
-
 # Handle signal to write output beofre exiting the program:
 	Handle all signal which generate an exit if not catch by the program and wite the output file at that moment
 	This can be useful to analyse program which take a long time to run completly (can stop after a few min and have the needed data to recover struct).
@@ -48,13 +44,13 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 	*run struct recovery only on new block*
 	*be careful of stuff like unique id from the dynamo data*
 
-#add an option to produce radare2 script which do automatique typing in radare2 debugger:
+#add an option to produce radare2 script which do automatique memory typing in radare2 debugger:
      	
 	I usually use radare2 as decompiler and debugger (It's a big open source project).  
 	Radare2 can be script to automate action during the debugging, this option will produce a script for radare2.  
 	This script will load the structure recovered (with user modification) in radare2 and used address of malloc from block in the struct to automatically associated the structure (pf* commands in radare2).
 
-#pointeur detection:
+#pointeur detection at data gathering time:
 
 	By looking at the addr store in block on the data gatherer it could be possible to detect pointer to structure/heap/read_only data and in case of heap pointer, store to what block (for linked-list detection for example).
 
@@ -70,6 +66,7 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 	For that you have to store the alignement use by the program in struct (and find a way tu find it).
 	
 	*used padding to determine inner struct ven it's not a array_struct*
+	*can be done via static analyze if access (access pattern, before get root ptr of inner struct and after go to member)*
 
 	also by adding saving the previous isntruciton as ctx for read access, it could be possible to toll if the member is the start of a structure in an array of struct or inner structure (because of the ptern of access which usualy is reg = root_ptr, member = reg + offset)
 
@@ -110,10 +107,6 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 #check other language like rust, go, ... (I think most of them don't call malloc but have their own allocator system, mmap wrapping can help but it's not very precise): need flexibility on allocator:
 
        It's impossible to detect all programing language and to do specific stuff for all of them, but if only add some option (like the flexibility on the allocator) allow dynStruct to handle more program language properly do it.
-
-#search other usage of the data extract:
-
-       This one is just if some new idea to use the data extract appear.
 
 #wrap mmap syscall and use new memory as a big block (not for structure recovering), mark block as mmap and don't try to recover struct. but if mmap by allocator don't save it:
 

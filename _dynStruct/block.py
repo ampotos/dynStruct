@@ -30,7 +30,9 @@ class Block:
                 for orig in filter(None, access["details"]):
                     self.w_access.append(Access(access["offset"], orig, self.start, self, len(l_access_w), 'write'))
                     l_access_w.append(self.w_access[-1])
-                    
+
+        Access.remove_instrs(self.r_access + self.w_access)
+
     def get_access_by_offset(self, offset):
         ret = []
         for access in self.r_access + self.w_access:

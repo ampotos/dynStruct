@@ -387,6 +387,18 @@ def struct_instance_do_edit():
 
     _dynStruct.save_modif()
 
+@bottle.route("/do_recovery")
+def do_recovery():
+    block_id = check_block_id(bottle.request.query.id_block)
+    block = _dynStruct.l_block[block_id]
+    if not block.struct:
+        new_struct = _dynStruct.Struct(block)
+        new_struct.id = _dynStruct.l_struct[-1].id + 1;
+        new_struct.set_default_name()
+        _dynStruct.l_struct.append(new_struct)
+        _dynStruct.save_modif()
+    bottle.redirect("/block?id=%d" % (block_id))
+
 @bottle.route("/quit")
 def quit():
     return bottle.template("quit")

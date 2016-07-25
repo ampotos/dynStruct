@@ -10,7 +10,10 @@ class StructMember:
             self.t = "uint%d_t" % (self.size * 8)
         else:
             self.t = t
-        self.web_t = self.t
+        if self.t == _dynStruct.ptr_func_str:
+            self.web_t = self.t % ('ptr_func')
+        else:
+            self.web_t = self.t
         self.set_default_name()
         
         self.is_array = False

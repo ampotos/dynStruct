@@ -201,7 +201,7 @@ struct struct_14{
 	}struct_array_0x14[2];
 } 
 ```
-The recovery process can take several minutes if there are large block.
+The recovery process can take a few minutes if there are large blocks.
 ### Usage
 ```
 usage: dynStruct.py [-h] [-d DYNAMO_FILE] [-p PREVIOUS_FILE] [-o OUT_PICKLE]

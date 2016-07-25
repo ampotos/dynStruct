@@ -29,7 +29,7 @@
   <p class="text-center"><a href="/remove_struct?id_block={{block.id_block}}">Unlinked this block</a></p>
 % else:
   <h3 class="text-center">This block is not actually a structure instance</h3>
-  <p class="text-center"><a href="/add_to_struct?id_block={{block.id_block}}">Linked this block with a structure</a></p>
+  <p class="text-center"><a href="/add_to_struct?id_block={{block.id_block}}">Linked this block with a structure</a><br><a href="/do_recovery?id_block={{block.id_block}}">Analyze this block</a></p>
 % end
   
   <h1 class="text-center"> Block access</h1>

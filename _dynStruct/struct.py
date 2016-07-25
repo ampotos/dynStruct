@@ -76,6 +76,9 @@ class Struct:
     def recover(self, block):
         actual_offset = 0
 
+        if not _dynStruct.disasm:
+            _dynStruct.create_disasm()
+
         while actual_offset < self.size:
             accesses = block.get_access_by_offset(actual_offset)
             if not accesses:
@@ -392,6 +395,7 @@ class Struct:
             elif t:
                 types[t] = 1
 
+        _dynStruct.Access.remove_instrs(accesses)
         # ptr_struct_str and ptr_array_str are ptr_str with a comment
         # they provide more information but are the same C type than ptr_str
         # So they have to be prioritary on ptr_str

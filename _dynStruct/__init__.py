@@ -18,6 +18,7 @@ from .processing import filter_block
 from .processing import filter_access
 from .processing import sorting_block
 from .processing import sorting_access
+from .utils import create_disasm
 
 bits = 0
 

@@ -5,7 +5,6 @@ import pickle
 import json
 import _dynStruct
 import pyprind
-import capstone
 
 def get_args():
     parser = argparse.ArgumentParser(description='Dynstruct analize tool')
@@ -37,15 +36,10 @@ def load_json(json_data, l_block, l_access_w, l_access_r):
     id_block = 0
 
     if json_data["is_64"] == 1:
-        _dynStruct.disasm = capstone.Cs(capstone.CS_ARCH_X86,
-                                        capstone.CS_MODE_64)
         _dynStruct.bits = 64
     else:
-        _dynStruct.disasm = capstone.Cs(capstone.CS_ARCH_X86,
-                                        capstone.CS_MODE_32)
         _dynStruct.bits = 32
-    # active detail to operand information (used to analize context instr)
-    _dynStruct.disasm.detail = True
+
     try:
         prbar = pyprind.ProgBar(len(json_data["blocks"]), track_time=False, title="Loading Json data")
         for block in filter(None, json_data["blocks"]):
@@ -79,9 +73,6 @@ def main():
             _dynStruct.Struct.recover_all_struct(_dynStruct.l_block, _dynStruct.l_struct)
             _dynStruct.Struct.clean_all_struct(_dynStruct.l_struct, args.run_cleaning)
 
-        # We don't need capstone instr object anymore sot remove them
-        _dynStruct.Access.remove_instrs(_dynStruct.l_access_w)
-        _dynStruct.Access.remove_instrs(_dynStruct.l_access_r)
     elif args.previous_file:
         with open(args.previous_file, "rb") as f:
             data = pickle.load(f)

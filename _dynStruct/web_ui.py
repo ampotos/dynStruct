@@ -419,11 +419,12 @@ def struct_do_detect():
 @bottle.route("/do_recovery")
 def do_recovery():
     block_id = check_block_id(bottle.request.query.id_block)
-    if not block_id:
+    if not block_id and block_id != 0:
         return bottle.template("error", msg="Bad block id")
     block = _dynStruct.l_block[block_id]
     if not block.struct:
         new_struct = _dynStruct.Struct(block)
+        new_struct.clean_struct()
         try:
             new_struct.id = _dynStruct.l_struct[-1].id + 1;
         except IndexError:

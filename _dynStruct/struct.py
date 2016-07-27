@@ -460,6 +460,7 @@ class Struct:
             member = self.get_member(other_member.offset)
             if not member:
                 self.insert_member(copy.deepcopy(other_member))
+                continue
 
             # only case possible: change on ptr type
             # check which ptr we should keep and if other_member
@@ -467,7 +468,7 @@ class Struct:
             if member.t != other_member.t:
                 if member.t == 'int%d_t' % _dynStruct.bits or\
                    member.t == _dynStruct.ptr_str:
-                    self.members.delete(member)
+                    self.members.remove(member)
                     self.insert_member(copy.deepcopy(other_member))
 
     def has_member_or_padding(self, offset, size, t):

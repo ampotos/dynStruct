@@ -16,6 +16,11 @@ int get_balance(tree_t *node)
 
 tree_t *get_parent(tree_t *tree, tree_t *node)
 {
+  // to avoid double dut to some malloc
+  // algorithm
+  if (tree->min_addr == node->min_addr)
+    return NULL;
+
   if (tree->high_addr < node->min_addr && tree->right)
     return get_parent(tree->right, node);
   else if (tree->min_addr > node->high_addr && tree->left)
@@ -152,13 +157,14 @@ void balance_tree(tree_t *node, tree_t **tree)
     }
 }
 
-void add_to_tree(tree_t **tree, tree_t *node)
+int add_to_tree(tree_t **tree, tree_t *node)
 {
   tree_t	*parent;
   int		balance;
 
   if (!node)
-    return;
+    return false;
+
   node->height = 0;
   node->left = NULL;
   node->right = NULL;
@@ -171,12 +177,23 @@ void add_to_tree(tree_t **tree, tree_t *node)
   else
     {
       parent = get_parent(*tree, node);
+      if (!parent)
+	return false;
       node->parent = parent;
       if (parent->min_addr > node->high_addr)
-	parent->left = node;
+	{
+	  // this can happen with some malloc algorithm
+	  if (parent->left)
+	    return false;
+	  parent->left = node;
+	}
       else
-	parent->right = node;
-      
+	{
+	  // this can happen with some malloc algorithm
+	  if (parent->right)
+	    return false;
+	  parent->right = node;
+	}
       recompute_height(node->parent);
       
       while (parent)
@@ -190,6 +207,7 @@ void add_to_tree(tree_t **tree, tree_t *node)
 	  parent = parent->parent;
 	}
     }
+  return true;
 }
 
 void del_leaf(tree_t **tree, tree_t *node)
@@ -212,7 +230,7 @@ void del_branch(tree_t **tree, tree_t *node)
 {
   tree_t	*parent = node->parent;
 
-  if (parent)
+ if (parent)
     {
       if (parent->left == node)
 	{
@@ -242,23 +260,10 @@ void del_branch(tree_t **tree, tree_t *node)
     }
 }
 
-void *get_node(tree_t *tree, void *addr)
-{
-  if (!tree)
-    return NULL;
-
-  if (tree->high_addr < addr)
-    return get_node(tree->right, addr);
-  else if (tree->min_addr > addr)
-    return get_node(tree->left, addr);
-
-  return tree;
-}
-
 void del_from_tree(tree_t **tree, void *start_addr,
 		   void (* free_func)(void *), int free)
 {
-  tree_t	*node = get_node(*tree, start_addr);
+  tree_t	*node = search_on_tree(*tree, start_addr);
   tree_t	*to_switch;
   tree_t	*parent_node;
   tree_t	*parent_switch;
@@ -266,11 +271,16 @@ void del_from_tree(tree_t **tree, void *start_addr,
   int		tmp_height;
   int		balance;
 
-  if (!node)
-    return;
+  if (!node || node->min_addr != start_addr)
+    {
+      // because this tree can be used to store a unique data
+      // are an address space, we have to check both
+      if (!(node = search_same_addr_on_tree(*tree, start_addr)))
+	return;
+    }
   parent_node = node->parent;
 
-  // if no child just delet the node
+  // if no child just delete the node
   if (!(node->right) && !(node->left))
     del_leaf(tree, node);
   // if node have 2 child node swap and delete

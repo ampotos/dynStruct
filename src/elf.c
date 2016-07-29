@@ -199,7 +199,8 @@ void add_plt(const module_data_t *mod, void *got, void *drcontext)
 
   new_node->data = got;
 
-  add_to_tree(&plt_tree, new_node);
+  if (!add_to_tree(&plt_tree, new_node))
+    dr_global_free(new_node, sizeof(*new_node));
 }
 
 

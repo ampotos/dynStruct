@@ -35,6 +35,8 @@ struct malloc_s;
 
 void *alloc_instr(struct malloc_s *block, unsigned int size);
 access_t *alloc_access(struct malloc_s *block);
+void free_last_access(struct malloc_s *block);
 orig_t *alloc_orig(struct malloc_s *block);
+void free_last_orig(struct malloc_s *block);
 void custom_free_pages(struct malloc_s *block);
 #endif

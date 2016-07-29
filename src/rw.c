@@ -83,7 +83,8 @@ void incr_orig(access_t *access, size_t size, void *pc, void *drcontext,
       orig_tree->node.high_addr = pc;
       orig_tree->node.min_addr = pc;
       orig_tree->node.data = orig_tree;
-      add_to_tree(&(access->origs), (tree_t*)orig_tree);
+      if (!add_to_tree(&(access->origs), (tree_t*)orig_tree))
+	free_last_orig(block);
 
       return;
     }
@@ -125,7 +126,8 @@ access_t *get_access(size_t offset, tree_t **t_access, malloc_t *block)
   access->node.high_addr = (void *)offset;
   access->node.min_addr = (void *)offset;
 
-  add_to_tree(t_access, (tree_t*)access);
+  if (!add_to_tree(t_access, (tree_t*)access))
+    free_last_access(block);
 
   return access;
 }

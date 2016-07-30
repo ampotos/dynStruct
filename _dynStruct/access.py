@@ -143,7 +143,8 @@ class Access:
 
             # when the mov is an imm value on the same page than rip => func_ptr
             if self.instr.mnemonic.startswith('mov') and\
-               self.instr.op_find(capstone.x86.X86_OP_IMM, 1):
+               self.instr.op_find(capstone.x86.X86_OP_IMM, 1) and\
+               size == _dynStruct.bits / 8:
                 if int(self.instr.address / 4096) ==\
                    int(self.instr.operands[1].imm / 4096):
                     return _dynStruct.ptr_func_str

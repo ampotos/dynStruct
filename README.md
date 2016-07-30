@@ -179,11 +179,11 @@ It's impossible to recover exactly the structures used in the original source co
 To recover the size of members dynStruct.py look at the size of the accesses for a particular offset, it keep the more used
 size, if 2 or more size are used the same number of time it keep the smaller size.
 
-The default types are ```int<size>_t```, all the default names are ```offset_<offset_int_the_struct>```.
+The default types are ```int<size>_t```, all the default names are ```offset_<offset_in_the_struct>```.
 Some offset in blocks have no read or write accesses in the ouput of the dynStruct dynamoRIO client, so the empty offset are fill
 with array called ```pad_offset<offset_in_the_struct>```, all pading are uint8_t.
 Array are detected, 5 or more consecutive members of a struct with the same size is considered as an array.
-Array are named ```array_<offset_int_the_struct>```.
+Array are named ```array_<offset_in_the_struct>```.
 The last thing that is detected is array of structure, named ```struct_array_<offset_in_the_struct>```    
 
 dynStruct also record the assembly instruction which does the access and a context instruction, the context instruction is the next one in the case of a read access and the previous one in the case of write access.  

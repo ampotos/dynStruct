@@ -1,5 +1,12 @@
 This file is the todo list of dynStruct. This are just ideas, ways to look, some of them can be impossible to do.
 
+# when -k is used change the name of the "struct" in the name by "array"
+        Do the same when analysis is ran from the web_ui
+
+#add a not research (maybe '!' at the start of the search field)
+        Actually it can be difficult to find information which are different than an other (specifically in the access search).
+	Doing something like: if the line start by '!' display everything which don't match the research
+
 #check if it work correctly with multi-thread program:
 
 	Just verify if dynStruct work properly wth multi-thread program.
@@ -49,6 +56,7 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 	I usually use radare2 as decompiler and debugger (It's a big open source project).  
 	Radare2 can be script to automate action during the debugging, this option will produce a script for radare2.  
 	This script will load the structure recovered (with user modification) in radare2 and used address of malloc from block in the struct to automatically associated the structure (pf* commands in radare2).
+	This script could add comment on allocation/deallocation and r/w access of member of struct
 
 #pointeur detection at data gathering time:
 

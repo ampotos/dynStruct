@@ -159,11 +159,16 @@ void add_hit(void *pc, size_t size, void *target, int read, void *drcontext,
 void check_opnd(opnd_t opnd, void *pc, int read, void *drcontext,
 		dr_mcontext_t *mctx, void *prev_pc)
 {
+  void *target;
+
   if (opnd_is_memory_reference(opnd) && opnd_is_base_disp(opnd))
-    add_hit(pc, opnd_size_in_bytes(opnd_get_size(opnd)),
-	    opnd_get_disp(opnd) + (void *)reg_get_value(opnd_get_base(opnd),
-						       mctx),
-	    read, drcontext, prev_pc);
+    {
+      target = (void *)reg_get_value(opnd_get_base(opnd), mctx);
+      target += opnd_get_disp(opnd);
+      target += reg_get_value(opnd_get_index(opnd), mctx) * opnd_get_scale(opnd);
+      add_hit(pc, opnd_size_in_bytes(opnd_get_size(opnd)), target, read,
+	      drcontext, prev_pc);
+    }
   else if (opnd_is_memory_reference(opnd) && opnd_get_addr(opnd))
     add_hit(pc, opnd_size_in_bytes(opnd_get_size(opnd)), opnd_get_addr(opnd),
 	    read, drcontext, prev_pc);

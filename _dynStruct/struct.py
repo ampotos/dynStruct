@@ -425,8 +425,8 @@ class Struct:
     def change_to_str(self, block):
         self.members.clear()
         self.members = [StructMember(0, self.size)]
-        self.members[0].set_array(self.size, 1)
         self.members[0].t = 'char'
+        self.members[0].set_array(self.size, 1)
 
     def struct_is_equal(self, struct):
         if struct.size != self.size:

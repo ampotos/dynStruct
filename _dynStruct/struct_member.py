@@ -79,7 +79,12 @@ class StructMember:
         return str_struct + "%s[%d];\n" % (self.name, self.number_unit)
 
     def print_array(self):
-        return "%s %s[%d];\n" % (self.t, self.name, self.number_unit)
+        if not '//' in self.t:
+            ret = "%s %s[%d];\n" % (self.t, self.name, self.number_unit)
+        else:
+            ret = "%s %s[%d]; //%s\n" % (self.t.split('//')[0], self.name,
+                                       self.number_unit, self.t.split('//')[1])
+        return ret
     
     def set_array(self, nb_unit, size_unit):
         self.is_array = True

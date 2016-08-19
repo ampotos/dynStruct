@@ -56,7 +56,8 @@ void set_addr_malloc(malloc_t *block, void *start, unsigned int flag,
       block->node.min_addr = block->start;
       block->node.high_addr = block->end;
       block->node.data = block;
-      add_to_tree(&active_blocks, (tree_t *)block);
+      if (!add_to_tree(&active_blocks, (tree_t *)block))
+	dr_custom_free(NULL, 0, block, sizeof(*block));
     }
   else
     dr_printf("Error : *alloc post wrapping call without pre wrapping\n");

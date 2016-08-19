@@ -9,9 +9,6 @@
 #include "../includes/args.h"
 #include "../includes/out_json.h"
 
-static int malloc_init = 0;
-static int realloc_init = 0;
-
 // used to know when flush old_blocks
 // list to limit memory usage
 static int	old_blocks_count = 0;
@@ -80,21 +77,21 @@ void pre_malloc(void *wrapctx, OUT void **user_data)
   drc = drwrap_get_drcontext(wrapctx);
   dr_mutex_lock(lock);
 
-  // the first call on 64 bit and the second in 32bit
-  // are init call, so we have to do nothing
-#ifdef BUILD_64
-  if (!malloc_init++ && !realloc_init)
-    {
-      dr_mutex_unlock(lock);
-      return;
-    }
-#else
-  if (malloc_init++ == 1 && realloc_init != 1)
-    {
-      dr_mutex_unlock(lock);
-      return;
-    }
-#endif
+/*   // the first call on 64 bit and the second in 32bit */
+/*   // are init call, so we have to do nothing */
+/* #ifdef BUILD_64 */
+/*   if (!malloc_init++ && !realloc_init) */
+/*     { */
+/*       dr_mutex_unlock(lock); */
+/*       return; */
+/*     } */
+/* #else */
+/*   if (malloc_init++ == 1 && realloc_init != 1) */
+/*     { */
+/*       dr_mutex_unlock(lock); */
+/*       return; */
+/*     } */
+/* #endif */
 
   
   if (!module_is_wrapped(drc))
@@ -137,22 +134,22 @@ void pre_realloc(void *wrapctx, OUT void **user_data)
   void		*drc = drwrap_get_drcontext(wrapctx);
 
   dr_mutex_lock(lock);
-  // the first call on 64 bit and the second in 32bit
-  // are init call, so we have to do nothing
-#ifdef BUILD_64
-  if (!realloc_init)
-    {
-      realloc_init++;
-      dr_mutex_unlock(lock);
-      return;
-    }
-#else
-  if (realloc_init++ == 1)
-    {
-      dr_mutex_unlock(lock);
-      return;
-    }
-#endif
+/*   // the first call on 64 bit and the second in 32bit */
+/*   // are init call, so we have to do nothing */
+/* #ifdef BUILD_64 */
+/*   if (!realloc_init) */
+/*     { */
+/*       realloc_init++; */
+/*       dr_mutex_unlock(lock); */
+/*       return; */
+/*     } */
+/* #else */
+/*   if (realloc_init++ == 1) */
+/*     { */
+/*       dr_mutex_unlock(lock); */
+/*       return; */
+/*     } */
+/* #endif */
 
   // if size == 0, realloc call free
   if (!size)

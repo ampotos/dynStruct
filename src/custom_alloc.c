@@ -39,6 +39,11 @@ access_t *alloc_access(malloc_t *block)
   return &(block->access_pages->accesses[block->access_pages->header.next_idx++]);
 }
 
+void free_last_access(malloc_t *block)
+{
+  block->access_pages->header.next_idx--;
+}
+
 orig_t *alloc_orig(malloc_t *block)
 {
   if (!(block->orig_pages) ||
@@ -49,6 +54,11 @@ orig_t *alloc_orig(malloc_t *block)
     }
 
   return &(block->orig_pages->origs[block->orig_pages->header.next_idx++]);
+}
+
+void free_last_orig(malloc_t *block)
+{
+  block->orig_pages->header.next_idx--;
 }
 
 void custom_free_pages(malloc_t *block)

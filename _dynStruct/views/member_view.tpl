@@ -115,7 +115,7 @@
     </tr>
     <tr>
       <td> {{member.size}} </td>
-      <td> <span class="text-warning">{{member.t}}</span></td>
+      <td> <span class="text-warning">{{member.web_t}}</span></td>
     </tr>
   </table>
 % else:
@@ -130,7 +130,7 @@
       <tr>
 	<td> <input type="text" name="name" value="{{member.name}}" class="form-control" /> </td>
 	<td> <input type="number" name="size" value="{{member.size}}" class="form-control" /> </td>
-	<td> <input type="test" name="type" value="{{member.t}}" class="form-control" /> </td>
+	<td> <input type="test" name="type" value="{{member.web_t}}" class="form-control" /> </td>
 	<td> <input type="submit" value="Edit" class="btn btn-primary" /> </td>
       </tr>
     </table>

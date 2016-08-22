@@ -1,5 +1,10 @@
 This file is the todo list of dynStruct. This are just ideas, ways to look, some of them can be impossible to do.
 
+# when reocrding an access, also record the base if the access is on form <base + disp + scale * index>
+       this can allow to detect sub sutructure, structure inside an address space (like return of mmap)
+       this can also allow to detect stack structure more easily
+       Also this will not make the isntrumentation more heavier than now and everything can be do in post processing
+
 # when -k is used change the name of the "struct" in the name by "array"
         Do the same when analysis is ran from the web_ui
 
@@ -76,7 +81,6 @@ This file is the todo list of dynStruct. This are just ideas, ways to look, some
 	*used padding to determine inner struct ven it's not a array_struct*
 	*can be done via static analyze if access (access pattern, before get root ptr of inner struct and after go to member)*
 
-	also by adding saving the previous isntruciton as ctx for read access, it could be possible to toll if the member is the start of a structure in an array of struct or inner structure (because of the ptern of access which usualy is reg = root_ptr, member = reg + offset)
 
 #detect array at runtime by pattern of how the data are accessed:
 	Must record alignement size os the program in the data gatherer

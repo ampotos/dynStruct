@@ -293,5 +293,5 @@ On the second list only blocks with the same size than the structure and not alr
 ### Edits saving
 All edits are saved in the serialized file if any (work with files give with args -o and -p).
 
-### Know issue
+### Known issue
 The web interface is run via the same script than the structure recovery, so thay the web interface have the same issue than the structure recovery.

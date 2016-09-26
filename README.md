@@ -9,7 +9,8 @@ dynStruct can also be used to quickly find where and by which function a member 
 ## Requirements
 ### Data gatherer
 * CMake >= 2.8
-* [DynamoRIO](https://github.com/DynamoRIO/dynamorio)
+* [DynamoRIO](https://github.com/DynamoRIO/dynamorio)  
+There is an issue in the last release of DynamoRIO, the last tested build is available at https://console.cloud.google.com/storage/browser/chromium-dynamorio/builds/ (DynamoRIO-Linux-6.1.17025-0xac1015a.tar.gz).
 
 ### Structure recovery and web interface
 * Python3
@@ -293,5 +294,5 @@ On the second list only blocks with the same size than the structure and not alr
 ### Edits saving
 All edits are saved in the serialized file if any (work with files give with args -o and -p).
 
-### Know issue
+### Known issue
 The web interface is run via the same script than the structure recovery, so thay the web interface have the same issue than the structure recovery.

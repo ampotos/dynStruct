@@ -171,7 +171,9 @@ void add_plt(const module_data_t *mod, void *got, void *drcontext)
   module_segment_data_t	*seg_plt;
 
   // if the path to the module is not present we can't get the file
-  if (!(mod->full_path))
+  // if the path of the module start by '[' it's a section of the executable
+  // which doesn't correspond to any file
+  if (!(mod->full_path) || mod->full_path[0] == '[')
     return;
   
   if (!(seg_plt = find_load_section(mod, &tmp_data_plt, PLT_NAME)))

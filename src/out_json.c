@@ -14,10 +14,18 @@ int      len_tmp = 0;
 
 void init_buffering()
 {
-  DR_ASSERT((global_buf = dr_custom_alloc(NULL, DR_ALLOC_NON_HEAP | DR_ALLOC_NON_DR, GLOBAL_BUF_SIZE,
-					  DR_MEMPROT_WRITE | DR_MEMPROT_READ , NULL)));
-  DR_ASSERT((tmp_buf = dr_custom_alloc(NULL, DR_ALLOC_NON_HEAP | DR_ALLOC_NON_DR, TMP_BUF_SIZE,
-				       DR_MEMPROT_WRITE | DR_MEMPROT_READ , NULL)));
+  if (!global_buf)
+    DR_ASSERT((global_buf = dr_custom_alloc(NULL,
+					    DR_ALLOC_NON_HEAP | DR_ALLOC_NON_DR,
+					    GLOBAL_BUF_SIZE,
+					    DR_MEMPROT_WRITE | DR_MEMPROT_READ,
+					    NULL)));
+  if (!tmp_buf)
+    DR_ASSERT((tmp_buf = dr_custom_alloc(NULL,
+					 DR_ALLOC_NON_HEAP | DR_ALLOC_NON_DR,
+					 TMP_BUF_SIZE,
+					 DR_MEMPROT_WRITE | DR_MEMPROT_READ,
+					 NULL)));
 }
 
 void stop_buffering()
@@ -90,13 +98,12 @@ void print_block_json(malloc_t *block)
   DS_PRINTF("\"read_access\" : [");
   clean_tree(&(block->read), (void (*)(void*))print_access_json, false);
   DS_PRINTF("{}], ");
-  
+
   DS_PRINTF("\"write_access\" : [");
   clean_tree(&(block->write), (void (*)(void*))print_access_json, false);
   DS_PRINTF("{}]");
 
   DS_PRINTF("}, ");
-
   custom_free_pages(block);
   dr_custom_free(NULL, 0, block, sizeof(*block));
 }

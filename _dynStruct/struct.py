@@ -513,20 +513,21 @@ class Struct:
         else:
             self.looks_array = False
 
-    def not_a_struct(self):
+    def not_a_struct(self, t=None):
         non_padding = [m for m in self.members if not m.is_padding]
+        if not t:
+            t = non_padding[0].t
 
         if len(non_padding) < 2 and not non_padding[0].is_array_struct\
            and not non_padding[0].is_struct:
             return True
 
-        if not True in [m.is_struct or m.is_array_struct or\
-                         m.is_sub_struct for m in non_padding]:
-            if False in [m.t == non_padding[0].t for m in non_padding]:
+        if not True in [((m.is_struct or m.is_array_struct) and not\
+                                        m.sub_struct.not_a_struct(t=t))\
+                        or m.is_sub_struct for m in non_padding]:
+            if False in [m.t == t for m in non_padding]:
                 return False
 
-            # this a struct with only multiple simple member of the same type
-            # and padding. This is not really a structure
             return True
 
         return False
@@ -573,10 +574,10 @@ class Struct:
     def clean_all_struct(structs, cleaning):
         list_structs = list(structs)
         for struct in list_structs:
-            struct.clean_struct()
             if cleaning and struct.not_a_struct():
                 struct.remove_all_block()
                 structs.remove(struct)
+            struct.clean_struct()
 
     @staticmethod
     def get_by_id(id_struct, struct=None):

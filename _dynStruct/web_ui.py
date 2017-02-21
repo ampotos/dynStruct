@@ -451,5 +451,5 @@ def index():
 
 def start_webui(addr, port):
     bottle.TEMPLATE_PATH.insert(0, os.path.dirname(__file__) + "/views")
-    print ("Starting web server at %s:%s" % (addr, port))
+    print("Starting web server at http://%s:%s" % (addr, port))
     bottle.run(host=addr, port=port, quiet=True)

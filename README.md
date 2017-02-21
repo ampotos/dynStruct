@@ -164,6 +164,9 @@ If you don't want the data gatherer to follow new processes use the options -no_
 ### Output
 In order to reduce the memory overhead of the data gatherer, if there is an output file the data will be written in it every 100 block free.
 
+### Known issues
+The buffering have an issue on my setup when analyzing xterm, no problem with other program or other systems. The issue is a bit of the json output is missing. If you have this issue as well please fill an issue with detal of your setup and of the program analyzed. To fix it if needed comment the macro in includes/out_json.h and uncomment the first macro named DS_PRINTF.
+
 ## Structure recovery
 
 The python script dynStruct.py do the structure recovery and can start the web_ui.

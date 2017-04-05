@@ -7,9 +7,9 @@ and use this data to recover structures of the original code.
 dynStruct can also be used to quickly find where and by which function a member of a structure is write or read.
 
 ## Papers
-dynStruct was the subject of my master thesis and also the subject of a publication.
-[Master Thesis] (https://kar.kent.ac.uk/58461/)
-[Publication] (http://ieeexplore.ieee.org/document/7884661/)
+dynStruct was the subject of my master thesis and also the subject of a publication.  
+[Master Thesis](https://kar.kent.ac.uk/58461/)  
+[Publication](http://ieeexplore.ieee.org/document/7884661/)
 
 ## Requirements
 ### Data gatherer
@@ -18,8 +18,8 @@ dynStruct was the subject of my master thesis and also the subject of a publicat
 
 ### Structure recovery and web interface
 * Python3
-* [Capstone] (http://www.capstone-engine.org/)
-* [Bottle] (http://bottlepy.org/docs/dev/index.html)
+* [Capstone](http://www.capstone-engine.org/)
+* [Bottle](http://bottlepy.org/docs/dev/index.html)
 
 ## Setup
 ### Data Gatherer 

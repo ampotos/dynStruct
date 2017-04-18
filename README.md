@@ -35,7 +35,7 @@ Install dependencies for dynStruct.py: `pip3 install -r requirements.txt`
 
 ## Data gatherer
 
-###Usage
+### Usage
 
 ```
 drrun -opt_cleancall 3 -c <dynStruct_path> <dynStruct_args> -- <prog_path> <prog_args>

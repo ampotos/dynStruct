@@ -14,7 +14,7 @@ dynStruct was the subject of my master thesis and also the subject of a publicat
 ## Requirements
 ### Data gatherer
 * CMake >= 2.8
-* [DynamoRIO](https://github.com/DynamoRIO/dynamorio)  >= [weekly build 7.0.17598] https://github.com/DynamoRIO/dynamorio/releases/tag/cronbuild-7.0.17598 (before there is a bug making it unsuable with a recent libc), also when the v7 will be released (not the rc1 which doen't contain the patch) it should work. 
+* [DynamoRIO](https://github.com/DynamoRIO/dynamorio)  >= [weekly build 7.0.17598](https://github.com/DynamoRIO/dynamorio/releases/tag/cronbuild-7.0.17598) (before there is a bug making it unsuable with a recent libc), also when the v7 will be released (not the rc1 which doen't contain the patch) it should work. 
 
 ### Structure recovery and web interface
 * Python3

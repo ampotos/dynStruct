@@ -14,7 +14,7 @@ dynStruct was the subject of my master thesis and also the subject of a publicat
 ## Requirements
 ### Data gatherer
 * CMake >= 2.8
-* [DynamoRIO](https://github.com/DynamoRIO/dynamorio)  
+* [DynamoRIO](https://github.com/DynamoRIO/dynamorio)  >= [weekly build 7.0.17598] https://github.com/DynamoRIO/dynamorio/releases/tag/cronbuild-7.0.17598 (before there is a bug making it unsuable with a recent libc), also when the v7 will be released (not the rc1 which doen't contain the patch) it should work. 
 
 ### Structure recovery and web interface
 * Python3
@@ -170,7 +170,7 @@ If you don't want the data gatherer to follow new processes use the options -no_
 In order to reduce the memory overhead of the data gatherer, if there is an output file the data will be written in it every 100 block free.
 
 ### Known issues
-The buffering have an issue on my setup when analyzing xterm, no problem with other program or other systems. The issue is a bit of the json output is missing. If you have this issue as well please fill an issue with detal of your setup and of the program analyzed. To fix it if needed comment the macro in includes/out_json.h and uncomment the first macro named DS_PRINTF.
+The buffering has an issue on my setup when analyzing xterm, no problem with other program or other systems. The issue is a bit of the json output is missing. If you have this issue as well please fill an issue with detail of your setup and of the program analyzed. To fix it if needed comment the macro in includes/out_json.h and uncomment the first macro named DS_PRINTF.
 
 ## Structure recovery
 
